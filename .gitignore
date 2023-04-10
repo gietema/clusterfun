@@ -1,0 +1,16 @@
+node_modules/
+
+.idea
+.pytest_cache
+__pycache__
+*.ipynb
+.cache/
+.ipynb_checkpoints/
+.DS_STORE
+data/cifar10
+data/cifar10/*
+frontend/public/data/cifar10/*/*.png
+/data/
+data
+frontend/.next
+*.parquet

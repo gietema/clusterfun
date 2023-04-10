@@ -1,0 +1,1154 @@
+img_path,painting,style,x,y,brightness
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_the-large-fly-1937.jpg,The Large Fly,Cubism,6.729631,13.904775,117.22851111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_study-of-bathers-1.jpg,Study Of Bathers,Cubism,2.0874357,13.876572,124.35585555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_female-bust.jpg,Female,Cubism,4.3803854,11.485603,109.97791111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_the-cloud-1921.jpg,The Cloud,Cubism,6.510559,12.913075,116.42266666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-studio-vi-1951.jpg,The Studio Vi,Cubism,5.236261,14.575987,69.9862
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_peti-parrot-women-women-in-parrot.jpg,Peti Parrot Women Women In,Cubism,5.525415,11.190861,99.50265555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_chateau-noir-4.jpg,Chateau Noir,Cubism,1.5152617,13.371119,91.82285555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-woman-in-blue-1912.jpg,The Woman In Blue,Cubism,3.3236523,12.14188,104.45333333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_fruit-dish.jpg,Fruit,Cubism,1.9645212,12.1137,101.29592222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_man-and-woman-1958.jpg,Man And Woman,Cubism,6.7202625,14.53833,151.08686666666668
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-echo.jpg,The,Cubism,5.2427998,14.062862,89.8494
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_pierrot-1922.jpg,Pierrot,Cubism,6.3937907,12.955935,102.11412222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_still-life-1922.jpg,Still Life,Cubism,7.1911306,13.613969,121.82243333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_viareggio-la-depeche-de-toulouse.jpg,Viareggio La Depeche De,Cubism,7.1070914,12.432068,170.5157
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_pierrot-playing-guitar-1923.jpg,Pierrot Playing Guitar,Cubism,5.207657,12.672073,139.6005
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_head-of-a-man-1908-1.jpg,Head Of A Man 1908,Cubism,3.0335972,12.4731865,56.72527777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_harlequin-with-guitar-1919.jpg,Harlequin With Guitar,Cubism,4.357359,12.916184,68.18944444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_face-by-hand-on-a-red-background.jpg,Face By Hand On A Red,Cubism,8.768984,13.1098795,131.92526666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life-with-lemons-1907.jpg,Still Life With Lemons,Cubism,3.5320814,11.756252,122.5129
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_vessels-on-the-red-tablecloth-1916.jpg,Vessels On The Red Tablecloth,Cubism,3.8513527,13.402349,109.92247777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-two-sailors.jpg,The Two,Cubism,8.173195,13.638218,152.31553333333332
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_nude-1909.jpg,Nude,Cubism,4.011798,11.64371,115.52002222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_portrait-of-p-denike-yuriev-and-a-pokrovsky-1913.jpg,Portrait Of P Denike Yuriev And A Pokrovsky,Cubism,3.8406203,13.079664,97.72273333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_woman-with-a-mandolin-1937.jpg,Woman With A Mandolin,Cubism,5.609644,14.566265,80.17865555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_nude-female-figure-shown-from-the-back.jpg,Nude Female Figure Shown From The,Cubism,7.236666,9.655629,133.29732222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_artist-s-studio-1916.jpg,Artist S Studio,Cubism,7.2123156,10.148716,217.4362
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_the-poet-or-half-past-three-1912.jpg,The Poet Or Half Past Three,Cubism,3.6909988,12.026103,155.833
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_in-the-park-of-the-chateau-noir.jpg,In The Park Of The Chateau,Cubism,1.3010204,12.957518,95.86017777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_pierrot-with-book-1924.jpg,Pierrot With Book,Cubism,3.0748065,12.20537,99.44307777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-creation-of-the-world-bird-drawing-of-costume-1923.jpg,The Creation Of The World Bird Drawing Of Costume,Cubism,7.748028,13.993353,153.7724888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_chateau-noir-2.jpg,Chateau Noir,Cubism,0.8629867,13.457934,88.31935555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_mediterranean-landscape-1952.jpg,Mediterranean Landscape,Cubism,8.512819,14.014762,85.27247777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_abramtsevo-the-bridge-drawing-for-the-painting-bridge-in-abramtsevo-1911.jpg,Abramtsevo The Bridge Drawing For The Painting Bridge In Abramtsevo,Cubism,6.8073525,10.079437,144.23986666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_untitled-1939.jpg,Untitled,Cubism,5.6588144,12.355087,113.4444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_still-life-bach-1912.jpg,Still Life Bach,Cubism,7.3435674,11.829737,195.7841222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_siena-1912.jpg,Siena,Cubism,3.8834667,14.360357,85.79818888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life-school-of-paris-1936.jpg,Still Life School Of Paris,Cubism,5.720392,11.690284,189.63523333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_the-appointment-of-the-four-forms-from-the-portfolio-life-forms.jpg,The Appointment Of The Four Forms From The Portfolio Life,Cubism,4.5435834,11.090103,176.61067777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_the-red-fish-1921.jpg,The Red Fish,Cubism,5.817903,13.3019905,123.16688888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_near-siena-1912.jpg,Near Siena,Cubism,4.006033,14.079513,97.95994444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-chair-membership-to-the-lamp-the-lamp-still-life-1955.jpg,The Chair Membership To The Lamp The Lamp Still Life,Cubism,8.202185,13.915815,166.6682
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_balustre-et-crane-1938.jpg,Balustre Et Crane,Cubism,5.4064226,14.71542,102.94206666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_road-near-estaque-1908.jpg,Road Near Estaque,Cubism,1.8771921,11.814239,105.24543333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_three-figures-1921.jpg,Three Figures,Cubism,8.154202,14.431215,116.46057777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_trouville-1921.jpg,Trouville,Cubism,8.43371,14.892226,124.32987777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_stables-1913.jpg,Stables,Cubism,4.6762357,15.59572,130.57734444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_two-women-with-the-toilet-final-state-1920.jpg,Two Women With The Toilet Final State,Cubism,8.377061,14.590225,120.91097777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-house-under-the-trees-1913.jpg,The House Under The Trees,Cubism,2.1941144,11.618226,110.35688888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_landscape-at-beaulieu-1918.jpg,Landscape At Beaulieu,Cubism,3.902926,11.621658,89.51306666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_skull-and-leeks-1945.jpg,Skull And Leeks,Cubism,8.426158,13.571329,112.7031
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_a-girl-from-avignon-1907.jpg,A Girl From Avignon,Cubism,5.0957546,11.390348,182.42111111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_standing-woman.jpg,Standing,Cubism,6.209984,12.943088,115.6179
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_port-of-siena-1912.jpg,Port Of Siena,Cubism,3.8906643,14.461082,131.58123333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_bowl-of-fruit-and-guitar-1920.jpg,Bowl Of Fruit And Guitar,Cubism,6.859193,13.315661,132.52068888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_two-figures.jpg,Two,Cubism,7.1561265,10.055143,197.34812222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_red-pot-1926.jpg,Red Pot,Cubism,7.9452143,14.607469,132.76382222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_algerian-women-delacroix-1955.jpg,Algerian Women Delacroix,Cubism,8.5435,13.776886,99.01872222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_untitled-1920-2.jpg,Untitled 1920,Cubism,6.6051035,15.307809,174.1151111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_house-and-trees-1894.jpg,House And Trees,Cubism,2.235364,13.602129,118.24108888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_the-waterfall-1912.jpg,The Waterfall,Cubism,2.5198052,11.642488,79.97432222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_smoke-1912.jpg,Smoke,Cubism,7.377605,13.327654,110.4953
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_jourdan-s-cottage-1906-1.jpg,Jourdan S Cottage 1906,Cubism,1.8413945,13.842224,183.0419222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_three-lamps-1911.jpg,Three Lamps,Cubism,6.712068,11.66187,187.6279888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_crane-and-pitcher-1945.jpg,Crane And Pitcher,Cubism,8.415118,13.854539,95.01495555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-pedestal-1938.jpg,The Pedestal,Cubism,6.418626,14.140183,114.95844444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_viaduct-at-estaque.jpg,Viaduct At,Cubism,2.7788372,12.786589,117.50494444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_machine-elements-1920.jpg,Machine Elements,Cubism,7.7017813,14.978275,125.00365555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_portrait-of-a-e-goncz-1918.jpg,Portrait Of A E Goncz,Cubism,6.168641,10.612574,152.7417111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_jacqueline-with-flowers-1954.jpg,Jacqueline With Flowers,Cubism,7.943192,13.11215,78.05281111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_the-mountain-le-canigou-1921.jpg,The Mountain Le Canigou,Cubism,6.9583335,12.810604,135.94611111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_mandrill-1913.jpg,Mandrill,Cubism,2.2674518,11.651334,95.96846666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_the-basket-of-pears-1925.jpg,The Basket Of Pears,Cubism,6.046927,12.908763,99.3895111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life-with-gobleet-1914.jpg,Still Life With Gobleet,Cubism,5.1003394,14.795215,123.7842
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_three-girls-on-red-background-composition-with-three-women-1927.jpg,Three Girls On Red Background Composition With Three Women,Cubism,8.846855,13.051492,103.02084444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_the-student-1919.jpg,The Student,Cubism,7.7336936,14.15148,86.8733
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_contrasts-of-forms-1913.jpg,Contrasts Of Forms,Cubism,6.290742,13.360997,118.479
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_montagne-sainte-victoire-and-the-black-chateau.jpg,Montagne Sainte Victoire And The Black,Cubism,0.9316995,13.523987,96.19632222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-bathers-1.jpg,The Bathers,Cubism,8.832593,13.145891,151.63926666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_city-1912.jpg,City,Cubism,2.2035549,13.612545,69.00722222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_a-driade-nude-in-the-forest-1908.jpg,A Driade Nude In The Forest,Cubism,3.1381624,11.510921,97.34535555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_mont-sainte-victoire-seen-from-les-lauves-1.jpg,Mont Sainte Victoire Seen From Les Lauves,Cubism,1.0735587,13.340157,89.29618888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_sorrow.jpg,,Cubism,6.9633183,11.333027,164.20624444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_lulli-1919.jpg,Lulli,Cubism,6.184613,13.405994,97.66237777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_farm-woman-1908-1.jpg,Farm Woman 1908,Cubism,2.974102,12.971987,66.81261111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_female-nude-near-the-garden-1956.jpg,Female Nude Near The Garden,Cubism,8.508749,13.601961,109.83501111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_madonna-of-the-rocks-1912.jpg,Madonna Of The Rocks,Cubism,5.860342,10.270824,146.92833333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_the-holy-coachman-1912.jpg,The Holy Coachman,Cubism,4.40126,11.442873,130.10257777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_glass-and-violin.jpg,Glass And,Cubism,6.95335,13.710645,114.67846666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_mandolin-glass-pot-and-fruit-1927.jpg,Mandolin Glass Pot And Fruit,Cubism,3.376458,12.649405,61.882266666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_self-portrait-with-palette-1917.jpg,Self Portrait With Palette,Cubism,3.9637094,11.970522,99.71116666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_painter-and-his-model-1963-1.jpg,Painter And His Model 1963,Cubism,4.9329634,15.241643,93.10811111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_acrobats-in-the-circus-1918.jpg,Acrobats In The Circus,Cubism,4.8134956,13.737956,123.02913333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_three-women-1921.jpg,Three Women,Cubism,8.453776,15.053728,135.84175555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_cassis-1913.jpg,Cassis,Cubism,7.076607,10.83234,192.4292
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_bibemus-quarry-1898-1.jpg,Bibemus Quarry 1898,Cubism,1.0532776,13.423735,103.02271111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_three-women-rhythmical-version-1908.jpg,Three Women Rhythmical Version,Cubism,2.379646,11.591146,137.1798
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_houses-in-the-trees-landscape-n-3-1914.jpg,Houses In The Trees Landscape N 3,Cubism,4.387304,13.687886,115.56264444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_a-child-with-pigeons-1943.jpg,A Child With Pigeons,Cubism,6.639599,13.77159,109.02562222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_still-life-with-ephemeris-1914.jpg,Still Life With Ephemeris,Cubism,5.9164762,13.148816,111.6165
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_untitled-still-life-1929.jpg,Untitled Still Life,Cubism,8.469745,13.999116,129.5289111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_mont-sainte-victoire-4.jpg,Mont Sainte Victoire,Cubism,1.182181,13.714932,98.97052222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_figure-with-fruit-dish.jpg,Figure With Fruit,Cubism,4.9323983,12.511697,78.10768888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-great-tug-1923.jpg,The Great Tug,Cubism,8.430123,14.450925,128.0804222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_three-sisters-1952.jpg,Three Sisters,Cubism,8.819866,13.109151,96.68324444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_roses-in-a-bottle-1904.jpg,Roses In A Bottle,Cubism,4.4362516,13.033139,168.02427777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_skating-rink-marine-blue-and-red-drawing-of-costume-1921.jpg,Skating Rink Marine Blue And Red Drawing Of Costume,Cubism,4.383017,11.380994,160.23153333333335
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_rain-1929.jpg,Rain,Cubism,6.840956,14.774343,113.6798
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_cassis-1913-1.jpg,Cassis 1913,Cubism,2.4462762,13.35638,81.46183333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_the-painter-to-the-moon-1917.jpg,The Painter To The Moon,Cubism,4.8911853,11.106681,134.33223333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_bird-in-the-foliage-1961.jpg,Bird In The Foliage,Cubism,3.551186,13.474127,123.9597888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_jew-at-prayer-1913.jpg,Jew At Prayer,Cubism,3.3071194,13.200185,77.20497777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_pot-glass-and-book-1908.jpg,Pot Glass And Book,Cubism,3.9135556,11.635498,96.34778888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_composition-1919.jpg,Composition,Cubism,8.320761,13.649862,125.63206666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_mont-sainte-victoire-6.jpg,Mont Sainte Victoire,Cubism,1.3138089,13.71063,126.87793333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_the-bunch-of-grapes-1924.jpg,The Bunch Of Grapes,Cubism,6.5722322,14.71868,121.435
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_composition-peasants-1906.jpg,Composition Peasants,Cubism,1.6534507,12.941196,95.56108888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-round-table-1929.jpg,The Round Table,Cubism,6.7037787,15.325406,125.39047777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_drawing-woman-surrounded-by-her-children-1950.jpg,Drawing Woman Surrounded By Her Children,Cubism,8.611096,13.267652,118.72543333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_carafe-and-book-1920.jpg,Carafe And Book,Cubism,7.063784,13.792008,87.63393333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_guitar-on-pedestal-1920.jpg,Guitar On Pedestal,Cubism,6.7855744,15.389103,117.34976666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-studio-ii-1949.jpg,The Studio Ii,Cubism,5.1649556,14.72778,81.54118888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_the-model-in-a-chair-1918.jpg,The Model In A Chair,Cubism,2.2609868,12.426306,129.88941111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_female-nude-study-1907.jpg,Female Nude Study,Cubism,4.5073495,11.345838,175.57438888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-birds-in-the-landscape-1921.jpg,The Birds In The Landscape,Cubism,7.9202847,14.975202,155.58142222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_the-wolves-balkan-war-1913.jpg,The Wolves Balkan War,Cubism,2.065638,11.772089,73.58467777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_draft-costume-front-1929.jpg,Draft Costume Front,Cubism,6.785725,10.327216,207.22425555555554
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_seated-woman-1908.jpg,Seated Woman,Cubism,4.30843,12.537085,73.51416666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_two-naked-figures.jpg,Two Naked,Cubism,6.036149,10.71873,131.11121111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_our-futures-is-in-the-air-1912.jpg,Our Futures Is In The Air,Cubism,4.5366178,11.521944,127.1045
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_woman-with-a-fan-1907.jpg,Woman With A Fan,Cubism,4.654115,11.705195,109.55971111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_homage-to-gogol-design-for-curtain-for-gogol-festival-1917.jpg,Homage To Gogol Design For Curtain For Gogol Festival,Cubism,5.547044,11.73461,131.67517777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_viaduct-at-estaque-1908.jpg,Viaduct At Estaque,Cubism,1.9976312,12.0123415,109.7565
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_deer-in-a-monastery-garden-1912.jpg,Deer In A Monastery Garden,Cubism,2.0459514,11.625201,84.32853333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_woman-with-a-book-1923.jpg,Woman With A Book,Cubism,8.49361,12.976814,99.25644444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_tyrol-1914.jpg,Tyrol,Cubism,1.5706321,11.996424,92.26566666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_naked-model-in-the-workshop-1913.jpg,Naked Model In The Workshop,Cubism,8.046386,13.2700405,118.84157777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_cassis-ships-1913.jpg,Cassis Ships,Cubism,3.9728765,14.531348,120.70952222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-creation-of-the-world-monkey-drawing-of-costume-1923.jpg,The Creation Of The World Monkey Drawing Of Costume,Cubism,8.29677,12.947445,134.3138111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_nude-bust-1907.jpg,Nude Bust,Cubism,5.1208544,11.532915,143.93241111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_bottle-and-fish-1941.jpg,Bottle And Fish,Cubism,6.1779413,12.711759,98.89495555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_naked-woman-on-the-beach-and-shovel-1960.jpg,Naked Woman On The Beach And Shovel,Cubism,7.3916564,14.510796,129.85446666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_bibemus-quarry-1898.jpg,Bibemus Quarry,Cubism,1.1446283,13.4725485,84.25286666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_the-model-by-the-stove-1917-2.jpg,The Model By The Stove 1917,Cubism,6.4293966,10.378127,162.34553333333332
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_corner-of-quarry.jpg,Corner Of,Cubism,1.0463543,13.493438,97.61497777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_fruit-on-a-tablecloth-with-a-fruitdish-1925.jpg,Fruit On A Tablecloth With A Fruitdish,Cubism,4.767222,14.149076,56.54251111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-bottle-of-marc-1930.jpg,The Bottle Of Marc,Cubism,6.2596087,13.1587715,121.33082222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_fruit-and-book.jpg,Fruit And,Cubism,5.270872,12.383023,89.23851111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_seated-nude-1920.jpg,Seated Nude,Cubism,4.7371197,12.088146,54.59963333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_siena-1912-1.jpg,Siena 1912,Cubism,4.418913,15.27661,95.30183333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_the-glass-1914.jpg,The Glass,Cubism,3.5282884,12.999666,52.641333333333336
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_woman.jpg,,Cubism,7.1285014,12.432676,155.43883333333332
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_the-cardplayer-1921.jpg,The Cardplayer,Cubism,6.74475,10.935636,152.28655555555557
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_the-model-on-the-carpet-1919.jpg,The Model On The Carpet,Cubism,4.1449604,14.013407,116.8028
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_bull-plate-ix-1946.jpg,Bull Plate Ix,Cubism,7.0709004,10.743718,203.80943333333335
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_woman-with-guitar-1913.jpg,Woman With Guitar,Cubism,4.93688,12.569653,155.45118888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_head-of-woman-1908.jpg,Head Of Woman,Cubism,2.7942991,12.690975,86.45606666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-studio-iv-1950.jpg,The Studio Iv,Cubism,6.116945,14.179493,87.38332222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_torso.jpg,,Cubism,5.920551,10.16766,220.84088888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_harlequin-with-violin.jpg,Harlequin With,Cubism,4.313779,11.932443,73.74807777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_guitar-on-pedestal-1920-1.jpg,Guitar On Pedestal 1920,Cubism,6.8798532,15.201079,92.88674444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_seated-female-nude-black-torso-1911.jpg,Seated Female Nude Black Torso,Cubism,5.8553767,10.102309,200.29787777777779
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_two-women-two-sisters-1935.jpg,Two Women Two Sisters,Cubism,6.4069104,10.523403,215.86705555555557
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_interior-with-easel-1926.jpg,Interior With Easel,Cubism,8.074016,14.389823,117.02388888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-wash-stand-1942.jpg,The Wash Stand,Cubism,4.8149185,13.994366,130.74321111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_glass-pitcher-and-lemons-1942.jpg,Glass Pitcher And Lemons,Cubism,6.3192344,14.061107,96.88493333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_punchinello-with-guitar-1920.jpg,Punchinello With Guitar,Cubism,6.5116935,12.922193,81.74716666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_study-of-bathers.jpg,Study Of,Cubism,2.4071183,13.902239,130.67686666666665
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_golgotha-1912.jpg,Golgotha,Cubism,2.7591238,11.832763,68.55971111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_birth-1912.jpg,Birth,Cubism,2.1505897,12.034382,71.32443333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_a-cello-1921.jpg,A Cello,Cubism,6.773735,12.305156,141.82174444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_agave-1916.jpg,Agave,Cubism,2.8545706,13.568259,100.76202222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_bull-plate-viii-1946.jpg,Bull Plate Viii,Cubism,7.0492573,11.000063,207.62296666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_pipe-and-glass-1923.jpg,Pipe And Glass,Cubism,4.831439,12.848764,76.51846666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_contrast-of-forms-1913.jpg,Contrast Of Forms,Cubism,2.5983472,11.653544,118.72706666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_mill-on-the-river.jpg,Mill On The,Cubism,4.560528,15.381215,165.784
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_coquette-1950.jpg,Coquette,Cubism,4.2601233,11.338489,93.63028888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_the-girls-of-avignon-1907.jpg,The Girls Of Avignon,Cubism,4.025904,11.941344,137.78965555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_still-life-1922.jpg,Still Life,Cubism,7.4029813,14.537702,87.85968888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_sudak-the-valley-1917.jpg,Sudak The Valley,Cubism,2.4304574,13.910985,102.50753333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_animal-destinies-the-trees-show-their-rings-the-animals-their-veins.jpg,Animal Destinies The Trees Show Their Rings The Animals Their,Cubism,1.4580404,12.241301,64.02858888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_woman-s-head-1934.jpg,Woman S Head,Cubism,5.4417787,11.71991,115.3016
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_girl-in-chair-1952.jpg,Girl In Chair,Cubism,4.750419,12.321514,103.99596666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_figures-and-marine-anchor-1930.jpg,Figures And Marine Anchor,Cubism,6.106411,11.679302,145.99066666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_king-solomon.jpg,King,Cubism,5.8009896,10.316545,109.95608888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_seated-mythical-animal-1913.jpg,Seated Mythical Animal,Cubism,3.0992532,11.346782,174.76558888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_nude-woman-with-turkish-bonnet-1955.jpg,Nude Woman With Turkish Bonnet,Cubism,4.9304314,11.340781,159.8677
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_green-lovers-1915.jpg,Green Lovers,Cubism,2.0058682,12.058292,66.20894444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-disc-1918.jpg,The Disc,Cubism,7.9390097,14.438792,116.18317777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_deer-in-the-forest-1913.jpg,Deer In The Forest,Cubism,3.427598,13.965553,113.71146666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_women-with-mirror-1920.jpg,Women With Mirror,Cubism,7.0533624,13.350906,128.68396666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_seated-woman-1927.jpg,Seated Woman,Cubism,6.9544635,12.52629,114.47602222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_big-nude-1908.jpg,Big Nude,Cubism,3.4011307,11.790107,134.1276
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_concert-1928.jpg,Concert,Cubism,6.278304,11.828933,120.96806666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_woman-with-a-cat-1921.jpg,Woman With A Cat,Cubism,7.717798,12.994424,140.73544444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_house-in-a-garden-1908.jpg,House In A Garden,Cubism,4.6979957,14.464133,88.19025555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_the-girls-of-avignon-study-1907.jpg,The Girls Of Avignon Study,Cubism,6.113816,10.670967,161.1535111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_three-characters-1924.jpg,Three Characters,Cubism,8.910524,13.061994,133.38007777777779
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-studio-1939.jpg,The Studio,Cubism,5.3025165,14.687266,112.15973333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-rider-acrobat-juggler-1921.jpg,The Rider Acrobat Juggler,Cubism,5.946628,11.826634,166.3688
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-flowers-in-the-banks-begonias-1918.jpg,Still Life Flowers In The Banks Begonias,Cubism,2.616362,12.331292,103.1084
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_danse-macabre-group-terror-41.jpg,Danse Macabre Group Terror,Cubism,3.6834726,13.886513,132.1752888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_man-in-town.jpg,Man In,Cubism,6.388099,10.922278,201.2137
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-observatory-study-for-the-city.jpg,The Observatory Study For The,Cubism,6.9590073,11.433212,215.86503333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-large-tug-boat-1923.jpg,The Large Tug Boat,Cubism,8.451501,14.7428255,109.44117777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_crane-book-and-oil-lamp-1946.jpg,Crane Book And Oil Lamp,Cubism,8.570712,14.255089,161.06434444444446
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_the-fiddler-1914.jpg,The Fiddler,Cubism,3.7790463,12.65132,99.42963333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_composition-with-goat-1917.jpg,Composition With Goat,Cubism,6.9159503,12.725561,118.01286666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life-1922.jpg,Still Life,Cubism,6.4376884,13.420927,69.67522222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-box-of-cigars-1916.jpg,Still Life Box Of Cigars,Cubism,4.7529635,14.029015,109.69453333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_kuntsevo-yellow-cottage-1919.jpg,Kuntsevo Yellow Cottage,Cubism,2.0959136,13.123746,114.10774444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_three-women-1908.jpg,Three Women,Cubism,3.2761216,11.640638,73.80588888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_nude-with-raised-arms-1907.jpg,Nude With Raised Arms,Cubism,2.290532,11.478857,141.72207777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_wounded-soldier-1914-1.jpg,Wounded Soldier 1914,Cubism,3.197821,12.893279,106.0115111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_jug-and-card-1919.jpg,Jug And Card,Cubism,6.8889194,13.5370455,87.97862222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_bananas.jpg,,Cubism,5.768236,12.438389,101.37853333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_woman-with-a-mandolin-after-corot-1916.jpg,Woman With A Mandolin After Corot,Cubism,5.3838825,11.92779,72.60404444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_still-life-1912.jpg,Still Life,Cubism,2.865763,12.135386,85.27305555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_self-portrait-1912.jpg,Self Portrait,Cubism,2.7892232,11.963768,106.74296666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_nudes-in-the-forest-1910.jpg,Nudes In The Forest,Cubism,2.2351646,13.662717,81.9602
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_mont-sainte-victoire.jpg,Mont Sainte,Cubism,1.1168269,13.286229,98.1703111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_composition-au-coquillage-1940.jpg,Composition Au Coquillage,Cubism,7.569502,13.727708,78.37492222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_harlequin-1922.jpg,Harlequin,Cubism,6.9707417,12.202154,196.80275555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_portrait-of-a-man-1923.jpg,Portrait Of A Man,Cubism,5.4942617,13.243549,72.31205555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_figure-in-a-collection-of-poems-autographs-1920.jpg,Figure In A Collection Of Poems Autographs,Cubism,6.98371,11.102651,183.0725888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_still-life-with-grapes(1).jpg,Still Life With,Cubism,5.851803,14.728662,78.93107777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_the-reader-1926.jpg,The Reader,Cubism,6.6310925,14.471814,104.79023333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_pierrot-1921.jpg,Pierrot,Cubism,5.6441164,11.946541,126.05831111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_the-praying-jew-rabbi-of-vitebsk-1914.jpg,The Praying Jew Rabbi Of Vitebsk,Cubism,2.948164,12.039437,93.37175555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_pear-compotoir-1923.jpg,Pear Compotoir,Cubism,8.139428,14.782493,134.2973
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_lovers-with-flowers-1927.jpg,Lovers With Flowers,Cubism,2.1468291,13.199838,77.58402222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_the-smolensk-newspaper-1914.jpg,The Smolensk Newspaper,Cubism,6.362412,13.298963,126.78391111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_still-life-mandolin-ii.jpg,Still Life Mandolin,Cubism,4.3924417,13.762195,108.18615555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-circus-1918.jpg,The Circus,Cubism,4.9073143,13.676849,118.26652222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_still-life-with-music-scroll.jpg,Still Life With Music,Cubism,3.7809849,14.153002,118.2842888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_guitar-bottle-and-fruit-bowl-1921.jpg,Guitar Bottle And Fruit Bowl,Cubism,7.39611,12.599004,138.3512111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_woman-with-a-shirt-sitting-in-a-chair-1913.jpg,Woman With A Shirt Sitting In A Chair,Cubism,4.1838655,12.212874,68.17576666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_planches-de-salut-1931(1).jpg,Planches De Salut,Cubism,4.5910745,14.765951,135.71786666666668
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_adam-and-eve-1912.jpg,Adam And Eve,Cubism,2.5418613,11.674143,113.24987777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_jew-in-green-1914.jpg,Jew In Green,Cubism,3.3026001,12.133711,66.24285555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_cassis-the-view-from-the-window-1913.jpg,Cassis The View From The Window,Cubism,2.7292216,13.005244,109.39954444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_a-pond-1920.jpg,A Pond,Cubism,2.2402072,13.903433,137.92734444444446
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_three-women-with-the-still-life-1920.jpg,Three Women With The Still Life,Cubism,8.278809,14.569974,98.32057777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-studio-ix-1954.jpg,The Studio Ix,Cubism,4.8835745,14.354562,66.31637777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_composition-1946.jpg,Composition,Cubism,5.922273,11.827077,156.04156666666665
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_portrait-of-the-sculptor-p-bromirsky-1919.jpg,Portrait Of The Sculptor P Bromirsky,Cubism,3.0630412,13.956319,105.51704444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_breads-1920.jpg,Breads,Cubism,3.4664674,13.093521,97.23752222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_landscape-of-juan-les-pins-1920.jpg,Landscape Of Juan Les Pins,Cubism,7.979496,14.095531,67.3672
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_algerian-women-1955.jpg,Algerian Women,Cubism,8.621863,13.902369,107.284
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_coloful-flowers-abstract-forms.jpg,Coloful Flowers Abstract,Cubism,2.8378875,11.272509,160.4187777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_monkey-frieze-1911.jpg,Monkey Frieze,Cubism,2.26472,11.573194,121.75908888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_sleeping-animals-1913.jpg,Sleeping Animals,Cubism,1.8584623,11.95459,138.47774444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_milliners-workshop-of-the-milliner-1926.jpg,Milliners Workshop Of The Milliner,Cubism,4.680547,15.533746,84.75268888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_woman-sitting-in-an-armchair-1938.jpg,Woman Sitting In An Armchair,Cubism,6.8002386,12.850699,158.34042222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_under-the-lamp-1952.jpg,Under The Lamp,Cubism,4.3519473,13.60232,84.93823333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_bust-of-woman-with-yellow-ribbon-jacqueline-1962.jpg,Bust Of Woman With Yellow Ribbon Jacqueline,Cubism,5.27036,12.347271,79.55685555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-cancers-1916.jpg,Still Life Cancers,Cubism,3.873857,13.9696,101.56287777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_cock-and-knife-1947.jpg,Cock And Knife,Cubism,6.824676,11.2575445,173.43025555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_lying-horizontal.jpg,Lying,Cubism,6.9583306,11.2605295,117.36644444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_las-meninas-velazquez-1957.jpg,Las Meninas Velazquez,Cubism,5.0440316,14.007234,115.03232222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_collage-no-2.jpg,Collage No,Cubism,4.3245325,11.195424,166.54575555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_child-with-flower-1945.jpg,Child With Flower,Cubism,5.4243293,12.920273,113.98406666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_brown-still-life-1932.jpg,Brown Still Life,Cubism,5.282736,12.693878,67.18954444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_bread-on-the-blue-1913.jpg,Bread On The Blue,Cubism,3.157323,13.632992,87.82864444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_man-from-touraine-1918.jpg,Man From Touraine,Cubism,6.4841013,14.131208,106.66374444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_jug-candle-and-enamel-pan-1945.jpg,Jug Candle And Enamel Pan,Cubism,5.2121463,11.437628,79.0517888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_pierrot-1919.jpg,Pierrot,Cubism,6.4088097,13.518873,84.95636666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_figure-double-with-marine-background-1942.jpg,Figure Double With Marine Background,Cubism,3.3952723,11.886522,97.86185555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_soldiers-1912.jpg,Soldiers,Cubism,5.270641,12.322937,90.25101111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_composition-with-skull-1908.jpg,Composition With Skull,Cubism,5.0120354,12.477405,101.11726666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_forest-1894.jpg,Forest,Cubism,1.1977208,13.337737,91.67887777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_seated-nude.jpg,Seated,Cubism,3.6466203,11.564655,91.24855555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_two-figures-naked-on-red-bottom-1923.jpg,Two Figures Naked On Red Bottom,Cubism,8.685036,13.032048,84.75223333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-painter-and-his-model-1939.jpg,The Painter And His Model,Cubism,5.2626944,14.901672,92.17504444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_flowers-in-a-grey-jar-1908.jpg,Flowers In A Grey Jar,Cubism,3.548259,12.777617,85.95728888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_the-fox-1913.jpg,The Fox,Cubism,3.5439277,14.0068865,67.1984
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_the-goblet-1927.jpg,The Goblet,Cubism,5.172925,12.088552,74.0918
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_still-life-with-candle.jpg,Still Life With,Cubism,6.986248,14.998537,123.29977777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_the-musician-s-table-1926.jpg,The Musician S Table,Cubism,5.8126426,12.275057,105.74338888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_horse-asleep.jpg,Horse,Cubism,2.287244,11.402312,134.5360777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_pedestal-glasses-cups-mandolin-1911.jpg,Pedestal Glasses Cups Mandolin,Cubism,5.428756,14.0616255,157.60914444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_violin-bottle-flowers-in-a-glass-and-eight-of-spades-1919.jpg,Violin Bottle Flowers In A Glass And Eight Of Spades,Cubism,7.7934666,13.8828335,86.46601111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_clown.jpg,,Cubism,4.744254,12.628838,112.7807
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_bull-plate-x-1946.jpg,Bull Plate X,Cubism,7.0378046,10.700675,201.4993111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_a-reclining-female-nude-1936.jpg,A Reclining Female Nude,Cubism,3.249178,11.482929,114.4577
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_portrait-of-henry-viel-a-friend-of-painter-fernand-leger-1903.jpg,Portrait Of Henry Viel A Friend Of Painter Fernand Leger,Cubism,7.194942,9.856425,188.31504444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life-with-bust-and-palette.jpg,Still Life With Bust And,Cubism,6.865949,13.5209465,64.21817777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-chair-1948.jpg,The Chair,Cubism,5.240313,14.042228,124.92112222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_sleeping-woman-1917.jpg,Sleeping Woman,Cubism,3.123429,13.129546,108.38914444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_the-lamb-1914.jpg,The Lamb,Cubism,1.7407173,12.083659,88.83273333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_a-red-pedestal-1942.jpg,A Red Pedestal,Cubism,4.2780185,12.706244,93.87664444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_glass-and-carafe-1917.jpg,Glass And Carafe,Cubism,7.1366315,14.480188,102.52635555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_seated-female-nude-with-left-hand-on-right-leg.jpg,Seated Female Nude With Left Hand On Right,Cubism,7.246217,9.665917,140.85543333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_two-nude-female-figures-seated-and-bending.jpg,Two Nude Female Figures Seated And,Cubism,3.7231343,12.736833,138.27045555555554
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_the-feast-of-the-tabernacles-1916.jpg,The Feast Of The Tabernacles,Cubism,4.750745,13.367995,122.94964444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-checkers-and-oranges-1916.jpg,Still Life Checkers And Oranges,Cubism,3.3394938,13.454179,126.72727777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-bridge-of-the-tug-boat-1920.jpg,The Bridge Of The Tug Boat,Cubism,8.069361,15.116378,128.4479
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_still-life-in-front-of-the-window-1920.jpg,Still Life In Front Of The Window,Cubism,6.5213866,14.068804,119.65273333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_guitar-and-fruit-bowl-on-a-table-1918.jpg,Guitar And Fruit Bowl On A Table,Cubism,4.651128,12.220532,105.59966666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_las-meninas-velazquez-1957-4.jpg,Las Meninas Velazquez 1957,Cubism,5.7355075,14.478612,102.94207777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_the-boy-in-the-park-1921.jpg,The Boy In The Park,Cubism,1.4497205,12.683934,89.13885555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_leeks-fish-head-skull-and-pitcher-1945.jpg,Leeks Fish Head Skull And Pitcher,Cubism,7.5116205,12.446637,153.82235555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_house-in-the-garden-1908.jpg,House In The Garden,Cubism,3.7515507,13.518671,111.04024444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_musicians-with-masks-1921.jpg,Musicians With Masks,Cubism,6.3744473,14.361369,71.18257777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_face-with-both-hands-1954.jpg,Face With Both Hands,Cubism,5.7609158,11.932508,162.82037777777776
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_siena-1912-2.jpg,Siena 1912,Cubism,4.554014,14.212823,99.41223333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-lotus-1917.jpg,Still Life Lotus,Cubism,3.186222,13.241966,122.07594444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-woman-and-the-child-1922.jpg,The Woman And The Child,Cubism,8.445176,14.396533,115.53522222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life-in-front-of-a-window-at-saint-raphael-1919.jpg,Still Life In Front Of A Window At Saint Raphael,Cubism,7.0523725,14.170854,127.75061111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_two-women-and-still-life-1st-state-1920.jpg,Two Women And Still Life 1st State,Cubism,8.014573,13.431639,112.30538888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-man-with-the-pipe-1918.jpg,The Man With The Pipe,Cubism,8.083305,13.90999,118.00003333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_visit-to-grandparents-1915.jpg,Visit To Grandparents,Cubism,4.9706173,13.500186,198.1162111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_chimneys-on-rooftops-1911.jpg,Chimneys On Rooftops,Cubism,4.789564,13.437563,102.89066666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_peasant-life-1925.jpg,Peasant Life,Cubism,2.885169,12.201589,129.99535555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_the-soldier-drinks-1912.jpg,The Soldier Drinks,Cubism,3.75642,11.998632,102.16167777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_artist-s-studio-on-street-la-boetie-1920.jpg,Artist S Studio On Street La Boetie,Cubism,7.7471857,14.298749,187.8327111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_woman-with-a-fan.jpg,Woman With A,Cubism,5.483142,10.399126,178.43796666666665
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_portrait-of-artist-herman-vasilyevich-fyodorov-1919.jpg,Portrait Of Artist Herman Vasilyevich Fyodorov,Cubism,2.415196,13.084564,74.82545555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_carrousel-pierrot.jpg,Carrousel,Cubism,4.8302226,11.869849,172.79867777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_mountain-goats-1914.jpg,Mountain Goats,Cubism,2.120157,12.271961,148.63207777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_maison-maria-with-a-view-of-chateau-noir-1895.jpg,Maison Maria With A View Of Chateau Noir,Cubism,1.442529,13.558509,121.452
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_sudak-mulberry-1917.jpg,Sudak Mulberry,Cubism,1.949372,13.560529,128.3786
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_mont-sainte-victoire-seen-from-les-lauves.jpg,Mont Sainte Victoire Seen From Les,Cubism,1.2430738,13.83896,130.36036666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_piano-and-mandolin.jpg,Piano And,Cubism,1.9130961,12.052862,122.46686666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_breads-and-the-tray-1912.jpg,Breads And The Tray,Cubism,2.762885,13.105255,94.68602222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_lovers-in-pink-1916.jpg,Lovers In Pink,Cubism,3.4564075,12.059578,59.60937777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_animated-landscape-1921.jpg,Animated Landscape,Cubism,7.1716633,10.903284,186.1680111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_still-life.jpg,Still,Cubism,5.266426,12.957584,86.08296666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-the-palette-and-paint-1912.jpg,Still Life The Palette And Paint,Cubism,4.5330634,14.045227,108.48521111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_divers-polychrome.jpg,Divers,Cubism,8.282369,13.576467,117.83442222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life-with-antique-bust-1925.jpg,Still Life With Antique Bust,Cubism,5.8354864,12.11061,65.3907
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life-with-lemon-and-oranges-1936.jpg,Still Life With Lemon And Oranges,Cubism,4.276874,11.542822,126.65064444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_head-of-a-woman-1921.jpg,Head Of A Woman,Cubism,5.795217,10.715449,95.82584444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-study-for-the-city-centre-1927.jpg,The Study For The City Centre,Cubism,8.645322,13.047438,121.84372222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_a-house-at-estaque-1908.jpg,A House At Estaque,Cubism,1.8846105,12.521076,107.55163333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_guitar-fruit-and-pitcher-1927.jpg,Guitar Fruit And Pitcher,Cubism,6.081852,14.411019,98.73264444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_the-great-odalisque-after-ingres-1907.jpg,The Great Odalisque After Ingres,Cubism,2.0270314,11.936378,130.61886666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-three-comrades-1920.jpg,The Three Comrades,Cubism,7.1709623,15.176099,120.60305555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_plate-and-fruit-dish-1908.jpg,Plate And Fruit Dish,Cubism,2.198774,12.117867,155.02048888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_lemon.jpg,,Cubism,5.163114,12.245068,97.78803333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_workbench-1917.jpg,Workbench,Cubism,2.1183496,12.622155,129.32563333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_mont-sainte-victoire-8.jpg,Mont Sainte Victoire,Cubism,1.184886,13.7002125,135.06434444444446
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_the-blue-cloth-1925.jpg,The Blue Cloth,Cubism,2.976821,11.369754,132.2904888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_portrait-of-a-e-goncz-1918-1.jpg,Portrait Of A E Goncz 1918,Cubism,2.0567305,12.97518,72.2023
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_portrait-of-manuel-pallares-1909.jpg,Portrait Of Manuel Pallares,Cubism,4.735685,11.141642,126.4529111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-with-a-pipe-1919.jpg,Still Life With A Pipe,Cubism,2.8755796,13.223806,71.95395555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_dry-paints-1913.jpg,Dry Paints,Cubism,5.075198,14.03534,102.71941111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_factories-1918.jpg,Factories,Cubism,8.254742,13.931767,120.80592222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_cat-eating-a-bird-1939.jpg,Cat Eating A Bird,Cubism,5.324248,12.04417,112.96823333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_woman-with-flower-portrait-study-1920.jpg,Woman With Flower Portrait Study,Cubism,7.7437334,13.393834,123.74542222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_over-the-town-1918.jpg,Over The Town,Cubism,3.8259418,12.533343,144.36405555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_bridge-in-nara-the-wind-1918.jpg,Bridge In Nara The Wind,Cubism,4.516163,15.439807,134.63407777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_trouville-1911.jpg,Trouville,Cubism,1.8837113,12.67306,103.55504444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_caliban-from-shakespeare-s-the-tempest-1914(1).jpg,Caliban From Shakespeare S The Tempest,Cubism,2.621164,11.370456,157.1928111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_the-drunkard-1912.jpg,The Drunkard,Cubism,3.6504798,11.976748,119.57758888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_large-reclining-nude.jpg,Large Reclining,Cubism,4.405549,11.126086,93.80763333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_breakfast-1953.jpg,Breakfast,Cubism,8.324104,13.812306,112.82424444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_lemon-walnuts-and-pot-with-tobacco.jpg,Lemon Walnuts And Pot With,Cubism,4.835249,13.943116,68.64396666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_lemons-1929.jpg,Lemons,Cubism,5.025796,13.90914,91.02731111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_portrait-of-actress-vizarova-1917.jpg,Portrait Of Actress Vizarova,Cubism,2.725806,13.371174,98.75955555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_nude-with-raised-arms-the-avignon-dancer-1907.jpg,Nude With Raised Arms The Avignon Dancer,Cubism,3.031634,11.561614,87.21884444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_nude-with-towel-1907.jpg,Nude With Towel,Cubism,2.9481394,11.392949,86.09572222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_still-life-with-goblet.jpg,Still Life With,Cubism,7.1107235,9.896796,209.94326666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-patience-1942.jpg,The Patience,Cubism,5.2509484,14.588444,102.98908888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_a-dream-1932.jpg,A Dream,Cubism,5.1820517,11.371433,131.74454444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_the-sculpture-1925.jpg,The Sculpture,Cubism,6.7464895,15.466785,149.71277777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_untitled-1919.jpg,Untitled,Cubism,6.7303104,14.844638,135.69623333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_nature-morte-cubiste-1914.jpg,Nature Morte Cubiste,Cubism,4.9841113,12.812194,103.23343333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_the-model-by-the-stove-1917.jpg,The Model By The Stove,Cubism,3.5358536,13.955786,102.70816666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_nude-1913.jpg,Nude,Cubism,4.1584244,12.520548,100.15277777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_woman-with-yellow-shirt-1907.jpg,Woman With Yellow Shirt,Cubism,3.9871519,13.023988,93.56174444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_mont-sainte-victoire-1897.jpg,Mont Sainte Victoire,Cubism,1.0996606,13.34321,107.92655555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_portrait-of-the-artist-vladimir-rozhdestvensky-1912.jpg,Portrait Of The Artist Vladimir Rozhdestvensky,Cubism,3.1262224,11.917804,101.37063333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_seated-man-with-his-arms-crossed-1915.jpg,Seated Man With His Arms Crossed,Cubism,6.9501233,10.926723,233.78952222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_mountains-rocky-way-landscape.jpg,Mountains Rocky Way,Cubism,2.0800478,11.468921,131.02676666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_lovers-in-green-1917.jpg,Lovers In Green,Cubism,1.4071393,13.266422,70.5629
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_still-life-with-big-bear-1926.jpg,Still Life With Big Bear,Cubism,6.68989,14.6150465,124.98557777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_project-costume-skating-rink.jpg,Project Costume Skating,Cubism,7.119935,12.308967,138.5357888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_painter-and-his-model-1963.jpg,Painter And His Model,Cubism,4.72195,15.363763,108.44418888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-house-in-the-trees-1913.jpg,The House In The Trees,Cubism,4.64177,15.5958395,135.70116666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-big-parade.jpg,The Big,Cubism,8.034496,13.931384,143.1573
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_still-life-with-guitar-1935.jpg,Still Life With Guitar,Cubism,5.690861,14.415515,105.42214444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_standing-female-figure.jpg,Standing Female,Cubism,5.7422123,10.242375,181.95527777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_still-life-with-pomegranates-and-knife-on-a-pedistal-1925.jpg,Still Life With Pomegranates And Knife On A Pedistal,Cubism,7.5690804,14.841673,123.75336666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_three-acrobates-1926.jpg,Three Acrobates,Cubism,2.570635,12.259568,92.00785555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_still-life-with-lamp-1919.jpg,Still Life With Lamp,Cubism,6.7278166,12.455226,120.16302222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_two-pierrots-1922.jpg,Two Pierrots,Cubism,6.043275,12.258416,141.2616
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_head-of-a-man-1908-2.jpg,Head Of A Man 1908,Cubism,2.8771482,12.700097,59.19573333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_to-russia-with-asses-and-others.jpg,To Russia With Asses And,Cubism,2.9277647,11.93582,48.51634444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_path-at-estaque-1908.jpg,Path At Estaque,Cubism,1.2991122,12.653217,105.79224444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_woman-with-basket-1927.jpg,Woman With Basket,Cubism,4.546325,11.367291,124.4002888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life.jpg,Still,Cubism,4.6460743,13.936295,61.32095555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-woman-with-black-hair-1952.jpg,The Woman With Black Hair,Cubism,8.714847,13.149163,168.98743333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_portrait-of-olga-konchalovskaya-wife-of-the-artist-in-blue-1919.jpg,Portrait Of Olga Konchalovskaya Wife Of The Artist In Blue,Cubism,2.3614929,13.226649,114.34477777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_the-enchanted-mill-1913.jpg,The Enchanted Mill,Cubism,4.4902763,15.274089,124.03345555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_studio.jpg,,Cubism,7.209883,15.11866,143.69694444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_red-jew-1915.jpg,Red Jew,Cubism,4.2771378,12.368467,97.05774444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_discs-1918-1.jpg,Discs 1918,Cubism,8.047725,15.177337,136.6669222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-the-stove-1912.jpg,Still Life The Stove,Cubism,4.3890657,14.129467,92.76197777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_smokers-1912.jpg,Smokers,Cubism,2.651269,12.103141,104.26142222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-fruitdish-1912.jpg,The Fruitdish,Cubism,5.3622403,14.923422,163.24467777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_seated-woman-in-garden-1938.jpg,Seated Woman In Garden,Cubism,8.457502,13.512859,126.5963888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_red-deer-1913.jpg,Red Deer,Cubism,2.2506766,11.4350605,160.09823333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-packing-case-1947.jpg,The Packing Case,Cubism,4.8010855,14.160909,100.44326666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_vitebsk-from-mount-zadunov-1917.jpg,Vitebsk From Mount Zadunov,Cubism,1.1894667,13.065561,97.63791111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life-on-a-table-1947.jpg,Still Life On A Table,Cubism,8.474004,13.295919,107.88888888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_staircase-19-1914.jpg,Staircase 19,Cubism,7.9673047,13.242985,128.06237777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_la-table-1930.jpg,La Table,Cubism,6.552818,12.087329,137.7242777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_composition-1920.jpg,Composition,Cubism,5.7938395,10.510296,185.7222888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_portrait-of-brother-david-with-mandolin-1914.jpg,Portrait Of Brother David With Mandolin,Cubism,3.0798473,11.868669,86.35821111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_riverbanks-1905.jpg,Riverbanks,Cubism,1.4079223,13.845381,126.37495555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_a-b-c-1927.jpg,A B C,Cubism,8.480891,14.84321,128.65328888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_bust-of-woman-1936.jpg,Bust Of Woman,Cubism,5.026976,11.453992,120.82267777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_the-open-book-1925.jpg,The Open Book,Cubism,6.9291778,14.574836,128.4281222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_la-table-1927.jpg,La Table,Cubism,7.173135,14.624988,100.5766111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_breakfast-1921.jpg,Breakfast,Cubism,7.376303,14.997357,181.96925555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_acrobats-in-gray-1944.jpg,Acrobats In Gray,Cubism,8.858512,13.049275,118.87312222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_window-opened-to-the-street-penthieure-1920.jpg,Window Opened To The Street Penthieure,Cubism,7.858679,14.282718,93.58892222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_jacqueline-at-the-studio-1956.jpg,Jacqueline At The Studio,Cubism,8.39653,13.7052765,113.57032222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_still-life-1919.jpg,Still Life,Cubism,7.541164,13.722228,96.58525555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_musical-instruments-1912.jpg,Musical Instruments,Cubism,7.1764054,12.376642,143.5884
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_still-life-1925.jpg,Still Life,Cubism,8.392589,14.801223,165.65
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-two-women-two-sisters-1952.jpg,The Two Women Two Sisters,Cubism,8.355056,13.769208,144.8925
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_clown-1919.jpg,Clown,Cubism,4.6217203,11.772437,132.8855111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_still-life-1918.jpg,Still Life,Cubism,5.135843,14.300724,77.8385
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_seated-female-nude-with-left-leg-bent.jpg,Seated Female Nude With Left Leg,Cubism,7.2305074,9.7458315,178.29124444444443
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_glass-and-fruits-1908.jpg,Glass And Fruits,Cubism,3.357821,13.159889,65.09551111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_bird-returning-to-it-s-nest-1956.jpg,Bird Returning To It S Nest,Cubism,3.1381328,12.835151,76.75185555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-typographer-1919.jpg,The Typographer,Cubism,7.739138,13.516842,97.1637
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_la-cithare-1923.jpg,La Cithare,Cubism,7.223107,14.933147,118.69231111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_fishing-boats.jpg,Fishing,Cubism,1.8508725,12.458076,109.59366666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_horse-and-dog-1913.jpg,Horse And Dog,Cubism,4.2899227,13.977229,166.22043333333335
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_david-in-profile-1914.jpg,David In Profile,Cubism,2.440998,12.132906,98.74166666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_a-pumpkin-1944.jpg,A Pumpkin,Cubism,5.45708,13.336028,63.14591111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_musical-instruments-1908.jpg,Musical Instruments,Cubism,2.3956985,11.883341,107.18616666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_the-fiddler-1913.jpg,The Fiddler,Cubism,4.7932124,13.2651415,122.58781111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_the-dream-1912.jpg,The Dream,Cubism,4.276117,13.90677,84.0345
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-creation-of-the-world-drawing-of-curtain-of-scene-1923.jpg,The Creation Of The World Drawing Of Curtain Of Scene,Cubism,8.083529,14.679978,85.85396666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_harlequin-1920.jpg,Harlequin,Cubism,6.573605,10.877336,184.73763333333332
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_woman-sitting-in-an-armchair-1920.jpg,Woman Sitting In An Armchair,Cubism,7.2529135,14.001411,103.78843333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_cassis-sea-1913.jpg,Cassis Sea,Cubism,2.9504094,13.5025835,113.10681111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_still-life-with-red-tablecloth-1934.jpg,Still Life With Red Tablecloth,Cubism,5.1463976,13.114763,141.99582222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_portrait-of-a-violinist-grigory-fedorovich-romashkov-1918.jpg,Portrait Of A Violinist Grigory Fedorovich Romashkov,Cubism,1.1640424,12.91175,99.86862222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_girl.jpg,,Cubism,3.3840015,12.033905,131.7709
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_untitled-1937.jpg,Untitled,Cubism,5.5267496,12.564766,93.36177777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_small-composition-ii-1914.jpg,Small Composition Ii,Cubism,2.126325,12.124485,100.65145555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_bull-plate-vii-1945.jpg,Bull Plate Vii,Cubism,6.8170977,10.787172,182.94217777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_guitar-and-music-paper-1927.jpg,Guitar And Music Paper,Cubism,5.0369587,12.432463,101.36791111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-hairy.jpg,The,Cubism,7.218142,11.1142025,173.96464444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_self-portrait-with-seven-digits-autoportrait-1913.jpg,Self Portrait With Seven Digits Autoportrait,Cubism,4.421804,12.096116,113.20781111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_morning-in-provence.jpg,Morning In,Cubism,1.9019824,13.835389,139.64898888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_poire-verte-et-couteau-1941.jpg,Poire Verte Et Couteau,Cubism,5.546043,12.415575,77.27425555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_the-table-1919.jpg,The Table,Cubism,7.514321,14.236396,113.93551111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_a-muse-1935.jpg,A Muse,Cubism,8.38903,13.831722,113.77864444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_head-of-a-man-1908.jpg,Head Of A Man,Cubism,2.9403315,12.497662,76.47788888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_birds-1914.jpg,Birds,Cubism,1.7799255,11.832604,106.38071111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_fruit-in-a-vase-1909.jpg,Fruit In A Vase,Cubism,3.0058424,12.629748,100.34448888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_skull-urchins-and-lamp-on-a-table-1943.jpg,Skull Urchins And Lamp On A Table,Cubism,8.73957,13.417078,112.00955555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_tiger-1912.jpg,Tiger,Cubism,2.631682,11.787911,73.96146666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-butcher-shop-1921.jpg,The Butcher Shop,Cubism,8.343089,14.263728,137.83763333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_reclining-nude-1908.jpg,Reclining Nude,Cubism,2.9711173,12.6957,48.27781111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_nature-morte-1926.jpg,Nature Morte,Cubism,6.376356,13.9402275,80.58107777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_david-1914.jpg,David,Cubism,3.0261416,12.042075,92.2562
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_seated-female-nude-1939.jpg,Seated Female Nude,Cubism,7.2388487,9.993365,196.53995555555557
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_bathers.jpg,,Cubism,4.6417594,11.227474,157.01064444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-face-face-and-hands.jpg,The Face Face And,Cubism,5.4482126,11.228332,96.11232222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_picture-with-cattle-1913.jpg,Picture With Cattle,Cubism,2.8003201,13.706382,75.30853333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_las-meninas-velazquez-1957-5.jpg,Las Meninas Velazquez 1957,Cubism,8.498338,14.173515,107.26086666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_table-overlooking-the-sea-1925.jpg,Table Overlooking The Sea,Cubism,5.273496,12.030175,109.62342222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_three-characters-1920.jpg,Three Characters,Cubism,7.8110075,14.729656,132.76314444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_painter-and-his-model-1927.jpg,Painter And His Model,Cubism,7.3622394,14.142102,160.12454444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_two-seated-women-1958.jpg,Two Seated Women,Cubism,5.151514,11.152765,171.29276666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_bibemus-quarry-1.jpg,Bibemus Quarry,Cubism,1.0097029,13.412845,96.14061111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_bather-1908.jpg,Bather,Cubism,4.8746533,11.209557,146.7632888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_a-slice-of-watermelon-1927.jpg,A Slice Of Watermelon,Cubism,7.770294,13.165228,119.97085555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_crimea-alupka-1916-1.jpg,Crimea Alupka 1916,Cubism,4.5423565,15.54142,139.52166666666668
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life-with-class-and-an-apple-1914.jpg,Still Life With Class And An Apple,Cubism,6.333957,12.506909,173.45412222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_figs.jpg,,Cubism,5.0251827,13.934197,92.04424444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_woman-with-a-fan-ii.jpg,Woman With A Fan,Cubism,6.770911,14.765975,79.64892222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-salon-1944.jpg,The Salon,Cubism,5.6985717,14.68874,70.39031111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-level-crossing-1912.jpg,The Level Crossing,Cubism,5.5569,13.639485,138.18976666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_a-tree-1916.jpg,A Tree,Cubism,1.6759741,12.550619,91.323
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_bull-plate-iv-1945.jpg,Bull Plate Iv,Cubism,6.0353823,10.790082,136.81774444444446
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_harlequin-with-violin.jpg,Harlequin With,Cubism,6.1256185,13.831483,124.43888888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_chateau-noir.jpg,Chateau,Cubism,1.2065432,13.358773,76.9786
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_in-the-park-of-chateau-noir-1900.jpg,In The Park Of Chateau Noir,Cubism,2.0798268,13.493027,115.4717888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_dancer-in-blue-veil.jpg,Dancer In Blue,Cubism,6.525039,11.308295,197.3178
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_bees-1940.jpg,Bees,Cubism,4.5127525,13.768665,100.98103333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_figure-double.jpg,Figure,Cubism,4.821249,13.995901,102.13862222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_green-pan-and-black-bottle-1908.jpg,Green Pan And Black Bottle,Cubism,4.3198347,13.29727,43.10145555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_big-trees-at-estaque-1908.jpg,Big Trees At Estaque,Cubism,1.8412228,11.972396,80.37832222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_seated-woman-1939.jpg,Seated Woman,Cubism,7.959077,12.827197,102.1616
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_two-poets-1929.jpg,Two Poets,Cubism,5.9349585,14.071742,112.90705555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_study-for-the-city.jpg,Study For The,Cubism,7.9892287,15.110506,166.38874444444446
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_cafe-bar-1919.jpg,Cafe Bar,Cubism,4.9911695,13.805133,81.84282222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_harlequin-and-woman-with-necklace-1917.jpg,Harlequin And Woman With Necklace,Cubism,7.069673,15.159766,91.72795555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_torso-1.jpg,Torso,Cubism,5.8329563,10.662583,70.31636666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_purim.jpg,,Cubism,5.005043,13.123035,150.9214
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_the-garden-at-les-lauves-1906.jpg,The Garden At Les Lauves,Cubism,1.5767527,13.814605,165.35261111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_guitar-and-fruit-dish-1919.jpg,Guitar And Fruit Dish,Cubism,4.0974517,11.38089,89.4523
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_hy-res-i-1928.jpg,Hy Res I,Cubism,6.33423,13.027194,112.91157777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-creation-of-the-prehistoric-world-state-1923.jpg,The Creation Of The Prehistoric World State,Cubism,5.303158,11.417999,175.2040111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_the-past.jpg,The,Cubism,6.266029,10.1447735,171.3719
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_trees-1919.jpg,Trees,Cubism,1.591029,13.067744,105.01097777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_self-portrait-with-easel-1914.jpg,Self Portrait With Easel,Cubism,1.7353537,13.124089,101.11691111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-duet-1937.jpg,The Duet,Cubism,5.565298,14.608077,84.04147777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_kuntsevo-cottage-1919.jpg,Kuntsevo Cottage,Cubism,1.5038949,13.627376,112.85874444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-woman-leaves-the-woman-with-the-bird.jpg,The Woman Leaves The Woman With The,Cubism,4.66931,14.202398,86.74513333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_musicians-with-masks-1921-1.jpg,Musicians With Masks 1921,Cubism,6.2294364,14.277203,50.383633333333336
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-two-women-in-blue-vase-1935.jpg,The Two Women In Blue Vase,Cubism,8.814681,13.169447,120.27581111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_the-miller-1918.jpg,The Miller,Cubism,6.5651393,13.737798,103.80806666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_portret-van-albert-flechteim-1914.jpg,Portret Van Albert Flechteim,Cubism,7.5368686,13.452393,118.3634888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_portrait-of-henry-viel-a-friend-of-painter-fernand-leger-1904.jpg,Portrait Of Henry Viel A Friend Of Painter Fernand Leger,Cubism,7.1341143,10.015287,195.4246
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_interior-with-girl-drawing-1956.jpg,Interior With Girl Drawing,Cubism,8.422465,13.833995,136.79683333333332
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-studio-v-1949.jpg,The Studio V,Cubism,5.023047,14.4070215,70.12805555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-terrace-1948.jpg,The Terrace,Cubism,4.9262094,14.417695,97.5387
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_violin-with-fruit-1924.jpg,Violin With Fruit,Cubism,3.9204545,11.9284725,90.25615555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_man-with-mandolin-1920.jpg,Man With Mandolin,Cubism,7.613462,14.368349,100.09781111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_seated-woman-with-spelling-book-1941.jpg,Seated Woman With Spelling Book,Cubism,7.114654,11.776542,194.56001111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-bowl-of-grapes-1926.jpg,The Bowl Of Grapes,Cubism,6.0774345,13.18408,78.65223333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_factory-in-nara-1918.jpg,Factory In Nara,Cubism,3.5429006,14.207993,135.8767
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_crimea-1916.jpg,Crimea,Cubism,2.5885599,13.447317,106.98856666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-moulin-rouge.jpg,The Moulin,Cubism,6.576321,10.795708,224.49604444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_the-cattle-dealer-1912.jpg,The Cattle Dealer,Cubism,4.0566535,12.462525,83.432
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_self-portrait-with-muse-dream-1918.jpg,Self Portrait With Muse Dream,Cubism,2.0406623,12.535353,140.00804444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-yellow-napkin-1935.jpg,The Yellow Napkin,Cubism,4.684492,13.495374,183.39027777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-two-women-bouquet-1921.jpg,The Two Women Bouquet,Cubism,8.41224,14.984815,129.78475555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_composition-1920.jpg,Composition,Cubism,8.306816,14.651785,114.7140888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_portrait-of-sylvette-david.jpg,Portrait Of Sylvette,Cubism,6.796277,12.921722,114.70481111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_woman-with-book-1945.jpg,Woman With Book,Cubism,5.875884,14.529608,99.94516666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_composition-cubiste-au-portrait-poisson-et-clair-de-lune-1926.jpg,Composition Cubiste Au Portrait Poisson Et Clair De Lune,Cubism,6.294146,12.013761,123.10475555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_kerity-landscape-1927.jpg,Kerity Landscape,Cubism,5.4074955,12.833327,146.1322888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_wounded-bird.jpg,Wounded,Cubism,7.1500525,13.120058,105.38025555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_bust-of-a-woman-1942.jpg,Bust Of A Woman,Cubism,5.2930098,11.706318,123.9599
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_still-life-with-guitar-book-and-newspaper.jpg,Still Life With Guitar Book And,Cubism,4.322282,11.456355,128.3905
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-studio-i-1949.jpg,The Studio I,Cubism,6.242869,14.259302,73.90837777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_farm-at-montgeroult-1898.jpg,Farm At Montgeroult,Cubism,5.725419,13.517801,115.95178888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_the-park-of-the-chateau-noir-with-well.jpg,The Park Of The Chateau Noir With,Cubism,2.0294576,13.894454,158.13348888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_acrobats-2.jpg,Acrobats,Cubism,7.0265107,11.765043,166.43155555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_drawing-of-ground-plan-for-the-office-of-jean-zay-1937.jpg,Drawing Of Ground Plan For The Office Of Jean Zay,Cubism,4.375268,13.757009,193.27218888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_siena-1912-3.jpg,Siena 1912,Cubism,2.9227893,13.155235,95.48772222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_female-bust-portrait-de-dora-maar-1941.jpg,Female Bust Portrait De Dora Maar,Cubism,5.6833453,12.228478,111.68008888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_el-paseo-de-colon-1917.jpg,El Paseo De Colon,Cubism,4.6220913,14.878456,136.67634444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-studio-iii-1949.jpg,The Studio Iii,Cubism,5.1731796,14.335239,55.36671111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life-with-the-mandolin-1924.jpg,Still Life With The Mandolin,Cubism,8.539566,14.245909,142.05012222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_abramtsevo-the-boys-at-the-river-drawing-for-the-painting-boys-bathing-1920.jpg,Abramtsevo The Boys At The River Drawing For The Painting Boys Bathing,Cubism,6.778533,9.981387,152.2091
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-city-1919.jpg,The City,Cubism,4.7584853,15.508308,133.59392222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-mask-negro.jpg,The Mask,Cubism,8.033384,14.660679,126.39717777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_propellers-2nd-state-1918.jpg,Propellers 2nd State,Cubism,8.068451,13.280911,133.80217777777779
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_composition-au-visage-et-au-coquillage-1939.jpg,Composition Au Visage Et Au Coquillage,Cubism,5.7438765,14.815808,77.7995
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-mechanic-1920.jpg,The Mechanic,Cubism,7.869613,13.427309,125.59662222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_glass-bottle-packet-of-tobacco-1922.jpg,Glass Bottle Packet Of Tobacco,Cubism,7.1539087,14.129104,120.36497777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_pitcher-and-bowls-1908.jpg,Pitcher And Bowls,Cubism,3.4401705,12.948899,57.75176666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_not_detected_207835.jpg,,Cubism,6.4132957,12.337566,97.5549
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_forest-near-the-rocky-caves-above-the-chateau-noir-1904.jpg,Forest Near The Rocky Caves Above The Chateau Noir,Cubism,1.2378435,13.286301,91.53711111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_chateau-noir-1.jpg,Chateau Noir,Cubism,0.985929,13.490711,109.9159
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_mount-cassis-1913.jpg,Mount Cassis,Cubism,3.9430115,14.272369,87.42436666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-breakfast-1921.jpg,The Breakfast,Cubism,8.352013,15.001544,127.59233333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_pierrot-and-harlequin-1920.jpg,Pierrot And Harlequin,Cubism,8.136077,14.253813,124.11221111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_abramtsevo-the-trees-1920.jpg,Abramtsevo The Trees,Cubism,6.7961206,9.945719,141.3960888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_the-first-animals-1913.jpg,The First Animals,Cubism,2.280361,11.445805,133.2851222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_skating-rink-drawing-of-the-curtain-of-scene-1921.jpg,Skating Rink Drawing Of The Curtain Of Scene,Cubism,7.845118,14.238412,88.71431111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_a-pond-1920-1.jpg,A Pond 1920,Cubism,1.4764816,12.91255,99.01538888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_not_detected_207837.jpg,,Cubism,4.470413,11.803666,58.647444444444446
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_in-the-woods-1898.jpg,In The Woods,Cubism,1.0272075,13.4194145,129.21356666666668
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-scales-1916.jpg,Still Life Scales,Cubism,4.1267204,13.75337,68.7251
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life-with-stone-1924.jpg,Still Life With Stone,Cubism,7.7244086,14.929557,95.94074444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_still-life-with-window.jpg,Still Life With,Cubism,6.9566054,14.289811,140.14625555555557
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_homage-to-apollinaire-1912.jpg,Homage To Apollinaire,Cubism,4.3933296,11.444795,125.17796666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_bread-on-the-green-1913.jpg,Bread On The Green,Cubism,2.9904954,13.251906,105.66983333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_scenes-of-bullfighting-1945.jpg,Scenes Of Bullfighting,Cubism,6.7340617,10.078951,197.4400777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_fruit-dish-1912.jpg,Fruit Dish,Cubism,4.7731047,15.502622,112.8961
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_musician-in-an-interior-1929.jpg,Musician In An Interior,Cubism,6.9551973,12.410242,116.15958888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_fruit-bowl-pipe-and-newspaper.jpg,Fruit Bowl Pipe And,Cubism,4.688941,12.583344,86.97082222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-mantelpiece-1925.jpg,The Mantelpiece,Cubism,8.019283,14.328247,101.89293333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-purple-tablecloth-1936.jpg,The Purple Tablecloth,Cubism,4.6047783,13.509693,116.45705555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_portrait-daniel-henry-kahnweiler-1921.jpg,Portrait Daniel Henry Kahnweiler,Cubism,7.060047,10.899145,238.737
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_rain-1911.jpg,Rain,Cubism,4.257699,12.376649,85.52237777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_nude-with-drapery-study-for-the-great-dancer-1907.jpg,Nude With Drapery Study For The Great Dancer,Cubism,4.340569,11.354535,144.9010111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_the-betrothed-and-eiffel-tower-1913.jpg,The Betrothed And Eiffel Tower,Cubism,2.7183332,11.800429,105.65216666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_pedestal-1920.jpg,Pedestal,Cubism,6.721105,13.781131,122.0963
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_bull-study-1946.jpg,Bull Study,Cubism,7.172179,11.035139,205.07632222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_portrait-of-andre-mare-1901.jpg,Portrait Of Andre Mare,Cubism,6.960428,10.076881,184.49095555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_mother-and-child-marie-therese-and-maya-1938.jpg,Mother And Child Marie Therese And Maya,Cubism,3.7126594,11.721852,104.76861111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_bottle-wine-glass-and-fruit-bowl.jpg,Bottle Wine Glass And Fruit,Cubism,5.630983,12.778857,74.43135555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_the-wandering-jew-1925.jpg,The Wandering Jew,Cubism,1.1717608,13.047359,87.24275555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_still-life-with-lobster-1948.jpg,Still Life With Lobster,Cubism,5.3864856,13.545066,105.77845555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_violin-and-musical-score.jpg,Violin And Musical,Cubism,4.5493755,10.281345,124.91677777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_bull-plate-vi-1945.jpg,Bull Plate Vi,Cubism,6.066408,10.792295,127.67765555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_dance-1929.jpg,Dance,Cubism,8.798068,12.99245,146.3895
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_portrait-of-madame-josette-gris-1916.jpg,Portrait Of Madame Josette Gris,Cubism,6.206232,12.648949,116.46364444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_sleeping-deer-1913.jpg,Sleeping Deer,Cubism,2.4342575,11.833363,113.13912222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_breton-bread-two-fish-spoon-1929.jpg,Breton Bread Two Fish Spoon,Cubism,6.876221,15.345509,111.5992
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_saint-julian-l-hospitalier-1913.jpg,Saint Julian L Hospitalier,Cubism,2.1938052,11.467821,138.8307888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_portrait-of-sylvette-david-in-green-chair-1954.jpg,Portrait Of Sylvette David In Green Chair,Cubism,5.7466435,12.545217,141.30757777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_head-of-a-woman-1909.jpg,Head Of A Woman,Cubism,2.0070763,12.060759,57.006277777777775
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_female-nude-sitting-in-red-armchair-1932.jpg,Female Nude Sitting In Red Armchair,Cubism,5.159606,11.555649,152.66941111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_still-life-1927.jpg,Still Life,Cubism,8.477775,14.941662,81.62632222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-1911.jpg,Still Life,Cubism,3.1833684,13.34698,101.27176666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_standing-woman-1946.jpg,Standing Woman,Cubism,4.8840504,12.792663,155.18373333333332
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life-with-skull-on-an-armchair-1946.jpg,Still Life With Skull On An Armchair,Cubism,7.120167,11.840943,178.13037777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_bibemus-the-red-rock-1897.jpg,Bibemus The Red Rock,Cubism,1.0464164,13.252307,117.9116
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-the-guitar-1917.jpg,Still Life The Guitar,Cubism,3.110875,13.513293,92.15073333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_discs-1918.jpg,Discs,Cubism,8.141202,15.091532,112.13647777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_vase-with-flowers-1943.jpg,Vase With Flowers,Cubism,4.2701116,12.262734,79.6668
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_square-du-vert-galant-1943.jpg,Square Du Vert Galant,Cubism,4.380548,12.233571,103.47652222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-samovar-1917.jpg,Still Life Samovar,Cubism,4.316046,13.902941,142.45922222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life-on-the-dresser-1955.jpg,Still Life On The Dresser,Cubism,7.4398575,14.110394,129.00423333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_blue-dancer-1.jpg,Blue Dancer,Cubism,5.9314337,10.223738,169.48152222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_a-disc-in-the-city-1919.jpg,A Disc In The City,Cubism,8.106838,14.890103,137.6950111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_sketch-a-still-life-with-guitar-1917-1.jpg,Sketch A Still Life With Guitar 1917,Cubism,6.8705826,9.948317,152.5543888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_the-green-violinist-1924.jpg,The Green Violinist,Cubism,4.0576878,12.017264,145.4253
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_in-the-rain-1912.jpg,In The Rain,Cubism,2.0872655,11.801792,96.87672222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_sketch-a-still-life-with-copper-jugs-1917.jpg,Sketch A Still Life With Copper Jugs,Cubism,7.206641,9.823064,209.40754444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_broken-forms-1914.jpg,Broken Forms,Cubism,2.69628,12.625499,107.65447777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_bathers-2.jpg,Bathers,Cubism,1.6021179,12.972387,141.20786666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_mechanical-compositions-1923.jpg,Mechanical Compositions,Cubism,8.027672,13.41851,127.9182888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_bend-in-forest-road-1906.jpg,Bend In Forest Road,Cubism,1.3076788,13.5090475,99.85095555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_interior-with-balcony-1928.jpg,Interior With Balcony,Cubism,7.1785054,14.387177,80.53708888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_the-gondolier.jpg,The,Cubism,5.932076,10.170406,204.14988888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_bust-of-woman-with-flowers.jpg,Bust Of Woman With,Cubism,2.90387,11.756864,75.075
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_reclining-nude-1908-1.jpg,Reclining Nude 1908,Cubism,3.7346056,13.833454,93.17707777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_fabulous-beast-ii-1913.jpg,Fabulous Beast Ii,Cubism,3.2646565,13.690775,94.20995555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_un-reve-a-dream-1930.jpg,Un Reve A Dream,Cubism,6.586685,12.087579,167.33927777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_project-for-female-costume-skating-rink.jpg,Project For Female Costume Skating,Cubism,8.170505,12.901183,174.9651888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_guitar-and-pomegranates-by-a-window-1921.jpg,Guitar And Pomegranates By A Window,Cubism,7.3619466,13.839355,88.20614444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_the-bird-cage.jpg,The Bird,Cubism,7.7800198,13.557187,88.8696
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life-1914.jpg,Still Life,Cubism,7.186748,11.610806,183.2252777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_the-open-book-1925-1.jpg,The Open Book 1925,Cubism,6.4809637,12.694105,120.0231
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-viaduct.jpg,The,Cubism,8.312558,14.392458,169.47625555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_two-horses-1913.jpg,Two Horses,Cubism,2.4036863,11.469153,105.83182222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_blue-dancer.jpg,Blue,Cubism,5.941478,10.22656,103.64013333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_a-poet.jpg,A,Cubism,5.323748,10.809816,208.68212222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_still-life-in-the-tankard-final-state-1921.jpg,Still Life In The Tankard Final State,Cubism,8.401694,14.364469,118.7016111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_two-nude-female-figures-with-a-cloth.jpg,Two Nude Female Figures With A,Cubism,4.6426344,11.007956,180.3254777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_woman-combing-her-hair.jpg,Woman Combing Her,Cubism,5.9327993,10.177196,203.97276666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_cemetery-gates-1917.jpg,Cemetery Gates,Cubism,3.2187026,12.108029,111.61788888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-woman-with-the-fruit-dish-1924.jpg,The Woman With The Fruit Dish,Cubism,8.655695,14.195133,122.78086666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_grey-lovers-1917.jpg,Grey Lovers,Cubism,1.7000622,13.201605,79.82994444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_seated-woman-1953.jpg,Seated Woman,Cubism,5.6875167,12.774172,78.89821111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_female-nude-1941.jpg,Female Nude,Cubism,3.2414155,12.159796,93.03705555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_glass-and-pitcher-1944.jpg,Glass And Pitcher,Cubism,5.2353163,12.323418,64.40475555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_crimea-alupka-1916.jpg,Crimea Alupka,Cubism,4.48492,15.452012,94.97017777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_fishermen-1921.jpg,Fishermen,Cubism,6.6507053,14.291322,115.53967777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_nimes-1928.jpg,Nimes,Cubism,5.5307717,12.75592,64.12907777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_large-bathers-1906-1.jpg,Large Bathers 1906,Cubism,2.4845302,13.687385,129.28297777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_jourdan-s-cottage-1906.jpg,Jourdan S Cottage,Cubism,2.2650597,13.900514,158.38192222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_still-life-1.jpg,Still Life,Cubism,3.8987794,14.055746,102.74692222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_contrast-of-forms-1918.jpg,Contrast Of Forms,Cubism,7.3680744,13.665405,153.8672777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_bust-of-young-woman-from-avignon-1907.jpg,Bust Of Young Woman From Avignon,Cubism,2.8864455,12.363599,104.43145555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_in-the-cafe-woman-with-cup.jpg,In The Cafe Woman With,Cubism,6.603706,14.467807,126.39554444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_head.jpg,,Cubism,2.9763772,12.735845,88.35903333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_composition-with-skull-study.jpg,Composition With Skull,Cubism,3.0977721,11.443245,124.77623333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_portrait-the-sketch-1913.jpg,Portrait The Sketch,Cubism,6.9213614,9.884505,166.3074777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_portrait-of-a-violinist-grigory-fedorovich-romashkov-1918-1.jpg,Portrait Of A Violinist Grigory Fedorovich Romashkov 1918,Cubism,6.8823204,9.934601,167.06384444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_rocks-near-the-caves-below-the-chateau-noir.jpg,Rocks Near The Caves Below The Chateau,Cubism,1.2637162,13.32717,92.15176666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_still-life-with-a-violin-1912.jpg,Still Life With A Violin,Cubism,5.762622,14.94363,166.1638111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_still-life-with-ace-of-spades-1921.jpg,Still Life With Ace Of Spades,Cubism,7.3237786,13.951838,102.33202222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_a-bullfight-1934.jpg,A Bullfight,Cubism,8.396994,13.655285,93.37354444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-kneeling-woman-1934.jpg,The Kneeling Woman,Cubism,4.3248096,14.122286,143.2665
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_model-for-the-cover-of-minotaur-1933.jpg,Model For The Cover Of Minotaur,Cubism,5.552051,14.626104,102.57573333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-pink-napkin-1933.jpg,The Pink Napkin,Cubism,5.1515937,13.103509,165.48063333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_a-landscape-drawn-into-squares.jpg,A Landscape Drawn Into,Cubism,3.226124,12.773882,50.39174444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_paternity-1971.jpg,Paternity,Cubism,8.328305,13.118762,142.8951111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_nude.jpg,,Cubism,2.720412,12.696477,49.33927777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_seated-geometric-figure.jpg,Seated Geometric,Cubism,5.8591337,10.140702,157.7940111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_snow-covered-church-1927.jpg,Snow Covered Church,Cubism,7.1846337,13.572863,128.94053333333332
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_reclining-nude-1911.jpg,Reclining Nude,Cubism,4.687353,14.039313,97.425
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_female-nude-frauenakt.jpg,Female Nude,Cubism,7.096603,9.825965,162.12912222222224
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-man-with-the-cane-1920.jpg,The Man With The Cane,Cubism,7.911861,13.758752,109.18018888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_painter-and-his-model-1928.jpg,Painter And His Model,Cubism,8.084997,14.712225,124.28843333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-with-violin-1916.jpg,Still Life With Violin,Cubism,7.07534,9.953217,186.11563333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_guitar-and-clarinet-1920.jpg,Guitar And Clarinet,Cubism,6.9200616,13.42776,115.4198
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_portrait-of-sister-maryasinka-1914.jpg,Portrait Of Sister Maryasinka,Cubism,2.7342303,12.050468,103.243
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_portrait-of-jacqueline-1957.jpg,Portrait Of Jacqueline,Cubism,7.03068,14.201234,129.1387222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_not_detected_193676.jpg,,Cubism,6.2040505,13.0595875,119.31434444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_machine-elements-1919.jpg,Machine Elements,Cubism,8.178263,14.587899,122.72704444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_matador-1970.jpg,Matador,Cubism,8.359366,13.175739,111.1012
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_the-open-window-1921.jpg,The Open Window,Cubism,6.9011474,14.003752,98.24831111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-creation-of-the-world-great-figure-drawing-of-costume-1923.jpg,The Creation Of The World Great Figure Drawing Of Costume,Cubism,7.8718343,13.384402,159.40921111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_the-game-of-billiards-1918.jpg,The Game Of Billiards,Cubism,3.9577217,14.367251,101.35495555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_still-life-with-three-skulls.jpg,Still Life With Three,Cubism,4.050906,13.800244,207.66096666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_well-by-the-winding-road-in-the-park-of-chateau-noir.jpg,Well By The Winding Road In The Park Of Chateau,Cubism,7.1796346,9.707957,182.5336111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_book-and-guitar-1925.jpg,Book And Guitar,Cubism,6.5595026,14.719,96.23202222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_still-life-in-the-machine-elements-1918.jpg,Still Life In The Machine Elements,Cubism,8.298208,14.064655,118.15792222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_fruit-bowl-and-fruit.jpg,Fruit Bowl And,Cubism,3.6092732,11.426332,80.29484444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-bathers-the-dancers.jpg,The Bathers The,Cubism,5.4449563,11.187049,94.59963333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_still-life-with-envelope.jpg,Still Life With,Cubism,6.4050317,13.046126,92.05807777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_two-horses-red-and-blue-1912.jpg,Two Horses Red And Blue,Cubism,2.114417,11.55072,116.46113333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_small-composition-iii.jpg,Small Composition,Cubism,2.6884735,13.407428,107.181
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_landscape-animated-1st-study-1921.jpg,Landscape Animated 1st Study,Cubism,8.470272,14.842302,138.54215555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_figures-on-a-beach-1930.jpg,Figures On A Beach,Cubism,5.7684555,12.525493,100.43966666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_a-red-pedestal-1939.jpg,A Red Pedestal,Cubism,7.7162647,13.261142,99.46114444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_still-life-1925.jpg,Still Life,Cubism,4.932858,15.574093,132.77337777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_montagne-sainte-victoire-from-lauves.jpg,Montagne Sainte Victoire From,Cubism,0.95044136,13.450287,85.55645555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_viaduct-at-l-estaque-1908.jpg,Viaduct At L Estaque,Cubism,3.0339434,12.993446,134.11162222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_head-constructor-1950.jpg,Head Constructor,Cubism,8.70595,13.079668,186.09143333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_portrait-of-sylvette-david-1954.jpg,Portrait Of Sylvette David,Cubism,7.718851,13.010343,147.51067777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_study-of-mask-for-the-creation-of-monde.jpg,Study Of Mask For The Creation Of,Cubism,7.22401,10.077418,217.05867777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_flowers-on-the-table-1907.jpg,Flowers On The Table,Cubism,4.5757008,13.256376,88.61135555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_untitled-1920.jpg,Untitled,Cubism,6.79019,15.396371,157.29144444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-tug-in-the-city.jpg,The Tug In The,Cubism,6.383683,10.709659,212.1794111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-baluster-1925.jpg,The Baluster,Cubism,8.506119,14.896885,115.8549
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_mont-sainte-victoire-7.jpg,Mont Sainte Victoire,Cubism,1.035,13.418182,122.42388888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-crystal-1916.jpg,Still Life Crystal,Cubism,6.7269297,10.089243,173.35423333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_composition-1918.jpg,Composition,Cubism,7.3503447,13.739715,121.73676666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_still-life-in-front-of-the-balcony-1929.jpg,Still Life In Front Of The Balcony,Cubism,6.750294,14.805042,112.24971111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_the-old-gardener-1906.jpg,The Old Gardener,Cubism,2.2299764,13.426519,86.17731111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_still-life-with-clarinet-1927.jpg,Still Life With Clarinet,Cubism,6.662402,13.391489,78.27445555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_the-garden-1916.jpg,The Garden,Cubism,8.651545,13.358073,106.30706666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_two-nude-female-figures.jpg,Two Nude Female,Cubism,7.189035,9.772214,222.42605555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_mural-1951.jpg,Mural,Cubism,7.973813,15.211563,132.8746
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_two-discs-in-the-city-1918.jpg,Two Discs In The City,Cubism,8.162569,14.626079,122.74507777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_woman-with-umbrella-1919.jpg,Woman With Umbrella,Cubism,6.49429,10.49094,187.9508888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_cows-over-vitebsk-1966.jpg,Cows Over Vitebsk,Cubism,2.639212,13.14887,111.01784444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_still-life-with-fish-1928.jpg,Still Life With Fish,Cubism,7.3695145,14.194285,108.95057777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_study-for-builders-of-feet-1950.jpg,Study For Builders Of Feet,Cubism,7.19209,10.188209,153.47173333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_still-life-with-bottle-of-bass-1914.jpg,Still Life With Bottle Of Bass,Cubism,6.089427,11.375747,159.8346
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_on-the-beach-dinard-1928.jpg,On The Beach Dinard,Cubism,3.181819,11.637827,83.04588888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_the-guitar-with-inlay-1925.jpg,The Guitar With Inlay,Cubism,4.7091255,11.747148,102.87643333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_seated-harlequin-1923.jpg,Seated Harlequin,Cubism,2.9664605,11.4158125,133.92842222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-creation-of-the-world-costume-of-woman-1923.jpg,The Creation Of The World Costume Of Woman,Cubism,6.278328,11.94512,153.63106666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_three-women-with-flowers.jpg,Three Women With,Cubism,8.331354,14.975257,127.1448
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-creation-of-the-world.jpg,The Creation Of The,Cubism,8.110833,14.367714,95.53753333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-with-samovar-pipe-1918.jpg,Still Life With Samovar Pipe,Cubism,4.127239,14.036438,71.63443333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_paris-through-the-window-1913.jpg,Paris Through The Window,Cubism,5.471593,14.445342,112.10913333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_guitar-bottle-fruit-dish-and-glass-on-the-table-1919.jpg,Guitar Bottle Fruit Dish And Glass On The Table,Cubism,6.7951584,14.031717,70.50892222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_seated-woman-1930.jpg,Seated Woman,Cubism,7.113574,12.561557,121.69411111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_napkin-knife-and-pore-1908.jpg,Napkin Knife And Pore,Cubism,2.3519435,12.0810585,119.292
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_the-garden-terrace-at-les-lauves-1906.jpg,The Garden Terrace At Les Lauves,Cubism,1.7818918,13.922688,190.18034444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_russian-village-under-the-moon-1911.jpg,Russian Village Under The Moon,Cubism,7.7860894,13.618518,101.3103888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_long-yellow-horse-1913.jpg,Long Yellow Horse,Cubism,3.7633998,14.047839,132.64724444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_portrait-of-artist-leonard-mikhailovich-bunatyan-1920.jpg,Portrait Of Artist Leonard Mikhailovich Bunatyan,Cubism,3.43664,13.760235,114.94996666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life-in-front-of-a-window-overlooking-the-eglise-st-augustin-1919.jpg,Still Life In Front Of A Window Overlooking The Eglise St Augustin,Cubism,7.1419997,14.136093,155.90717777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_the-studio-viii-1954.jpg,The Studio Viii,Cubism,7.3036957,14.030675,64.18434444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_fruit-with-bowl-1926.jpg,Fruit With Bowl,Cubism,5.4501386,12.4403925,99.73564444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_portrait-of-jacqueline-roque-with-her-hands-crossed-1954.jpg,Portrait Of Jacqueline Roque With Her Hands Crossed,Cubism,5.457954,12.509135,119.67064444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_the-table-in-front-of-the-picture-1926.jpg,The Table In Front Of The Picture,Cubism,6.5868444,14.672234,102.15012222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_bust-of-woman-1939.jpg,Bust Of Woman,Cubism,7.663192,12.948642,101.95954444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_las-meninas-velazquez-1957-1.jpg,Las Meninas Velazquez 1957,Cubism,5.9818077,14.384132,89.3688
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_turning-road-at-montgeroult-1899.jpg,Turning Road At Montgeroult,Cubism,2.4632335,13.06976,86.6759111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_listening-to-the-cock-1944.jpg,Listening To The Cock,Cubism,2.620884,12.336875,72.25257777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_the-three-masks-1923.jpg,The Three Masks,Cubism,3.7552078,12.772364,122.41185555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_pierrot-with-guitar-1922.jpg,Pierrot With Guitar,Cubism,6.7201552,13.336871,115.62482222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_arabian-1940.jpg,Arabian,Cubism,5.909266,10.639093,131.50552222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_marketplace-in-vitebsk-1917.jpg,Marketplace In Vitebsk,Cubism,4.6002226,15.302004,113.2499
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-table-with-the-dishes-1919.jpg,Still Life Table With The Dishes,Cubism,4.078019,14.353335,103.9233111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-with-jug-1919.jpg,Still Life With Jug,Cubism,4.3006177,14.623723,122.5809
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_san-gimignano-1912.jpg,San Gimignano,Cubism,4.006114,14.04709,89.43642222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_cassis-1913-2.jpg,Cassis 1913,Cubism,2.7931736,12.921225,99.14687777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_bathers-mont-sainte-victoire-in-the-background.jpg,Bathers Mont Sainte Victoire In The,Cubism,1.0056193,13.419685,130.6644777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_farmer-s-wife-on-a-stepladder-1933.jpg,Farmer S Wife On A Stepladder,Cubism,5.492082,13.071346,104.48748888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_landscape-1912.jpg,Landscape,Cubism,2.9042492,13.309399,125.39954444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_fruit-dish-and-glass-1924.jpg,Fruit Dish And Glass,Cubism,6.7244287,14.714843,100.98327777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_cassis-boats-1913.jpg,Cassis Boats,Cubism,3.9864264,14.370421,112.64807777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_sketch-a-still-life-with-guitar-1917.jpg,Sketch A Still Life With Guitar,Cubism,7.113111,9.834612,211.99394444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_pierrot-with-guitar-1925.jpg,Pierrot With Guitar,Cubism,3.8838317,12.23341,82.56126666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_river-at-the-bridge-of-the-three-sources-1906.jpg,River At The Bridge Of The Three Sources,Cubism,2.4354265,13.968651,136.68175555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_nuit-ii-composition-with-frog.jpg,Nuit Ii Composition With,Cubism,4.8287997,13.341978,47.708666666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_still-life-with-a-metronome.jpg,Still Life With A,Cubism,1.2761128,12.733081,97.20932222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_a-glass-of-absinthe-1914.jpg,A Glass Of Absinthe,Cubism,1.6834271,13.113224,76.0950111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_mazin-the-poet.jpg,Mazin The,Cubism,2.2787442,12.729159,86.76283333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_seltzer-bottle-and-glass-1917.jpg,Seltzer Bottle And Glass,Cubism,6.6010737,12.692254,80.30168888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_interior-with-palette-1942.jpg,Interior With Palette,Cubism,5.6921105,14.257843,97.04744444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life-with-guitar-1942.jpg,Still Life With Guitar,Cubism,7.882533,13.108708,104.43794444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_group-of-nude-figures.jpg,Group Of Nude,Cubism,7.213381,9.706267,108.2874
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_a-black-pedestal-1919.jpg,A Black Pedestal,Cubism,6.211452,14.179467,72.60557777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_barselona-harlequin-1917.jpg,Barselona Harlequin,Cubism,3.396643,12.9293585,108.38052222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_small-composition-i-1913.jpg,Small Composition I,Cubism,3.1596713,12.236702,135.27974444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_mask-1911.jpg,Mask,Cubism,6.0055356,10.195643,207.14715555555554
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_bull-plate-v-1945.jpg,Bull Plate V,Cubism,6.076265,10.749804,161.89384444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-four-cyclists.jpg,The Four,Cubism,8.257588,13.698441,134.04064444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_machine-element-1924.jpg,Machine Element,Cubism,8.025086,14.376946,96.18342222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life-with-bull-s-skull-1939.jpg,Still Life With Bull S Skull,Cubism,4.3839064,12.727864,99.8916
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_the-watering-trough-1925.jpg,The Watering Trough,Cubism,2.4562588,12.267638,86.56524444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_still-life-with-skull-of-ox-1942.jpg,Still Life With Skull Of Ox,Cubism,6.4600897,13.888452,47.91557777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_men-in-the-city-1919.jpg,Men In The City,Cubism,8.166768,14.75388,116.70363333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_deer-in-the-forest-ii-1914.jpg,Deer In The Forest Ii,Cubism,4.0583262,13.606908,69.5469
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_the-open-door-1928.jpg,The Open Door,Cubism,7.0757847,14.34551,95.75223333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_draft-costume-front-1929-1.jpg,Draft Costume Front 1929,Cubism,6.439169,10.596789,200.22502222222224
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_bella-with-white-collar-1917.jpg,Bella With White Collar,Cubism,3.3972232,12.628095,132.8820888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_spring-1956.jpg,Spring,Cubism,4.498886,13.471855,127.20582222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_trees-by-the-water-1900.jpg,Trees By The Water,Cubism,1.7360488,13.9278145,185.14326666666668
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_animals-in-a-landscape-1914.jpg,Animals In A Landscape,Cubism,1.6271322,11.980738,113.38045555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-worker-sitting.jpg,The Worker,Cubism,7.9253874,15.192496,134.0956888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_bullfighter-1913.jpg,Bullfighter,Cubism,5.4675713,11.226678,135.17092222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_two-mullets-1941.jpg,Two Mullets,Cubism,4.4970074,13.225388,95.15175555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_acrobats.jpg,,Cubism,4.8590193,10.761117,123.90073333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_i-and-the-village-1911.jpg,I And The Village,Cubism,2.862027,12.112118,117.61848888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_landscape-1913.jpg,Landscape,Cubism,4.5098157,15.393723,98.52848888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_in-the-woods-1896.jpg,In The Woods,Cubism,2.2276466,13.975761,175.50256666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_queen-isabella-1908.jpg,Queen Isabella,Cubism,2.727753,11.723368,83.29857777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_the-two-faces-1951.jpg,The Two Faces,Cubism,5.6385,11.304138,172.96413333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_torso-in-space-1953.jpg,Torso In Space,Cubism,4.312924,11.208808,145.58133333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_guitar-on-pedestal-1920-2.jpg,Guitar On Pedestal 1920,Cubism,7.3747683,12.989765,145.29548888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_mont-sainte-victoire-seen-from-les-lauves-1905.jpg,Mont Sainte Victoire Seen From Les Lauves,Cubism,1.1170024,13.652923,159.42975555555554
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_harlequin-1918.jpg,Harlequin,Cubism,5.9857163,13.961503,121.19686666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_table-in-front-of-window-1919.jpg,Table In Front Of Window,Cubism,6.709364,15.164911,147.41634444444443
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_grace.jpg,,Cubism,5.851338,10.149081,202.00406666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-beer-and-roach-1912-1.jpg,Still Life Beer And Roach 1912,Cubism,4.4077306,13.132385,90.3658
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_two-horses-1912.jpg,Two Horses,Cubism,4.0314054,13.261188,108.4002
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_violinist-1918.jpg,Violinist,Cubism,6.7635903,10.031122,174.7703111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/franz-marc_three-horses-1912.jpg,Three Horses,Cubism,2.3303654,11.610106,82.84272222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_large-bathers-1906.jpg,Large Bathers,Cubism,1.7813622,12.637006,140.39405555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_san-gimignano-1912-1.jpg,San Gimignano 1912,Cubism,4.134824,14.533045,130.29327777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_discs-1919.jpg,Discs,Cubism,8.055053,15.099936,130.6883
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_skating-rink-drawing-of-decoration-1921.jpg,Skating Rink Drawing Of Decoration,Cubism,7.8771214,15.294635,153.47895555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_farm-woman-1908.jpg,Farm Woman,Cubism,2.336345,13.015594,81.50804444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_jacqueline-sitting-with-her-cat-1964.jpg,Jacqueline Sitting With Her Cat,Cubism,5.676714,13.264226,143.50865555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_carnival-at-the-bistro-1909.jpg,Carnival At The Bistro,Cubism,6.3208137,10.622655,184.242
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_house-at-vitebsk-1917.jpg,House At Vitebsk,Cubism,5.9539084,13.959907,126.23478888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_still-life-with-newspaper-1916.jpg,Still Life With Newspaper,Cubism,7.187804,9.708458,202.3986111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_blue-lovers-1914.jpg,Blue Lovers,Cubism,2.3989525,12.480293,89.85817777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_the-window-overlooking-the-eiffel-tower-1920.jpg,The Window Overlooking The Eiffel Tower,Cubism,6.071922,13.053853,158.8864111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_glass-1914.jpg,Glass,Cubism,5.619212,10.425581,186.3131888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_buste-of-young-woman-marie-therese-walter-1926.jpg,Buste Of Young Woman Marie Therese Walter,Cubism,4.9980974,12.741579,79.48157777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_lovers-1919.jpg,Lovers,Cubism,7.3025,14.271993,74.45968888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_bull-plate-xi-1946.jpg,Bull Plate Xi,Cubism,7.161335,10.300899,220.29267777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-with-a-samovar-1916.jpg,Still Life With A Samovar,Cubism,3.673526,13.850893,120.29413333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_woman-in-an-armchair-1941.jpg,Woman In An Armchair,Cubism,6.4760256,12.410706,150.01594444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_cubist-landscape-1918.jpg,Cubist Landscape,Cubism,5.225672,12.510024,164.0919888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_crouching-female-nude-1959.jpg,Crouching Female Nude,Cubism,4.9383683,12.214647,129.91457777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_still-life-with-green-melon.jpg,Still Life With Green,Cubism,1.8322251,13.783847,156.44424444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_the-pinch-of-snuff-1912.jpg,The Pinch Of Snuff,Cubism,5.119031,11.854163,86.90645555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_movers-verso-untitled-1920.jpg,Movers Verso Untitled,Cubism,6.1737328,10.794905,188.83406666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/georges-braque_woman-at-the-mirror-1945.jpg,Woman At The Mirror,Cubism,4.653789,14.184627,76.61944444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_man-and-woman-1921.jpg,Man And Woman,Cubism,4.399866,11.827836,112.31966666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_woman-with-mandolin-1925.jpg,Woman With Mandolin,Cubism,5.6793447,11.982072,133.27966666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_the-promenade-1918.jpg,The Promenade,Cubism,3.7583692,12.430168,150.94255555555554
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/louis-marcoussis_couple-1922.jpg,Couple,Cubism,6.76285,13.866369,97.02164444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_cassis-the-ship-1913.jpg,Cassis The Ship,Cubism,6.9523616,11.377646,169.3420111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_machine-element-1st-state-1924.jpg,Machine Element 1st State,Cubism,8.0004225,13.600983,129.76932222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pyotr-konchalovsky_still-life-scales-1916-1.jpg,Still Life Scales 1916,Cubism,2.758277,11.896764,94.56082222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_mechanical-elements-on-red-background-1924.jpg,Mechanical Elements On Red Background,Cubism,7.0594363,14.980742,115.92064444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/juan-gris_bottle-and-pitcher.jpg,Bottle And,Cubism,4.834446,11.744214,138.79655555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_guitar-i-love-eva-1912.jpg,Guitar I Love Eva,Cubism,5.3704495,13.899241,117.87417777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_chateau-noir-3.jpg,Chateau Noir,Cubism,1.3340554,13.786771,120.0273888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_untitled-1920-1.jpg,Untitled 1920,Cubism,7.0272245,13.730694,153.49738888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_two-women-on-the-beach-1956.jpg,Two Women On The Beach,Cubism,6.7423043,15.501213,165.36594444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/fernand-leger_diver-on-a-yellow-background.jpg,Diver On A Yellow,Cubism,5.289114,14.624515,83.11827777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/olexandr-archipenko_vase-figure.jpg,Vase,Cubism,5.8386173,10.964342,81.1750888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_bibemus-quarry.jpg,Bibemus,Cubism,1.8389511,13.61357,117.66811111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/paul-cezanne_the-bend-in-the-road.jpg,The Bend In The,Cubism,1.3629315,13.730257,159.57903333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/marc-chagall_the-blue-house-1917.jpg,The Blue House,Cubism,4.055296,13.976523,128.45056666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Cubism/pablo-picasso_man-with-mandolin-1920-1.jpg,Man With Mandolin 1920,Cubism,6.669208,13.72566,66.66688888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_still-life-with-newspaper-1918.jpg,Still Life With Newspaper,Synthetic_Cubism,5.852274,12.908017,63.9398
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_tobacco-newspaper-and-bottle-of-wine-1914.jpg,Tobacco Newspaper And Bottle Of Wine,Synthetic_Cubism,4.5423117,12.866731,77.84194444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_portrait-of-young-girl-1914.jpg,Portrait Of Young Girl,Synthetic_Cubism,4.595219,13.449077,109.72326666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_still-life-before-an-open-window-place-ravignan-1915.jpg,Still Life Before An Open Window Place Ravignan,Synthetic_Cubism,5.663881,12.839259,89.69773333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-siphon-1913.jpg,The Siphon,Synthetic_Cubism,6.37572,15.05909,94.69362222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-checkerboard-1915.jpg,The Checkerboard,Synthetic_Cubism,5.449074,13.264186,80.43105555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_man-with-pipe-1914.jpg,Man With Pipe,Synthetic_Cubism,6.383859,13.516964,94.74614444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_strawberry-jam-1917.jpg,Strawberry Jam,Synthetic_Cubism,5.349169,12.13638,102.10803333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_still-life-with-glass-carafe-and-phillips-ace-1919.jpg,Still Life With Glass Carafe And Phillips Ace,Synthetic_Cubism,5.830968,13.126969,102.98025555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_guitar-and-sheet-of-music-1912.jpg,Guitar And Sheet Of Music,Synthetic_Cubism,7.0024886,15.237852,149.62473333333332
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_glass-and-newspaper-1914.jpg,Glass And Newspaper,Synthetic_Cubism,6.8433247,14.653234,81.4465111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-guitar-1914.jpg,The Guitar,Synthetic_Cubism,4.885662,13.138473,93.73537777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_still-life-on-plaque-1917.jpg,Still Life On Plaque,Synthetic_Cubism,6.6161838,15.165244,106.71853333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_still-life-with-a-guitar-1919.jpg,Still Life With A Guitar,Synthetic_Cubism,6.8943434,15.288351,117.45572222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_bottle-newspaper-and-fruit-bowl-1915.jpg,Bottle Newspaper And Fruit Bowl,Synthetic_Cubism,6.402496,12.842187,93.748
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_still-life-with-checked-tablecloth-1915.jpg,Still Life With Checked Tablecloth,Synthetic_Cubism,4.1183105,12.403904,97.71682222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-painter-s-window-1925.jpg,The Painter S Window,Synthetic_Cubism,6.477139,12.651614,84.25526666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_bottle-of-vieux-marc-glass-and-newspaper-1913.jpg,Bottle Of Vieux Marc Glass And Newspaper,Synthetic_Cubism,6.857211,11.483609,160.98901111111113
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_fantomas-1915.jpg,Fantomas,Synthetic_Cubism,3.6076174,11.503492,91.17284444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_violin-and-glass-1913.jpg,Violin And Glass,Synthetic_Cubism,5.7326164,14.99389,123.75206666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_the-tavern-1914.jpg,The Tavern,Synthetic_Cubism,4.4774323,11.248897,136.12965555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_cubist-person-1917.jpg,Cubist Person,Synthetic_Cubism,4.071259,11.878586,106.2743
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_guitar.jpg,,Synthetic_Cubism,6.9456935,11.538123,187.82332222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_head-of-a-man-1.jpg,Head Of A Man,Synthetic_Cubism,5.586837,13.954334,139.28943333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_bottle-of-bass-glass-and-package-of-tobacco-1914.jpg,Bottle Of Bass Glass And Package Of Tobacco,Synthetic_Cubism,7.0009346,12.442516,141.4082
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-packet-of-coffee-1914.jpg,The Packet Of Coffee,Synthetic_Cubism,4.2650723,12.656561,92.91993333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_newspaper-bottle-packet-of-tobacco-1914.jpg,Newspaper Bottle Packet Of Tobacco,Synthetic_Cubism,6.0504584,11.09187,144.7472111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_violin-and-ink-bottle-on-a-table-1913.jpg,Violin And Ink Bottle On A Table,Synthetic_Cubism,5.96027,13.694828,94.00337777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_guitar-on-a-chair-1913.jpg,Guitar On A Chair,Synthetic_Cubism,4.7932425,12.372269,113.54292222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_geometrical-composition-the-guitar-1913.jpg,Geometrical Composition The Guitar,Synthetic_Cubism,6.0271516,12.05134,154.7648
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_compotier-carafe-and-open-book.jpg,Compotier Carafe And Open,Synthetic_Cubism,3.9541318,11.359575,66.6179
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_violin-and-glass-1915.jpg,Violin And Glass,Synthetic_Cubism,5.934028,12.756689,118.76203333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_landscape-at-beaulieu.jpg,Landscape At,Synthetic_Cubism,7.1790795,13.795075,89.74456666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_fruit-dish-1917.jpg,Fruit Dish,Synthetic_Cubism,4.7833486,12.54769,142.87462222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_bottle-glass-violin-1912.jpg,Bottle Glass Violin,Synthetic_Cubism,7.4807153,12.232389,183.4565888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_guitar-and-pipe-1913.jpg,Guitar And Pipe,Synthetic_Cubism,6.546878,12.539337,101.04416666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-violin-1914.jpg,The Violin,Synthetic_Cubism,4.07421,12.823569,72.34627777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_newspaper-with-coffee-mill-1915.jpg,Newspaper With Coffee Mill,Synthetic_Cubism,5.9340763,13.535935,116.1686111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_beer-glass-and-cards.jpg,Beer Glass And,Synthetic_Cubism,5.6915216,14.66735,130.40221111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_still-life-with-le-jour-1929.jpg,Still Life With Le Jour,Synthetic_Cubism,5.7613583,14.455541,119.79391111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_pedestal-table-1913.jpg,Pedestal Table,Synthetic_Cubism,4.542156,10.152277,133.6531222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_bowl-book-and-spoon.jpg,Bowl Book And,Synthetic_Cubism,5.191391,13.782442,97.50364444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_still-life-at-the-open-windowq-1925.jpg,Still Life At The Open Windowq,Synthetic_Cubism,5.4128923,11.706282,133.43833333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_fruit-dish-glass-and-lemon-still-life-with-nerwspape.jpg,Fruit Dish Glass And Lemon Still Life With,Synthetic_Cubism,4.4119153,12.19156,69.67187777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_still-life-with-fruit-bowl-and-mandolin-1919.jpg,Still Life With Fruit Bowl And Mandolin,Synthetic_Cubism,5.8996234,12.681245,135.28094444444446
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_a-pot-of-geraniums-1915.jpg,A Pot Of Geraniums,Synthetic_Cubism,4.290178,11.952717,98.16213333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-book-1913.jpg,The Book,Synthetic_Cubism,5.8734627,13.589855,116.62563333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_mandolin-1914.jpg,Mandolin,Synthetic_Cubism,6.8080473,12.810213,110.52056666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_harlequin-at-a-table-1919.jpg,Harlequin At A Table,Synthetic_Cubism,4.474326,11.730264,95.03872222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_newspaper-and-fruit-dish-1916.jpg,Newspaper And Fruit Dish,Synthetic_Cubism,6.306832,12.951225,98.5496111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_breakfast-1914.jpg,Breakfast,Synthetic_Cubism,6.1531553,12.279124,132.1350888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_newspaper-glass-and-pear-1917.jpg,Newspaper Glass And Pear,Synthetic_Cubism,5.2768397,13.442796,99.02771111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_the-sideboard-1920.jpg,The Sideboard,Synthetic_Cubism,6.6419115,13.841812,118.41876666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_glass-cup-and-bottle.jpg,Glass Cup And,Synthetic_Cubism,4.5722547,11.888572,83.61582222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_checkerboard-tivoli-cinema-1913.jpg,Checkerboard Tivoli Cinema,Synthetic_Cubism,7.3482513,11.722757,119.5524
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_the-clarinet-tenora-1913.jpg,The Clarinet Tenora,Synthetic_Cubism,6.9637527,12.856706,164.19066666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_man-with-a-guitar-1914.jpg,Man With A Guitar,Synthetic_Cubism,5.1904078,14.903216,104.96833333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_violin-1913.jpg,Violin,Synthetic_Cubism,4.9627028,14.701342,141.0044888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_mandolin-1914.jpg,Mandolin,Synthetic_Cubism,6.882989,12.068574,143.38531111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_bottle-of-black-rum-vive-la-france-1913.jpg,Bottle Of Black Rum Vive La France,Synthetic_Cubism,4.740478,14.164554,80.68825555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_still-life-with-grapes-1918.jpg,Still Life With Grapes,Synthetic_Cubism,4.13997,11.326615,103.82475555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_pipe-and-card-1914.jpg,Pipe And Card,Synthetic_Cubism,4.803553,11.010312,188.22085555555554
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_bottle-of-beaune-and-a-fruit-dish-1917.jpg,Bottle Of Beaune And A Fruit Dish,Synthetic_Cubism,5.203712,12.75685,81.99096666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_playing-cards-and-siphon-1916.jpg,Playing Cards And Siphon,Synthetic_Cubism,5.330738,13.074904,56.237633333333335
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_glass-pipe-and-newspaper-1917.jpg,Glass Pipe And Newspaper,Synthetic_Cubism,6.1684117,12.255078,62.00083333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_guitar-sheet-music-and-wine-glass-1912.jpg,Guitar Sheet Music And Wine Glass,Synthetic_Cubism,6.5420856,12.430461,141.23361111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_clarinet-guitar-and-compotier-1918.jpg,Clarinet Guitar And Compotier,Synthetic_Cubism,4.1974344,11.394908,65.62786666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_violin-and-glass.jpg,Violin And,Synthetic_Cubism,7.43358,12.281707,151.99471111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_violin-melodie-1914.jpg,Violin Melodie,Synthetic_Cubism,4.997274,13.528701,109.08118888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-guitar-1913.jpg,The Guitar,Synthetic_Cubism,6.045902,14.573325,121.90312222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_landscape-at-ceret-1913.jpg,Landscape At Ceret,Synthetic_Cubism,5.4319115,12.9731865,134.01226666666668
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-bottle-of-anis-del-mono-1914.jpg,The Bottle Of Anis Del Mono,Synthetic_Cubism,4.561332,11.967519,106.51224444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_breakfast-1915.jpg,Breakfast,Synthetic_Cubism,6.7353697,15.374021,86.75995555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_saint-matorel-1913.jpg,Saint Matorel,Synthetic_Cubism,5.581517,12.150355,140.26512222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-coffee-grinder-1916.jpg,The Coffee Grinder,Synthetic_Cubism,6.3374586,12.663322,134.9700777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_bowl-glass-and-newspaper.jpg,Bowl Glass And,Synthetic_Cubism,6.7482533,12.703241,141.39808888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_view-across-the-bay-1921.jpg,View Across The Bay,Synthetic_Cubism,6.3813763,13.341013,109.69673333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_landscape.jpg,,Synthetic_Cubism,4.729888,15.477368,82.89394444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_bottle-1914.jpg,Bottle,Synthetic_Cubism,7.369947,12.142368,166.51167777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_not_detected_207833.jpg,,Synthetic_Cubism,4.75337,12.630637,107.06482222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_water-bottle-bottle-and-fruit-dish-1915.jpg,Water Bottle Bottle And Fruit Dish,Synthetic_Cubism,3.8871741,11.453131,112.67414444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_guitar-bottle-and-glass-1914.jpg,Guitar Bottle And Glass,Synthetic_Cubism,4.5747056,12.853679,72.3742
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_still-life-with-ace-of-hearts-1914.jpg,Still Life With Ace Of Hearts,Synthetic_Cubism,6.440717,11.993249,157.3430888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_musician-s-table-1914.jpg,Musician S Table,Synthetic_Cubism,4.6437736,11.594939,129.24767777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_guitar-1920-1.jpg,Guitar 1920,Synthetic_Cubism,6.3823547,11.719567,146.83505555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_violin-1.jpg,Violin,Synthetic_Cubism,7.2258096,11.132963,195.58463333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-packet-of-tobacco-1916.jpg,The Packet Of Tobacco,Synthetic_Cubism,6.028752,13.20123,54.3206
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_still-life-1921.jpg,Still Life,Synthetic_Cubism,7.0004263,13.8382845,90.06228888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_guitar-program-statue-d-epouvante-1913.jpg,Guitar Program Statue D Epouvante,Synthetic_Cubism,7.360753,11.84684,130.8048
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_harlequin.jpg,,Synthetic_Cubism,7.195737,13.892185,81.34274444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_photograph-of-violin-and-checkerboard-1913.jpg,Photograph Of Violin And Checkerboard,Synthetic_Cubism,4.5552073,12.081299,101.31732222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_still-life-with-a-guitar-on-a-table-1918.jpg,Still Life With A Guitar On A Table,Synthetic_Cubism,6.1184244,13.110858,98.92043333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_man-with-guitar-1913.jpg,Man With Guitar,Synthetic_Cubism,6.0539603,14.956414,130.2262
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_violin-and-newspaper-musical-forms.jpg,Violin And Newspaper Musical,Synthetic_Cubism,7.010708,11.793301,166.9283888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_glass-and-bottle-of-suze-1912.jpg,Glass And Bottle Of Suze,Synthetic_Cubism,6.422945,12.345004,138.73355555555557
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_the-clarinet-valse-1912.jpg,The Clarinet Valse,Synthetic_Cubism,4.7279177,10.354712,144.03744444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_glass-cup-and-newspaper-1913.jpg,Glass Cup And Newspaper,Synthetic_Cubism,3.493078,12.282207,103.43411111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_au-bon-marche-1913.jpg,Au Bon Marche,Synthetic_Cubism,5.946716,14.442954,112.46782222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_fruit-vase-and-bunch-of-grapes-1914.jpg,Fruit Vase And Bunch Of Grapes,Synthetic_Cubism,5.7555285,13.7523,97.69074444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_still-life-with-guitar-1920.jpg,Still Life With Guitar,Synthetic_Cubism,7.3227754,13.804135,76.08548888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_composition-with-violin.jpg,Composition With,Synthetic_Cubism,5.946831,11.8040695,154.57093333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_the-violin-1914.jpg,The Violin,Synthetic_Cubism,6.389074,11.765744,111.03318888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_guitar-on-a-table-1915.jpg,Guitar On A Table,Synthetic_Cubism,5.865456,12.921521,92.22853333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-glass-the-fruit-bowl-1914.jpg,The Glass The Fruit Bowl,Synthetic_Cubism,4.7595253,12.767201,111.61256666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_bottle-and-glass-on-a-table-1914.jpg,Bottle And Glass On A Table,Synthetic_Cubism,5.4141154,11.865019,129.38586666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_still-life-with-violin-and-fruits-1912.jpg,Still Life With Violin And Fruits,Synthetic_Cubism,7.176683,12.823404,159.7594222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_still-life-dedicated-to-andre-salmon-1915.jpg,Still Life Dedicated To Andre Salmon,Synthetic_Cubism,4.829287,12.345142,80.47296666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_guitar-on-the-table-1913.jpg,Guitar On The Table,Synthetic_Cubism,5.752046,13.661032,130.39082222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_glass-carafe-and-newspapers-1914.jpg,Glass Carafe And Newspapers,Synthetic_Cubism,6.052804,12.613402,129.8861
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_book-pipe-and-glasses.jpg,Book Pipe And,Synthetic_Cubism,5.2108636,13.0271845,89.8863
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_the-musician-1918.jpg,The Musician,Synthetic_Cubism,6.561233,13.636066,106.62237777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_guitar-1912.jpg,Guitar,Synthetic_Cubism,7.110677,11.683838,177.7439
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-pipe-1916.jpg,The Pipe,Synthetic_Cubism,5.9113364,13.075427,102.9931111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_bottle-and-glass.jpg,Bottle And,Synthetic_Cubism,5.717117,13.101691,42.6405
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_guitar-and-glass-1914.jpg,Guitar And Glass,Synthetic_Cubism,3.3459315,12.852681,102.92314444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_still-life-with-grapes-ii-1918.jpg,Still Life With Grapes Ii,Synthetic_Cubism,5.323969,13.523924,127.66936666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_open-window-with-hills-1923.jpg,Open Window With Hills,Synthetic_Cubism,6.7614636,14.453953,125.55716666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-bottle-of-banyuls-1914-1.jpg,The Bottle Of Banyuls 1914,Synthetic_Cubism,5.8279643,13.176,115.23642222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_student-with-pipe.jpg,Student With,Synthetic_Cubism,4.8869767,11.060844,147.86177777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_fruit-dish-1913.jpg,Fruit Dish,Synthetic_Cubism,5.846362,14.7451315,142.79152222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_still-life-with-newspaper-1916-1.jpg,Still Life With Newspaper 1916,Synthetic_Cubism,5.6882987,12.206673,70.73874444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_head-of-a-man-1913.jpg,Head Of A Man,Synthetic_Cubism,7.2356973,12.404621,191.03462222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-sunblind-1914.jpg,The Sunblind,Synthetic_Cubism,6.117716,12.193118,105.32104444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_guitar-glass-and-bottle-of-vieux-marc-1912.jpg,Guitar Glass And Bottle Of Vieux Marc,Synthetic_Cubism,5.5102777,14.029841,146.05517777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_guitar-1926.jpg,Guitar,Synthetic_Cubism,6.956193,11.459101,191.96296666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_still-life-on-a-table-with-gillette-1914.jpg,Still Life On A Table With Gillette,Synthetic_Cubism,6.162414,11.529675,173.7489888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_glass-and-bottle-of-bass-1914.jpg,Glass And Bottle Of Bass,Synthetic_Cubism,6.34199,14.892099,157.40253333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_violin-and-pipe-le-quotidien-1913.jpg,Violin And Pipe Le Quotidien,Synthetic_Cubism,7.329872,11.883757,190.03446666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_clarinet-and-violin-1913.jpg,Clarinet And Violin,Synthetic_Cubism,6.5206866,11.914283,136.49563333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_the-guitar-1916.jpg,The Guitar,Synthetic_Cubism,5.9077735,13.193978,112.98704444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_violin.jpg,,Synthetic_Cubism,6.512374,11.953679,163.20402222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_bottle-glass-and-newspaper.jpg,Bottle Glass And,Synthetic_Cubism,6.7059264,13.110464,69.64336666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_pedestal-1914.jpg,Pedestal,Synthetic_Cubism,6.86904,12.674726,147.1526888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_figure.jpg,,Synthetic_Cubism,5.1741266,12.090569,127.11935555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-book-of-music-1922.jpg,The Book Of Music,Synthetic_Cubism,6.2964697,12.768233,104.31354444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_still-life-with-white-tablecloth-1916.jpg,Still Life With White Tablecloth,Synthetic_Cubism,5.3188386,12.698931,88.13075555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_partition-bottle-of-port-guitar-playing-cards-1917.jpg,Partition Bottle Of Port Guitar Playing Cards,Synthetic_Cubism,7.2258334,14.354011,115.84484444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_guitar-1920.jpg,Guitar,Synthetic_Cubism,7.873086,14.366652,154.21463333333332
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_still-life-1914.jpg,Still Life,Synthetic_Cubism,4.2364373,12.802965,97.46076666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_playing-card-and-glass-1914.jpg,Playing Card And Glass,Synthetic_Cubism,3.982119,14.103772,144.70466666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_photograph-of-the-guitar-1918.jpg,Photograph Of The Guitar,Synthetic_Cubism,6.6815796,12.748096,123.43018888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_fruit-bowl-book-and-newspaper.jpg,Fruit Bowl Book And,Synthetic_Cubism,6.095729,12.658047,128.62092222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_glass-on-a-table-1914.jpg,Glass On A Table,Synthetic_Cubism,6.4611397,11.528488,173.86066666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_lamp-1916.jpg,Lamp,Synthetic_Cubism,4.1543756,11.301169,107.9579
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_student-with-newspaper-1913.jpg,Student With Newspaper,Synthetic_Cubism,6.2168055,11.93319,172.92725555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_bottle.jpg,,Synthetic_Cubism,5.6654344,12.668941,119.52924444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_a-man-in-a-cafe-1914.jpg,A Man In A Cafe,Synthetic_Cubism,6.038703,12.437766,120.39643333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_guitar-and-sheet-music-1919.jpg,Guitar And Sheet Music,Synthetic_Cubism,6.6787686,13.557326,102.01614444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_still-life-on-a-chair-1917.jpg,Still Life On A Chair,Synthetic_Cubism,4.986124,12.5213,70.97865555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_guitar-and-sheet-music-on-table-1918.jpg,Guitar And Sheet Music On Table,Synthetic_Cubism,6.3198323,12.502635,138.5960888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_still-life-in-front-of-the-wiindow-1922.jpg,Still Life In Front Of The Wiindow,Synthetic_Cubism,7.2587233,13.114664,126.22166666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_pipe-and-fruit-dish-with-grapes-1918.jpg,Pipe And Fruit Dish With Grapes,Synthetic_Cubism,7.125667,14.665639,97.01
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_glass-and-bottle.jpg,Glass And,Synthetic_Cubism,5.611394,13.19534,68.384
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_still-life-on-a-table-1918.jpg,Still Life On A Table,Synthetic_Cubism,5.0273075,13.583729,96.39277777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_the-violin-valse-1913.jpg,The Violin Valse,Synthetic_Cubism,7.293791,12.089599,156.01493333333335
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_the-guitar-1913.jpg,The Guitar,Synthetic_Cubism,6.860095,12.663477,137.4501
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_harlequin-with-a-guitar.jpg,Harlequin With A,Synthetic_Cubism,5.722624,12.374891,102.2244
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_head-1913.jpg,Head,Synthetic_Cubism,6.36715,12.185486,134.5823
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-bay-1921.jpg,The Bay,Synthetic_Cubism,7.177849,14.121375,85.63653333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_fruit-bowl-with-bottle.jpg,Fruit Bowl With,Synthetic_Cubism,5.173488,12.767672,139.68656666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_clarinet-bottle-of-bass-newspaper-ace-of-clubs-1913.jpg,Clarinet Bottle Of Bass Newspaper Ace Of Clubs,Synthetic_Cubism,6.914154,13.030694,121.1041
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_the-green-jug.jpg,The Green,Synthetic_Cubism,7.081693,11.805908,165.00433333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_violin-and-sheet-music-on-a-table-petit-oiseau-1913.jpg,Violin And Sheet Music On A Table Petit Oiseau,Synthetic_Cubism,7.510986,12.250215,162.93854444444443
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_guitar-and-fruit-dish-1.jpg,Guitar And Fruit Dish,Synthetic_Cubism,7.1391673,13.823424,144.46494444444446
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_glass-and-card.jpg,Glass And,Synthetic_Cubism,4.015194,12.955739,146.3198111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_glasses-newspaper-and-bottle-of-wine.jpg,Glasses Newspaper And Bottle Of,Synthetic_Cubism,6.4214134,13.926427,87.92011111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_fruit-bowl-with-bottle-1914.jpg,Fruit Bowl With Bottle,Synthetic_Cubism,4.5862346,12.074138,136.99233333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_flowers-1914.jpg,Flowers,Synthetic_Cubism,2.7933846,12.437781,112.123
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_the-gray-table-1930.jpg,The Gray Table,Synthetic_Cubism,5.587985,12.79248,126.79018888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_violin-and-glass-1913-1.jpg,Violin And Glass 1913,Synthetic_Cubism,5.0878577,14.739778,83.05311111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_the-musician-s-table-1913.jpg,The Musician S Table,Synthetic_Cubism,5.916998,14.992911,148.21286666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_wineglass-bottle-of-bass-1914.jpg,Wineglass Bottle Of Bass,Synthetic_Cubism,6.2819233,12.022906,155.9811222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_guitar-and-bottle-1913.jpg,Guitar And Bottle,Synthetic_Cubism,6.1297703,14.856551,108.42893333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-table-in-front-of-the-window-1921.jpg,The Table In Front Of The Window,Synthetic_Cubism,6.203497,13.082026,96.6836111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_pedistal-table-in-front-of-the-window-1921.jpg,Pedistal Table In Front Of The Window,Synthetic_Cubism,4.2494817,11.429308,101.0135
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-dice-1922.jpg,The Dice,Synthetic_Cubism,6.9519706,13.183362,117.78933333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-violin-1916.jpg,The Violin,Synthetic_Cubism,6.8399754,14.644249,87.23478888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-bottle-of-banyuls-1914.jpg,The Bottle Of Banyuls,Synthetic_Cubism,4.0073667,11.67036,109.9442
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_still-life-with-bottle-and-glass-1914.jpg,Still Life With Bottle And Glass,Synthetic_Cubism,5.913498,12.893948,117.04192222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_bowl-and-book-1927.jpg,Bowl And Book,Synthetic_Cubism,6.6522174,13.807677,96.85593333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-bordeaux-bottle-1915.jpg,The Bordeaux Bottle,Synthetic_Cubism,4.7652097,12.372337,109.60924444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_grapes-1913.jpg,Grapes,Synthetic_Cubism,2.2582471,12.369233,92.98643333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_guitar-and-jug-on-a-table-1918.jpg,Guitar And Jug On A Table,Synthetic_Cubism,4.3983536,14.982806,87.54148888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_bottle-and-glass-1.jpg,Bottle And Glass,Synthetic_Cubism,6.8311143,12.163634,164.82008888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_pears-and-grapes-on-a-table-1913.jpg,Pears And Grapes On A Table,Synthetic_Cubism,4.1518807,12.513578,91.48795555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_bottle-and-fruit-dish.jpg,Bottle And Fruit,Synthetic_Cubism,5.5745535,12.77251,107.2748888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_tea-cups-1914.jpg,Tea Cups,Synthetic_Cubism,5.448779,12.419334,96.31766666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_violin-and-glass-1918.jpg,Violin And Glass,Synthetic_Cubism,6.8104067,13.293791,114.14477777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_violine-and-glass-1913.jpg,Violine And Glass,Synthetic_Cubism,6.1714425,13.876457,145.71085555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_the-bottle-of-rum-1914.jpg,The Bottle Of Rum,Synthetic_Cubism,6.159611,11.557182,178.90413333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_couple-of-dancers-1915.jpg,Couple Of Dancers,Synthetic_Cubism,6.3380795,15.038652,123.35238888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_landscape-with-house-at-ceret-1913.jpg,Landscape With House At Ceret,Synthetic_Cubism,4.4081283,11.596,123.11508888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_harlequin-at-table-1918.jpg,Harlequin At Table,Synthetic_Cubism,4.6947665,12.38207,149.77024444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_still-life-with-fruit-bowl-1918.jpg,Still Life With Fruit Bowl,Synthetic_Cubism,6.7366605,13.507912,81.81443333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_fruit-dish-glass-and-newspaper-1916.jpg,Fruit Dish Glass And Newspaper,Synthetic_Cubism,4.5046306,12.73672,59.605311111111114
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-bull-fighter-1913.jpg,The Bull Fighter,Synthetic_Cubism,4.2383885,11.823725,76.26821111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_violin-and-guitar-1913.jpg,Violin And Guitar,Synthetic_Cubism,6.84205,13.608153,64.5868888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_the-sideboard-1917.jpg,The Sideboard,Synthetic_Cubism,6.0860763,13.416922,66.10702222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_still-life-with-guitar-1914.jpg,Still Life With Guitar,Synthetic_Cubism,5.845119,11.602853,190.2031888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_still-life-with-bottle-and-cigars-1912.jpg,Still Life With Bottle And Cigars,Synthetic_Cubism,6.2370296,13.93095,106.31352222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/juan-gris_guitar-and-fruit-dish.jpg,Guitar And Fruit,Synthetic_Cubism,4.002157,11.47749,94.2953888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_bottle-of-rum-1914.jpg,Bottle Of Rum,Synthetic_Cubism,6.4656396,11.745734,128.7935222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_glass-and-bottle-of-straw-rum-1914.jpg,Glass And Bottle Of Straw Rum,Synthetic_Cubism,5.410125,14.250621,104.18454444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_head-of-a-man-with-hat-1912.jpg,Head Of A Man With Hat,Synthetic_Cubism,7.3142242,11.878416,189.90205555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_harlequin-1915.jpg,Harlequin,Synthetic_Cubism,5.06459,13.384745,71.58897777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/pablo-picasso_bottle-of-vieux-marc-glass-guitar-and-newspaper-1913.jpg,Bottle Of Vieux Marc Glass Guitar And Newspaper,Synthetic_Cubism,7.4285407,12.4650955,149.5686
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_woman-with-a-guitar-1913.jpg,Woman With A Guitar,Synthetic_Cubism,3.3834043,14.507259,134.5476
+s3://clusterfun-test-bucket/imgs/wikiart/Synthetic_Cubism/georges-braque_aria-de-bach-1913.jpg,Aria De Bach,Synthetic_Cubism,6.8832803,12.669438,151.32674444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_the-chess-1911.jpg,The Chess,Analytical_Cubism,4.320743,13.576302,160.2941
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_still-life-with-harp-and-violin-1911.jpg,Still Life With Harp And Violin,Analytical_Cubism,1.8855579,12.727857,125.2007111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_still-life-with-the-caned-chair-1912.jpg,Still Life With The Caned Chair,Analytical_Cubism,4.445402,11.358673,150.2183
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_a-girl(1).jpg,A,Analytical_Cubism,3.1119635,14.295562,120.93173333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_violin-and-pitcher-1910.jpg,Violin And Pitcher,Analytical_Cubism,1.820651,12.629968,109.3407888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_still-life-on-the-piano-cort-1911.jpg,Still Life On The Piano Cort,Analytical_Cubism,5.01012,15.088328,125.7358888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_the-aficionado-the-torero-1912.jpg,The Aficionado The Torero,Analytical_Cubism,4.8682356,14.854687,88.05896666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_seated-female-nude-1910.jpg,Seated Female Nude,Analytical_Cubism,1.6889741,12.636965,70.66522222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_fruitdish-and-glass-1912.jpg,Fruitdish And Glass,Analytical_Cubism,5.7976537,14.608554,162.67621111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/juan-gris_portrait-of-pablo-picasso-1912.jpg,Portrait Of Pablo Picasso,Analytical_Cubism,4.7876983,11.49258,130.91295555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_still-life-with-a-bunch-of-grapes-1912.jpg,Still Life With A Bunch Of Grapes,Analytical_Cubism,4.961244,14.959287,135.53483333333332
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_spanish-still-life-1912.jpg,Spanish Still Life,Analytical_Cubism,4.570229,10.113564,138.53476666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_homage-to-j-s-bach-1912.jpg,Homage To J S Bach,Analytical_Cubism,5.114667,14.974405,111.02301111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_the-pitcher-1909.jpg,The Pitcher,Analytical_Cubism,1.7675282,12.22867,137.451
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_pedestal-table-1911.jpg,Pedestal Table,Analytical_Cubism,3.0551345,14.438456,125.45245555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_table-in-a-cafe-bottle-of-pernod-1912.jpg,Table In A Cafe Bottle Of Pernod,Analytical_Cubism,3.6092725,14.424056,109.43788888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_portuguese-1911.jpg,Portuguese,Analytical_Cubism,2.7991886,14.603912,94.69628888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_bathers-drying-themselves-1909.jpg,Bathers Drying Themselves,Analytical_Cubism,2.8658154,12.71043,59.79494444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_man-with-guitar-1912.jpg,Man With Guitar,Analytical_Cubism,3.042429,14.613983,138.03654444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_the-city-on-the-hill-1909.jpg,The City On The Hill,Analytical_Cubism,1.3247899,12.646205,68.7955
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_the-castle-in-la-roche-guyon-1909.jpg,The Castle In La Roche Guyon,Analytical_Cubism,1.793392,12.836382,155.84987777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_violin-mozart-kubelick-1912.jpg,Violin Mozart Kubelick,Analytical_Cubism,4.825906,14.8298025,64.71694444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_female-nude.jpg,Female,Analytical_Cubism,1.8527826,12.361162,70.50263333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_woman-with-a-mandolin-1910.jpg,Woman With A Mandolin,Analytical_Cubism,4.522558,10.205944,111.67283333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_houses-on-the-hill-1909.jpg,Houses On The Hill,Analytical_Cubism,4.504894,15.26165,149.42093333333332
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/juan-gris_guitar-and-glass-1912.jpg,Guitar And Glass,Analytical_Cubism,5.474096,11.461831,175.1948888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_souvenir-from-havre-1912.jpg,Souvenir From Havre,Analytical_Cubism,4.583262,10.090694,135.15763333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_violin-and-clarinet-on-a-table-1912.jpg,Violin And Clarinet On A Table,Analytical_Cubism,4.980793,14.285227,64.44547777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/juan-gris_not_detected_207834.jpg,,Analytical_Cubism,5.5366106,13.627094,122.43411111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_portrait-of-a-woman.jpg,Portrait Of A,Analytical_Cubism,3.111358,14.281464,119.3589
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_man-with-a-guitar-1911-1.jpg,Man With A Guitar 1911,Analytical_Cubism,4.221881,14.782029,128.72467777777777
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/juan-gris_man-in-the-cafe-1912.jpg,Man In The Cafe,Analytical_Cubism,7.5340242,13.438616,111.0770111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_the-pigeon-pea-1912.jpg,The Pigeon Pea,Analytical_Cubism,5.6293697,14.745489,113.94104444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_still-life-with-a-violin-1911.jpg,Still Life With A Violin,Analytical_Cubism,2.6462967,14.414801,108.7323
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/juan-gris_still-life-with-flowers-1912.jpg,Still Life With Flowers,Analytical_Cubism,4.685637,11.443542,135.91108888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_girl-with-mandolin-fanny-tellier-1910.jpg,Girl With Mandolin Fanny Tellier,Analytical_Cubism,1.9675858,12.49077,131.782
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_jug-and-fruit-dish-1908.jpg,Jug And Fruit Dish,Analytical_Cubism,2.7552893,12.616207,99.27271111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_violin-glass-pipe-and-inkwell-1912.jpg,Violin Glass Pipe And Inkwell,Analytical_Cubism,4.5824866,10.146004,152.7028
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_poet-1911.jpg,Poet,Analytical_Cubism,2.6158175,14.507791,116.18561111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_harlequin-leaning-1909.jpg,Harlequin Leaning,Analytical_Cubism,1.99867,11.990098,121.9812
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_bathers-in-the-forest-1908.jpg,Bathers In The Forest,Analytical_Cubism,3.5738885,13.462058,147.6742
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_the-mandola-1910.jpg,The Mandola,Analytical_Cubism,2.758809,14.453482,122.00243333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_clarinetist.jpg,,Analytical_Cubism,2.9259508,14.659244,96.53742222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_nude-figure.jpg,Nude,Analytical_Cubism,2.0213082,13.690314,77.43163333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_still-life-with-bottle-of-rum-1911.jpg,Still Life With Bottle Of Rum,Analytical_Cubism,2.8904798,14.667245,77.36112222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_woman-reading-1911.jpg,Woman Reading,Analytical_Cubism,2.6800008,14.583982,71.24294444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_bread-and-dish-with-fruits-on-the-table.jpg,Bread And Dish With Fruits On The,Analytical_Cubism,2.2658088,11.989371,111.8227888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_guitar-and-fruit-dish-1909.jpg,Guitar And Fruit Dish,Analytical_Cubism,3.6266654,13.695345,161.13126666666668
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_woman-sitting-in-an-armchair.jpg,Woman Sitting In An,Analytical_Cubism,2.5153644,13.769622,92.21367777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_violin-and-palette-1909.jpg,Violin And Palette,Analytical_Cubism,3.8434944,13.266325,120.93867777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_pedestal-table-stal-1912.jpg,Pedestal Table Stal,Analytical_Cubism,4.5290112,10.20244,121.11313333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_the-shell-saint-jacques-our-future-is-in-the-air-1912.jpg,The Shell Saint Jacques Our Future Is In The Air,Analytical_Cubism,4.5906396,10.149859,146.31805555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_my-beautiful-woman-with-guitar-1912.jpg,My Beautiful Woman With Guitar,Analytical_Cubism,3.0758293,14.6193695,93.4533888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_le-sacre-coeur-1910.jpg,Le Sacre Coeur,Analytical_Cubism,2.8132849,14.28595,88.24811111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_clarinet-and-bottle-of-rum-on-a-mantelpiece-1911.jpg,Clarinet And Bottle Of Rum On A Mantelpiece,Analytical_Cubism,1.9424016,12.7049265,106.79811111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_violin-and-candlestick-1910.jpg,Violin And Candlestick,Analytical_Cubism,3.8699653,14.726216,109.92943333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_william-uhde-1910.jpg,William Uhde,Analytical_Cubism,3.0109723,14.376775,128.61267777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_the-piano-accordionist-1911.jpg,The Piano Accordionist,Analytical_Cubism,2.6895466,14.412578,137.83495555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_glass-on-a-table.jpg,Glass On A,Analytical_Cubism,2.4677653,12.113083,106.99777777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/juan-gris_portrait-of-germaine-raynal-1912.jpg,Portrait Of Germaine Raynal,Analytical_Cubism,7.4399114,13.126766,115.64876666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_woman-with-mandolin-1909.jpg,Woman With Mandolin,Analytical_Cubism,2.87918,12.765944,97.62068888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_rooftops-at-ceret-1911.jpg,Rooftops At Ceret,Analytical_Cubism,2.6219394,14.338435,90.30416666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/juan-gris_bottles-and-knife-1912.jpg,Bottles And Knife,Analytical_Cubism,4.7881207,11.386355,156.74503333333334
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_the-bottle-of-rum-1912.jpg,The Bottle Of Rum,Analytical_Cubism,4.5443497,10.172993,130.58214444444445
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/juan-gris_still-life-with-oil-lamp-1912.jpg,Still Life With Oil Lamp,Analytical_Cubism,4.698595,11.350497,160.29932222222223
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_harlequinesque-personage-1913.jpg,Harlequinesque Personage,Analytical_Cubism,4.9505334,15.171084,173.1207777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/juan-gris_portrait-of-maurice-raynal-1911.jpg,Portrait Of Maurice Raynal,Analytical_Cubism,4.8693376,11.317993,108.8119
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/juan-gris_the-watch-the-sherry-bottle-1912.jpg,The Watch The Sherry Bottle,Analytical_Cubism,5.3590264,13.466601,80.62584444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_woman-with-guitar.jpg,Woman With,Analytical_Cubism,4.2441144,14.742466,74.958
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_woman-with-a-mandolin-1909.jpg,Woman With A Mandolin,Analytical_Cubism,3.9266846,14.205089,122.12865555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_bathing-1908.jpg,Bathing,Analytical_Cubism,2.7494552,12.408169,108.75671111111112
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_guitar-and-violin.jpg,Guitar And,Analytical_Cubism,5.881215,14.862695,124.14923333333333
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_violin-and-jug-1910.jpg,Violin And Jug,Analytical_Cubism,2.8551588,11.747184,130.06615555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_the-mandolinist-1911.jpg,The Mandolinist,Analytical_Cubism,2.8755467,14.5897255,98.77276666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_a-glass-1911.jpg,A Glass,Analytical_Cubism,3.3614252,14.482449,166.5155
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_portrait-of-ambroise-vollard-1910.jpg,Portrait Of Ambroise Vollard,Analytical_Cubism,2.2512033,14.089131,88.39242222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_friendship-1908.jpg,Friendship,Analytical_Cubism,2.7487686,11.491247,101.6587
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_man-with-a-guitar-1911.jpg,Man With A Guitar,Analytical_Cubism,2.8098223,14.53052,116.86205555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/juan-gris_guitar-and-glasses-banjo-and-glasses-1912.jpg,Guitar And Glasses Banjo And Glasses,Analytical_Cubism,4.23126,13.330647,130.2617111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_the-candlestick-1911.jpg,The Candlestick,Analytical_Cubism,2.884578,14.463925,97.03268888888888
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_landscape-with-posters-1912.jpg,Landscape With Posters,Analytical_Cubism,4.605723,15.369022,150.39183333333332
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/juan-gris_portrait-of-the-artist-s-mother-1912.jpg,Portrait Of The Artist S Mother,Analytical_Cubism,4.779664,11.322549,128.54634444444446
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_still-life-with-bottle-of-anis-del-mono-1909.jpg,Still Life With Bottle Of Anis Del Mono,Analytical_Cubism,2.5367842,11.761891,111.06561111111111
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_man-with-a-guitar-1911.jpg,Man With A Guitar,Analytical_Cubism,2.7959414,14.57526,73.75256666666667
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/juan-gris_still-life-with-guitar-1913.jpg,Still Life With Guitar,Analytical_Cubism,6.8564935,15.010421,162.26754444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_man-with-a-violin-1912.jpg,Man With A Violin,Analytical_Cubism,4.5622206,10.2136345,139.82646666666668
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_still-life-with-a-pair-of-banderillas-1911.jpg,Still Life With A Pair Of Banderillas,Analytical_Cubism,2.6725166,14.4811945,88.79572222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_study-to-girls-from-avignon-1906.jpg,Study To Girls From Avignon,Analytical_Cubism,6.885446,10.69607,205.31647777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_clarinet-1911.jpg,Clarinet,Analytical_Cubism,2.918739,14.412371,124.39025555555556
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_glasses-and-bottle-1912.jpg,Glasses And Bottle,Analytical_Cubism,4.558275,10.162036,95.78055555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_harlequin-s-family-1908.jpg,Harlequin S Family,Analytical_Cubism,1.7294332,12.064607,129.2024888888889
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_guitar-player-1910.jpg,Guitar Player,Analytical_Cubism,3.212383,14.474604,122.91337777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_bottle-and-fishes-1910.jpg,Bottle And Fishes,Analytical_Cubism,3.1228395,14.591293,106.81655555555555
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_woman-and-pears-fernande-1909.jpg,Woman And Pears Fernande,Analytical_Cubism,2.4948018,11.974858,81.41646666666666
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_woman-with-guitar-and-piano-1911.jpg,Woman With Guitar And Piano,Analytical_Cubism,2.139905,12.590502,75.03627777777778
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_harbor-in-normandy-1909.jpg,Harbor In Normandy,Analytical_Cubism,2.1204112,11.875218,104.73082222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_portrait-of-daniel-henry-kahnweiler-1910.jpg,Portrait Of Daniel Henry Kahnweiler,Analytical_Cubism,2.812098,14.609259,101.50372222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_houses-at-estaque-1908.jpg,Houses At Estaque,Analytical_Cubism,1.917853,11.982535,91.29742222222222
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/juan-gris_the-packet-of-cigars-1912.jpg,The Packet Of Cigars,Analytical_Cubism,4.999137,12.746535,132.27444444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/georges-braque_castle-at-la-roche-guyon-1909.jpg,Castle At La Roche Guyon,Analytical_Cubism,1.7660813,12.235371,149.18354444444444
+s3://clusterfun-test-bucket/imgs/wikiart/Analytical_Cubism/pablo-picasso_dance-of-the-veils-1907.jpg,Dance Of The Veils,Analytical_Cubism,2.9946945,11.400923,84.96303333333333

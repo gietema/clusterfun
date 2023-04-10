@@ -1,0 +1,61 @@
+[tool.poetry]
+name = "clusterfun"
+version = "0.1.0"
+description = ""
+authors = ["Jochem Gietema <jochem@giete.ma>"]
+readme = "README.md"
+packages = [{include = "clusterfun"}]
+
+[tool.poetry.dependencies]
+python = ">=3.8.1"
+pandas = "*"
+uuid = "*"
+pyarrow = "*"
+fastapi = "*"
+uvicorn = "*"
+orjson = "*"
+boto3 = "*"
+dask = "*"
+requests = "*"
+pillow = "*"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2.0"
+black = "^22.12.0"
+pre-commit = "^2.20.0"
+isort = "^5.10.1"
+flake8 = "^6.0.0"
+ipdb = "^0.13.11"
+mypy = "^1.1.1"
+types-pillow = "^9.4.0.17"
+types-ujson = "^5.7.0.1"
+types-requests = "^2.28.11.15"
+pylint = "^2.17.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.poetry.scripts]
+serve = "clusterfun.serve_cli:main"
+
+
+[tool.pylint."MESSAGES CONTROL"]
+good-names = [
+    "df",
+    "f",
+    "y",
+    "x",
+]
+disable=[
+    "fixme",
+    "R0801"
+]

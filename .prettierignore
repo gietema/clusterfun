@@ -1,0 +1,5 @@
+# Ignore artifacts:
+.cache
+build
+coverage
+frontend/build

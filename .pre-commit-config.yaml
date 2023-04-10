@@ -1,0 +1,28 @@
+repos:
+  - repo: local
+    hooks:
+      - id: black
+        name: black
+        language: system
+        pass_filenames: false
+        entry: poetry run black .
+      - id: isort
+        name: isort
+        language: system
+        pass_filenames: false
+        entry: poetry run isort --profile black .
+      - id: prettier
+        name: prettier
+        language: system
+        pass_filenames: false
+        entry: npx prettier --write .
+      - id: flake8
+        name: flake8
+        language: system
+        pass_filenames: false
+        entry: poetry run flake8 .
+#      - id: eslint
+#        name: eslint
+#        language: system
+#        pass_filenames: false
+#        entry: npx eslint src/frontend
