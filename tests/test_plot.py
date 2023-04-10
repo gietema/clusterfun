@@ -38,7 +38,6 @@ def test_grid(cache_dir):
     df = pd.DataFrame()
     max_len = 1000
     df["media"] = ["https://picsum.photos/300/300" for _ in range(max_len)]
-    df["hahaha"] = np.random.normal(size=1000)
     cache_dir = grid(df, media="media", title="A title of a plot", show=False)
     assert isinstance(cache_dir, Path)
     with open(cache_dir / "config.json") as f:
@@ -108,6 +107,21 @@ def test_it_creates_a_scatter(cache_dir):
         y="y",
         media="media",
         color="color",
+        title="A title of a plot",
+        bounding_box="bbox",
+        show=False
+    )
+    assert isinstance(cache_dir, Path)
+    assert (cache_dir / "config.json").exists()
+    assert (cache_dir / "data.json").exists()
+    assert (cache_dir / "database.db").exists()
+
+    # without colour
+    cache_dir = scatter(
+        df,
+        x="x",
+        y="y",
+        media="media",
         title="A title of a plot",
         bounding_box="bbox",
         show=False

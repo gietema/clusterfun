@@ -128,7 +128,8 @@ class Plot:
         Plot
             An instance of the Plot class with the saved data and configuration.
         """
-
+        # copy dataframe to not change original input
+        df = df.copy()
         uuid = str(uuid4())
         if not df[cfg.media].iloc[0].startswith("http") and not df[cfg.media].iloc[0].startswith("s3://"):
             common_media_path = os.path.commonpath(df[cfg.media].tolist())
