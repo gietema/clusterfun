@@ -46,7 +46,7 @@ def image_to_base64(image: Image.Image) -> str:
     return str(base64.b64encode(buffered.getvalue()).decode("utf-8"))
 
 
-def load_media(url: str, as_base64: bool = False) -> Tuple[str, Optional[int], Optional[int]]:
+def load_media(url: str, as_base64: bool = False, common_media_path: Optional[str] = None) -> Tuple[str, Optional[int], Optional[int]]:
     """Load media from a URL or S3 bucket.
 
     Parameters
@@ -55,6 +55,9 @@ def load_media(url: str, as_base64: bool = False) -> Tuple[str, Optional[int], O
         The URL or S3 bucket to load the media from.
     as_base64 : bool, optional
         Whether to return the media as a base64-encoded string, by default False
+    common_media_path : Optional[str], optional
+        The common path to the media, by default None
+        This is used to determine the absolute path in case data is local
 
     Returns
     -------
@@ -65,7 +68,12 @@ def load_media(url: str, as_base64: bool = False) -> Tuple[str, Optional[int], O
     if url.startswith("s3://"):
         url = get_presigned_url(url)
     if as_base64:
-        response = requests.get(url, timeout=60)
-        image = Image.open(BytesIO(response.content))
+        if url.startswith("http"):
+            response = requests.get(url, timeout=60)
+            url = BytesIO(response.content)
+        else:
+            # assume local file
+            url = url.replace("/media", common_media_path)
+        image = Image.open(url)
         return f"data:image/png;base64, {image_to_base64(image)}", image.height, image.width
     return url, None, None

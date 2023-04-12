@@ -45,18 +45,10 @@ def main():
     # run query to get max 1000 random media columns, to see how to load data.
     query = f"SELECT {cfg.media} FROM database ORDER BY RANDOM() LIMIT 10000"
     media = run_query(LocalLoader(cache_dir.stem, cache_dir.parent).db_path, query, fetch_one=False)
-    common_media_path = None
-    if not media[0][0].startswith("http") and not media[0][0].startswith("s3://"):
+    common_media_path = cfg.common_media_path
+    if (not media[0][0].startswith("http") and not media[0][0].startswith("s3://")) and common_media_path is None:
         common_media_path = os.path.commonpath(media)
         # df[cfg.media] = df[cfg.media].apply(lambda x: x.replace(common_media_path, "/media"))
+    if common_media_path is not None:
         APP.mount("/media", StaticFiles(directory=common_media_path), name="media")
     plot.show(open_browser=True, common_media_path=common_media_path)
-
-
-# if __name__ == '__main__':
-#     if args.location:
-#         print(args.location, "args location")
-#         main(args.location)
-#     else:
-#         print("No location provided. Using default value 'recent'")
-#         main("recent")
