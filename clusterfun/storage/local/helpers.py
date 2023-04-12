@@ -103,7 +103,6 @@ def run_query(db_path: Path, query: str, fetch_one: bool = False) -> List:
         List of results
     """
     con = sqlite3.connect(db_path, check_same_thread=False)
-    print(query)
     result = con.execute(query)
     result = result.fetchone() if fetch_one else result.fetchall()
     con.close()

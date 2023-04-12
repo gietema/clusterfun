@@ -30,7 +30,6 @@ def main():
     if path_or_uuid == "recent":
         # set path_or_uuid to uuid
         path_or_uuid = LocalLoader("recent").cache_dir.stem
-        print(path_or_uuid)
     if os.path.exists(path_or_uuid):
         # if it is a path, set cache_dir to path
         cache_dir = Path(path_or_uuid)
