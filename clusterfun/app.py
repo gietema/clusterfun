@@ -31,12 +31,7 @@ APP.add_middleware(
 
 # Set the static files directory
 FRONTEND_DIR = Path(__file__).parent.parent / "app" / "out"
+# for production setting
 if os.environ.get("CLUSTERFUN_PROD_URL") is None and (FRONTEND_DIR / "_next").exists():
+    # this loads the static files from the frontend directory (CSS etc.)
     APP.mount("/_next", StaticFiles(directory=FRONTEND_DIR / "_next"), name="_next")
-
-# df = pd.read_parquet(Path(__file__).parent.parent / "tests" / "samples" / "cubism.parquet")
-# df.img_path = df.img_path.apply(lambda x: f"/Users/jochemgietema/code/clusterfun{x}")
-# common_media_path = os.path.commonpath(df["img_path"].tolist())
-# print(common_media_path, "common media path")
-# df["img_path"] = df["img_path"].apply(lambda x: x.replace(common_media_path, "/media"))
-# APP.mount("/media", StaticFiles(directory=common_media_path), name="media")
