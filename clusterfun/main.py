@@ -25,17 +25,17 @@ POST /views/{view_uuid}/filter
 
 """
 import dataclasses
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
-from fastapi.responses import HTMLResponse
 from fastapi import Request
+from fastapi.responses import HTMLResponse
 
+from clusterfun.app import APP, FRONTEND_DIR
 from clusterfun.models.filter import Filter
 from clusterfun.models.media_indices import MediaIndices
+from clusterfun.models.media_item import MediaItem
 from clusterfun.plot import Plot
 from clusterfun.storage.local.loader import LocalLoader
-from clusterfun.app import APP, FRONTEND_DIR
-from clusterfun.models.media_item import MediaItem
 
 
 @APP.get("/views/{view_uuid}")
@@ -75,7 +75,7 @@ def filter_view(view_uuid: str, filters: List[Filter]) -> List[Dict[str, Any]]:
 
 
 @APP.get("/{path:path}", response_class=HTMLResponse)
-async def catch_all(request: Request, path: str):
+async def catch_all(request: Request, path: str):  # pylint: disable=unused-argument
     """Last catch all function to return index html of frontend.
     Used for routing all remaining URLs to the NextJS app"""
     with open(FRONTEND_DIR / "index.html", encoding="utf-8") as f:

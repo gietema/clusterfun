@@ -12,7 +12,7 @@ get_x_and_y
     Get the x and y values for a histogram plot.
 """
 from pathlib import Path
-from typing import Optional, List
+from typing import List, Optional
 
 import pandas as pd
 

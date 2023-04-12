@@ -1,6 +1,6 @@
 """MediaItem model."""
 import dataclasses
-from typing import Optional, List, Any
+from typing import Any, List, Optional
 
 from clusterfun.utils.s3 import get_presigned_url
 

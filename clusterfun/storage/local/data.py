@@ -5,7 +5,7 @@ data.py
 This module contains functions for formatting the data to be used in the plotly plots.
 """
 import sqlite3
-from typing import Optional, Tuple, List, Dict, Any
+from typing import Any, Dict, List, Optional, Tuple
 
 from clusterfun.config import Config
 from clusterfun.constants import COLORS
@@ -74,7 +74,7 @@ def get_data_standard(
     elif cfg.x is not None:
         query = f"SELECT id,{cfg.x} FROM database"
     else:
-        query = f"SELECT id FROM database"
+        query = "SELECT id FROM database"
     if query_addition:
         query += f" WHERE {query_addition}"
     res = con.execute(query).fetchall()

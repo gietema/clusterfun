@@ -1,6 +1,6 @@
 """Base class for data loader."""
 import abc
-from typing import Tuple, Dict, Any, List
+from typing import Any, Dict, List, Tuple
 
 from clusterfun.config import Config
 from clusterfun.models.filter import Filter

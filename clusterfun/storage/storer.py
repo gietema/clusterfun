@@ -4,7 +4,7 @@ Base class for storing plots.
 import abc
 import base64
 from io import BytesIO
-from typing import Optional, Tuple, Dict, Any, List
+from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 import requests
@@ -46,7 +46,9 @@ def image_to_base64(image: Image.Image) -> str:
     return str(base64.b64encode(buffered.getvalue()).decode("utf-8"))
 
 
-def load_media(url: str, as_base64: bool = False, common_media_path: Optional[str] = None) -> Tuple[str, Optional[int], Optional[int]]:
+def load_media(
+    url: str, as_base64: bool = False, common_media_path: Optional[str] = None
+) -> Tuple[str, Optional[int], Optional[int]]:
     """Load media from a URL or S3 bucket.
 
     Parameters

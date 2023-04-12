@@ -10,11 +10,11 @@ import orjson
 from clusterfun.config import Config
 from clusterfun.models.filter import Filter
 from clusterfun.models.media_indices import MediaIndices
-from clusterfun.storage.local.helpers import get_filter_query, get_media_query, get_recent_dir, run_query
-from clusterfun.storage.local.data import get_data_dict
 from clusterfun.models.media_item import MediaItem
-from clusterfun.storage.storer import load_media
 from clusterfun.storage.loader import Loader
+from clusterfun.storage.local.data import get_data_dict
+from clusterfun.storage.local.helpers import get_filter_query, get_media_query, get_recent_dir, run_query
+from clusterfun.storage.storer import load_media
 
 
 class LocalLoader(Loader):
@@ -71,7 +71,9 @@ class LocalLoader(Loader):
         """Get a single row of data for a given uuid and media id."""
         result = run_query(self.db_path, f"SELECT * FROM database WHERE id = {media_id}", fetch_one=True)
         # index zero should be the id, index 1 the media src, everything else the remaining data
-        src, height, width = load_media(result[1], as_base64=as_base64, common_media_path=self.load_config().common_media_path)
+        src, height, width = load_media(
+            result[1], as_base64=as_base64, common_media_path=self.load_config().common_media_path
+        )
         return MediaItem(index=media_id, src=src, height=height, width=width, information=result[2:])
 
     def get_rows(self, media_indices: MediaIndices) -> List[MediaItem]:

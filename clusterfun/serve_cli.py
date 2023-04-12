@@ -1,8 +1,8 @@
+"""File to serve a plot from local storage using its unique identifier."""
 import argparse
 import os
 from pathlib import Path
 
-import pandas as pd
 from fastapi.staticfiles import StaticFiles
 
 from clusterfun.app import APP

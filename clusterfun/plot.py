@@ -18,7 +18,6 @@ import socket
 import webbrowser
 from functools import partial
 from pathlib import Path
-from threading import Thread
 from typing import Any, Dict, Optional
 from uuid import uuid4
 
@@ -26,14 +25,21 @@ import pandas as pd
 import uvicorn
 from fastapi.staticfiles import StaticFiles
 
-
+from clusterfun.app import APP
 from clusterfun.config import Config
 from clusterfun.storage.local.loader import LocalLoader
 from clusterfun.storage.local.storer import LocalStorer
-from clusterfun.app import APP
 
 
 def run_server(local_port: int):
+    """
+    This function runs the FastAPI server for the clusterfun web app.
+
+    Parameters
+    ----------
+    local_port : int
+        The local port number to be used for serving the application.
+    """
     config = uvicorn.Config(
         "clusterfun.main:APP",
         port=local_port,
