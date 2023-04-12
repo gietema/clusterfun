@@ -20,19 +20,13 @@ export interface QueryValues {
   back?: () => void
   handleMediaClick?: (index: number) => void
 }
-export default function Grid ({
-  uuid, media, sortBy, asc, page, show, useRouterFunction, back, handleMediaClick
-}: QueryValues): JSX.Element {
+export default function Grid (): JSX.Element {
   const router = useRouter()
   let queryValues: QueryValues | undefined
-  if (useRouterFunction === true) {
     const { uuid, media, sortBy, asc, page, show }: QueryValues = router.query
     queryValues = {
       uuid, media, sortBy, asc, page, show
     }
-  } else {
-    queryValues = { uuid, media, sortBy, asc, page, show }
-  }
   // TODO:: add previousPage
   const [currentPage, setCurrentPage] = useState<number | undefined>(
     (queryValues.page !== undefined) ? parseInt(queryValues.page) : undefined
@@ -100,12 +94,10 @@ export default function Grid ({
     }
     getMediaItems(uuid, mediaIndices, currentPage, sortColumn, ascending)
       .then((media) => {
-        if (useRouterFunction === true) {
           const query = buildQuery()
           router
             .push(`/plots/${uuid}/grid?${query}`, `/plots/${uuid}/grid?${query}`)
             .catch((e) => console.log(e))
-        }
         setMediaItems(media)
       })
       .catch((e) => console.log(e))
@@ -113,7 +105,7 @@ export default function Grid ({
   }, [sortColumn, ascending, uuid, currentPage])
 
   useEffect(() => {
-    if (shownColumn === undefined || uuid === undefined || useRouterFunction === false) {
+    if (shownColumn === undefined || uuid === undefined) {
       return
     }
     const query = buildQuery()
@@ -131,13 +123,9 @@ export default function Grid ({
     if (uuid === undefined) {
       return
     }
-    if (useRouterFunction === false && handleMediaClick !== undefined) {
-      handleMediaClick(index)
-    } else {
       router
         .push(`/plots/${uuid}/media/${index}`, `/plots/${uuid}/media/${index}`)
         .catch((e) => console.log(e))
-    }
   }
 
   function handleHover (index: number): void {
@@ -188,11 +176,7 @@ export default function Grid ({
   }
 
   function handleBack (): void {
-    if (back !== undefined) {
-      back()
-    } else if (useRouterFunction === true) {
       router.back()
-    }
   }
 
   return (

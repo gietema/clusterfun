@@ -12,12 +12,11 @@ import { getUuid } from '@/requests/GetUuid'
 
 interface PlotPageProps {
   uuidProp?: string
-  useRouterFunction?: boolean
   handleGrid?: (mediaIndices: number[]) => void
   handleMedia?: (mediaIndex: number) => void
 }
 
-export default function PlotPage ({ uuidProp, useRouterFunction, handleGrid, handleMedia }: PlotPageProps): JSX.Element {
+export default function PlotPage ({ uuidProp, handleGrid, handleMedia }: PlotPageProps): JSX.Element {
   const router = useRouter()
   const [uuid, setUuid] = useState<string | undefined>(undefined)
   const [config, setConfig] = useState(new Config('', '', []))
@@ -80,25 +79,17 @@ export default function PlotPage ({ uuidProp, useRouterFunction, handleGrid, han
     if (index != null && uuid != null) {
       const media: Media = await getMedia(uuid, index)
       setSideMedia(media)
-      if (useRouterFunction === true) {
-        router.push(`/plots/${uuid}/media/${index}`).catch((e) => console.log(e))
-      } else if (handleMedia !== undefined) {
-        handleMedia(index)
-      }
+      router.push(`/plots/${uuid}/media/${index}`).catch((e) => console.log(e))
     }
   }
 
   const handleMediaSelect = (mediaIndices: number[]): void => {
-    if (uuid === undefined || (useRouterFunction === undefined)) {
+    if (uuid === undefined) {
       return
     }
-    if (useRouterFunction) {
       router
         .push(`/plots/${uuid}/grid?page=0&media=${mediaIndices.join(',')}`)
         .catch((e) => console.log(e))
-    } else if (handleGrid !== undefined) {
-      handleGrid(mediaIndices)
-    }
   }
 
   return (

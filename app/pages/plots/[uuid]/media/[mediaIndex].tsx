@@ -19,15 +19,10 @@ interface PageValues {
   mediaIndex?: number
   back?: () => void
 }
-export default function MediaPage ({ uuid, mediaIndex, useRouterFunction, back }: MediaPageProps): JSX.Element {
+export default function MediaPage (): JSX.Element {
   const router = useRouter()
-
-  const pageValues: PageValues = { uuid, mediaIndex }
-  if (useRouterFunction !== undefined && useRouterFunction) {
-    const { uuid, mediaIndex } = router.query
-    pageValues.uuid = uuid as string
-    pageValues.mediaIndex = Number(mediaIndex)
-  }
+  const { uuid, mediaIndex } = router.query
+  const pageValues: PageValues = {uuid: uuid as string, mediaIndex: mediaIndex as unknown as number}
   const [media, setMedia] = useState<Media | undefined>()
   const scaleFactor = 1
   const shapes: object[] = []
@@ -42,7 +37,7 @@ export default function MediaPage ({ uuid, mediaIndex, useRouterFunction, back }
         setMedia(media)
       })
       .catch((e) => console.log(e))
-    getConfig(uuid)
+    getConfig(pageValues.uuid)
       .then((config) => {
         setConfig(config)
       })
@@ -51,11 +46,7 @@ export default function MediaPage ({ uuid, mediaIndex, useRouterFunction, back }
   }, [pageValues.uuid, pageValues.mediaIndex])
 
   function handleBack (): void {
-    if (back !== undefined) {
-      back()
-    } else if (useRouterFunction !== undefined && useRouterFunction) {
-      void router.push(`/plots/${pageValues.uuid}`)
-    }
+    void router.push(`/plots/${pageValues.uuid}`)
   }
 
   return (
