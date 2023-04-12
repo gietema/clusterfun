@@ -6,7 +6,7 @@ export default function Home (): JSX.Element {
   return (
     <>
         <ErrorBoundary>
-            <PlotPage uuidProp={'recent'} useRouterFunction={true} />
+            <PlotPage uuidProp={'recent'} />
         </ErrorBoundary>
     </>
   )
