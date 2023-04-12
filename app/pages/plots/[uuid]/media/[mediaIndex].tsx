@@ -7,29 +7,56 @@ import SideBar from '@/components/SideBar'
 import { getConfig } from '@/requests/GetConfig'
 import { Config } from '@/models/Config'
 
-export default function MediaPage (): JSX.Element {
+interface MediaPageProps {
+  uuid: string
+  mediaIndex?: number
+  useRouterFunction?: boolean
+  back?: () => void
+}
+
+interface PageValues {
+  uuid: string
+  mediaIndex?: number
+  back?: () => void
+}
+export default function MediaPage ({ uuid, mediaIndex, useRouterFunction, back }: MediaPageProps): JSX.Element {
   const router = useRouter()
-  const { uuid, mediaIndex } = router.query
-  const [media, setMedia] = useState<Media | undefined>(undefined)
+
+  const pageValues: PageValues = { uuid, mediaIndex }
+  if (useRouterFunction !== undefined && useRouterFunction) {
+    const { uuid, mediaIndex } = router.query
+    pageValues.uuid = uuid as string
+    pageValues.mediaIndex = Number(mediaIndex)
+  }
+  const [media, setMedia] = useState<Media | undefined>()
   const scaleFactor = 1
   const shapes: object[] = []
   const [config, setConfig] = useState<Config | undefined>(undefined)
 
   useEffect(() => {
-    if (uuid === undefined || mediaIndex === undefined) {
+    if (pageValues.uuid === undefined || pageValues.mediaIndex === undefined) {
       return
     }
-    getMedia(uuid as string, Number(mediaIndex), true)
+    getMedia(pageValues.uuid, Number(pageValues.mediaIndex), true)
       .then((media) => {
         setMedia(media)
       })
       .catch((e) => console.log(e))
-    getConfig(uuid as string)
+    getConfig(uuid)
       .then((config) => {
         setConfig(config)
       })
       .catch((e) => console.log(e))
-  }, [uuid, mediaIndex])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageValues.uuid, pageValues.mediaIndex])
+
+  function handleBack (): void {
+    if (back !== undefined) {
+      back()
+    } else if (useRouterFunction !== undefined && useRouterFunction) {
+      void router.push(`/plots/${pageValues.uuid}`)
+    }
+  }
 
   return (
     <div className="container-fluid">
@@ -38,8 +65,8 @@ export default function MediaPage (): JSX.Element {
           <div>
             <div className="p-1 mb-1 ps-0 border-bottom-1 border-secondary">
               <button
-                className="btn btn-secondary"
-                onClick={() => router.back()}
+                className="btn btn-sm btn-secondary"
+                onClick={() => handleBack()}
               >
                 Back
               </button>

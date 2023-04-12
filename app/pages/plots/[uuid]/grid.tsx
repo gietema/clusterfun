@@ -5,37 +5,51 @@ import { Media } from '@/models/Media'
 import { getMediaItems } from '@/requests/GetMediaItems'
 import { Pagination } from '@/components/Pagination'
 import MediaGridItem from '@/components/MediaGridItem'
-import Link from 'next/link'
 import { getConfig } from '@/requests/GetConfig'
 import { getMedia } from '@/requests/GetMedia'
 import SideBar from '@/components/SideBar'
 
-interface QueryValues {
+export interface QueryValues {
   uuid?: string
   media?: string[] | string
   sortBy?: string
   asc?: string
   page?: string
   show?: string
+  useRouterFunction?: boolean
+  back?: () => void
+  handleMediaClick?: (index: number) => void
 }
-export default function Grid (): JSX.Element | undefined {
+export default function Grid ({
+  uuid, media, sortBy, asc, page, show, useRouterFunction, back, handleMediaClick
+}: QueryValues): JSX.Element {
   const router = useRouter()
-  const { uuid, media, sortBy, asc, page, show }: QueryValues = router.query
+  let queryValues: QueryValues | undefined
+  if (useRouterFunction === true) {
+    const { uuid, media, sortBy, asc, page, show }: QueryValues = router.query
+    queryValues = {
+      uuid, media, sortBy, asc, page, show
+    }
+  } else {
+    queryValues = { uuid, media, sortBy, asc, page, show }
+  }
   // TODO:: add previousPage
-  const [currentPage, setCurrentPage] = useState<number | undefined>(undefined)
+  const [currentPage, setCurrentPage] = useState<number | undefined>(
+    (queryValues.page !== undefined) ? parseInt(queryValues.page) : undefined
+  )
   const [mediaItems, setMediaItems] = useState<Media[]>([])
-  const mediaIndices: number[] = decodeURIComponent(media as string)
+  const mediaIndices: number[] = decodeURIComponent(queryValues.media as string)
     .split(',')
     .map((s) => parseInt(s))
   const [ascending, setAscending] = useState<boolean>(
-    asc !== undefined && asc === 'true'
+    queryValues.asc !== undefined && queryValues.asc === 'true'
   )
   const [sortColumn, setSortColumn] = useState<string | undefined>(
-    sortBy !== undefined ? sortBy : undefined
+    queryValues.sortBy !== undefined ? queryValues.sortBy : undefined
   )
   const [config, setConfig] = useState(new Config('', '', []))
   const [shownColumn, setShownColumn] = useState<string | undefined>(
-    undefined
+    (queryValues.show !== undefined) ? queryValues.show : undefined
   )
   const [columnNumber, setColumnNumber] = useState<number>(0)
   const [showBboxLabel, setShowBboxLabel] = useState<boolean>(false)
@@ -86,10 +100,12 @@ export default function Grid (): JSX.Element | undefined {
     }
     getMediaItems(uuid, mediaIndices, currentPage, sortColumn, ascending)
       .then((media) => {
-        const query = buildQuery()
-        router
-          .push(`/plots/${uuid}/grid?${query}`, `/plots/${uuid}/grid?${query}`)
-          .catch((e) => console.log(e))
+        if (useRouterFunction === true) {
+          const query = buildQuery()
+          router
+            .push(`/plots/${uuid}/grid?${query}`, `/plots/${uuid}/grid?${query}`)
+            .catch((e) => console.log(e))
+        }
         setMediaItems(media)
       })
       .catch((e) => console.log(e))
@@ -97,7 +113,7 @@ export default function Grid (): JSX.Element | undefined {
   }, [sortColumn, ascending, uuid, currentPage])
 
   useEffect(() => {
-    if (shownColumn === undefined || uuid === undefined) {
+    if (shownColumn === undefined || uuid === undefined || useRouterFunction === false) {
       return
     }
     const query = buildQuery()
@@ -115,9 +131,13 @@ export default function Grid (): JSX.Element | undefined {
     if (uuid === undefined) {
       return
     }
-    router
-      .push(`/plots/${uuid}/media/${index}`, `/plots/${uuid}/media/${index}`)
-      .catch((e) => console.log(e))
+    if (useRouterFunction === false && handleMediaClick !== undefined) {
+      handleMediaClick(index)
+    } else {
+      router
+        .push(`/plots/${uuid}/media/${index}`, `/plots/${uuid}/media/${index}`)
+        .catch((e) => console.log(e))
+    }
   }
 
   function handleHover (index: number): void {
@@ -164,7 +184,15 @@ export default function Grid (): JSX.Element | undefined {
     return query
   }
   if (uuid === undefined) {
-    return
+    return <></>
+  }
+
+  function handleBack (): void {
+    if (back !== undefined) {
+      back()
+    } else if (useRouterFunction === true) {
+      router.back()
+    }
   }
 
   return (
@@ -178,7 +206,9 @@ export default function Grid (): JSX.Element | undefined {
                   <div className="row">
                     {config.type !== 'grid' && (
                       <div className="col-2">
-                        <Link href={`/plots/${uuid}`}>Back</Link>
+                        <button className="btn btn-sm btn-outline-secondary" onClick={() => handleBack()}>
+                          Back
+                        </button>
                       </div>
                     )}
                     <div className="col-3 text-dark">
@@ -198,7 +228,7 @@ export default function Grid (): JSX.Element | undefined {
                             <option value="" defaultValue={''}>
                               Order by
                             </option>
-                            {config.columns.map((column: string) => {
+                            {config.columns.slice(2).map((column: string) => {
                               return (
                                 <option value={column} key={column}>
                                   {column}
@@ -260,7 +290,7 @@ export default function Grid (): JSX.Element | undefined {
                         <option value="" defaultValue={''}>
                           Show value
                         </option>
-                        {config.columns.map((infoColumn: string) => {
+                        {config.columns.slice(2).map((infoColumn: string) => {
                           return (
                             <option key={infoColumn} value={infoColumn}>
                               {infoColumn}
