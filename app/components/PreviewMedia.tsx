@@ -176,7 +176,7 @@ export function PreviewMedia (props: {
   }
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div className={'image--preview'}>
       <Image
           src={props.media.src}
             key={props.media.src}
@@ -188,9 +188,13 @@ export function PreviewMedia (props: {
           sizes=" "
           style={{ width: 'auto', height: 'auto' }}
       />
-      <svg className={'sidebar-svg'} width={dims.width} height={dims.height}>
-        {bboxElement}
-      </svg>
+      {(props.boundingBoxColumnIndex == null && props.boundingBoxColumnIndex !== undefined) &&
+       (
+        <svg className={'sidebar-svg'} width={dims.width} height={dims.height}>
+          {bboxElement}
+        </svg>
+       )
+      }
     </div>
   )
 }

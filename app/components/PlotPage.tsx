@@ -10,7 +10,14 @@ import getPlot from '@/components/Plot'
 import SideBar from '@/components/SideBar'
 import { getUuid } from '@/requests/GetUuid'
 
-export default function PlotPage ({ uuidProp }: { uuidProp: string }): JSX.Element {
+interface PlotPageProps {
+  uuidProp?: string
+  useRouterFunction?: boolean
+  handleGrid?: (mediaIndices: number[]) => void
+  handleMedia?: (mediaIndex: number) => void
+}
+
+export default function PlotPage ({ uuidProp, useRouterFunction, handleGrid, handleMedia }: PlotPageProps): JSX.Element {
   const router = useRouter()
   const [uuid, setUuid] = useState<string | undefined>(undefined)
   const [config, setConfig] = useState(new Config('', '', []))
@@ -73,17 +80,25 @@ export default function PlotPage ({ uuidProp }: { uuidProp: string }): JSX.Eleme
     if (index != null && uuid != null) {
       const media: Media = await getMedia(uuid, index)
       setSideMedia(media)
-      router.push(`/plots/${uuid}/media/${index}`).catch((e) => console.log(e))
+      if (useRouterFunction === true) {
+        router.push(`/plots/${uuid}/media/${index}`).catch((e) => console.log(e))
+      } else if (handleMedia !== undefined) {
+        handleMedia(index)
+      }
     }
   }
 
   const handleMediaSelect = (mediaIndices: number[]): void => {
-    if (uuid === undefined) {
+    if (uuid === undefined || (useRouterFunction === undefined)) {
       return
     }
-    router
-      .push(`/plots/${uuid}/grid?page=0&media=${mediaIndices.join(',')}`)
-      .catch((e) => console.log(e))
+    if (useRouterFunction) {
+      router
+        .push(`/plots/${uuid}/grid?page=0&media=${mediaIndices.join(',')}`)
+        .catch((e) => console.log(e))
+    } else if (handleGrid !== undefined) {
+      handleGrid(mediaIndices)
+    }
   }
 
   return (
@@ -106,14 +121,16 @@ export default function PlotPage ({ uuidProp }: { uuidProp: string }): JSX.Eleme
                             )}
                         </div>
                         <div className="col-12 col--plot">
-                            {getPlot({
+                          {
+                            getPlot({
                               data: plotData,
                               config,
                               revision,
                               handleClick: handleMediaClick,
                               handleHover: handlePointHover,
                               handleSelect: handleMediaSelect
-                            })}
+                            })
+                          }
                         </div>
                     </div>
                 </div>

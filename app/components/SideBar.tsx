@@ -14,27 +14,32 @@ export default function SideBar ({
   boundingBoxColumn
 }: SideBarProps): JSX.Element {
   return (
-    <div className={'sidebar'}>
-      <PreviewMedia
-        media={media}
-        boundingBoxColumnIndex={
-          boundingBoxColumn != null
-            ? columns.indexOf(boundingBoxColumn)
-            : undefined
-        }
-        displayLabel={true}
-      />
-      {media.information
-        ?.filter(
-          (item, index) =>
-            index !==
-            (boundingBoxColumn != null
-              ? columns.indexOf(boundingBoxColumn)
-              : -1)
-        )
-        .map((item: any, index: number) => {
-          return InformationItem(index, columns.slice(2), item)
-        })}
+    <div className={'sidebar text-dark'} style={{
+      display: 'flex',
+      flexDirection: 'column',
+      maxHeight: 'calc(70vh - 35px)'
+    }}>
+      <div style={{ maxHeight: '300px' }}>
+          <PreviewMedia
+              media={media}
+              boundingBoxColumnIndex={
+                  boundingBoxColumn != null
+                    ? columns.indexOf(boundingBoxColumn)
+                    : undefined
+              }
+              displayLabel={true}
+          />
+      </div>
+      <div style={{ overflowY: 'scroll', flexGrow: 1 }}>
+          {media.information
+            ?.filter(
+              (item, index) => {
+                return index !== (boundingBoxColumn != null ? columns.indexOf(boundingBoxColumn) : -1)
+              })
+            .map((item: any, index: number) => {
+              return InformationItem(index, columns.slice(2), item)
+            })}
+      </div>
     </div>
   )
 }
