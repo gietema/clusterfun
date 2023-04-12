@@ -14,3 +14,5 @@ frontend/public/data/cifar10/*/*.png
 data
 frontend/.next
 *.parquet
+*.tar.gz
+*.whl
