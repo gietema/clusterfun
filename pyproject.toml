@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "clusterfun"
-version = "0.1.1a1"
+version = "0.1.1a4"
 description = "Clusterfun - a plotting library to inspect data"
 authors = ["Jochem Gietema <jochem@giete.ma>"]
 readme = "README.md"
@@ -8,13 +8,11 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.8.1"
 pandas = "*"
-uuid = "*"
 pyarrow = "*"
 fastapi = "*"
 uvicorn = "*"
 orjson = "*"
 boto3 = "*"
-dask = "*"
 requests = "*"
 pillow = "*"
 
@@ -44,7 +42,7 @@ profile = "black"
 line_length = 120
 
 [tool.poetry.scripts]
-serve = "clusterfun.serve_cli:main"
+clusterfun = "clusterfun.serve_cli:main"
 
 
 [tool.pylint."MESSAGES CONTROL"]
