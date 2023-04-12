@@ -30,7 +30,7 @@ APP.add_middleware(
 )
 
 # Set the static files directory
-FRONTEND_DIR = Path(__file__).parent.parent / "app" / "out"
+FRONTEND_DIR = Path(__file__).parent / "frontend"
 # for production setting
 if os.environ.get("CLUSTERFUN_PROD_URL") is None and (FRONTEND_DIR / "_next").exists():
     # this loads the static files from the frontend directory (CSS etc.)

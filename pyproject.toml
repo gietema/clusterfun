@@ -4,7 +4,6 @@ version = "0.1.0"
 description = ""
 authors = ["Jochem Gietema <jochem@giete.ma>"]
 readme = "README.md"
-packages = [{include = "clusterfun"}]
 
 [tool.poetry.dependencies]
 python = ">=3.8.1"
