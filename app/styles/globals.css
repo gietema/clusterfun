@@ -21,7 +21,7 @@ body {
 }
 .navbar-logo {
   /*font-family: "Gloria Hallelujah", cursive;*/
-  font-family: Oliver;
+  font-family: Oliver, serif;
   font-size: 1.2em !important;
   padding-left: 0.2em;
   padding-right: 0.2em;
@@ -164,6 +164,8 @@ body {
   margin-top: 1em;
   margin-bottom: 1em;
   max-height: 70vh;
+  overflow: hidden;
+  min-height: 600px;
 }
 .col--home .col--main {
   min-height: calc(70vh - 56px);
@@ -172,14 +174,8 @@ body {
   min-height: calc(70vh - 95px);
 }
 
-.home-examples img {
-  object-fit: contain;
-  height: 100%;
-  width: 100%;
-}
-
 .home--first {
-  background-color: #232424;
+  /*background-color: #232424;*/
   color: white;
   padding-bottom: 2em;
   margin: 0 auto;
@@ -211,7 +207,6 @@ body {
 .home--first h1 {
   font-size: 4em;
   font-weight: bold;
-  font-family: "Rubik", sans-serif;
 }
 
 .subtitle-home {
@@ -232,4 +227,25 @@ body {
 
 .sidebar img {
   max-width: 100%;
+}
+
+.image--preview {
+  position: relative;
+}
+
+.image--preview img {
+  max-width: 100%;
+  max-height: 300px;
+}
+
+.landing-helper {
+  float: left;
+  font-family: 'Oliver', serif;
+  font-size: 1.3em;
+  text-align: center;
+  margin-left: 100px;
+}
+.landing-helper img {
+  filter: invert(100%);
+  max-height: 30px;
 }
