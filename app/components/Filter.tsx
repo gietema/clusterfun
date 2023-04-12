@@ -37,24 +37,16 @@ export function Filter (props: {
       selectedComparison != null &&
       selectedColumn != null
     ) {
-      const newFilter = {
+      const newFilter: FilterInterface = {
         column: selectedColumn,
         comparison: selectedComparison,
         value: selectedValue
       }
-      const currentFilters = filters != null || []
-      if (
-        typeof currentFilters !== 'boolean' &&
-        currentFilters?.filter(
-          (f: { value: string, comparison: string, column: string }) =>
-            f.value === newFilter.value &&
-            f.comparison === newFilter.comparison &&
-            f.column === newFilter.column
-        ).length > 0
-      ) {
+      const currentFilters = (filters !== null && filters !== undefined) ? filters : []
+      // if new filter is already in currentFilters, do nothing
+      if (currentFilters?.filter((f: FilterInterface) => f === newFilter).length > 0) {
         return
       }
-      // @ts-expect-error
       setFilters([...currentFilters, newFilter])
     }
   }
