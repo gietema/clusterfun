@@ -7,9 +7,11 @@ from botocore.client import Config as BotoConfig
 # Create an S3 client
 s3 = boto3.client(
     "s3",
-    region_name="eu-west-2",
-    config=BotoConfig(region_name="eu-west-2", signature_version="v4"),
-    endpoint_url="https://s3.eu-west-2.amazonaws.com",
+    region_name=os.environ.get("AWS_REGION", "eu-west-2"),
+    config=BotoConfig(
+    region_name=os.environ.get("AWS_REGION", "eu-west-2"),
+    signature_version=os.environ.get("AWS_SIGNATURE_VERSION", "v4")
+    ),
 )
 
 
