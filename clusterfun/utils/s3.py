@@ -1,19 +1,22 @@
 """Utilities for working with S3."""
 import os
+from functools import lru_cache
 from typing import Tuple
 
 import boto3
 from botocore.client import Config as BotoConfig
 
-# Create an S3 client
-s3 = boto3.client(
-    "s3",
-    region_name=os.environ.get("AWS_REGION"),
-    config=BotoConfig(
+
+@lru_cache()
+def get_client() -> boto3.client:
+    """Get an S3 client.""" ""
+    # Create an S3 client
+    s3 = boto3.client(
+        "s3",
         region_name=os.environ.get("AWS_REGION"),
-        signature_version="s3v4"
-    ),
-)
+        config=BotoConfig(region_name=os.environ.get("AWS_REGION"), signature_version="s3v4"),
+    )
+    return s3
 
 
 def get_presigned_url(s3_url: str) -> str:
@@ -21,7 +24,7 @@ def get_presigned_url(s3_url: str) -> str:
     # Extract the bucket name and key from the full S3 URL
     bucket_name, key = get_bucket_and_key(s3_url)
     # Generate and return the pre-signed URL
-    return s3.generate_presigned_url(
+    return get_client().generate_presigned_url(
         ClientMethod="get_object",
         Params={
             "Bucket": bucket_name,
