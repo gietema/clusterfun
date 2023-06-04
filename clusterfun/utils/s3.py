@@ -9,8 +9,7 @@ from botocore.client import Config as BotoConfig
 
 @lru_cache()
 def get_client() -> boto3.client:
-    """Get an S3 client.""" ""
-    # Create an S3 client
+    """Get an S3 client."""
     s3 = boto3.client(
         "s3",
         region_name=os.environ.get("AWS_REGION"),
