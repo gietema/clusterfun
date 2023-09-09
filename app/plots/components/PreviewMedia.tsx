@@ -1,6 +1,5 @@
 import { uuidAtom } from "@/app/components/Previewer";
 import { useAtomValue } from "jotai";
-import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { BoundingBox } from "../models/BoundingBox";
 import { colors } from "../models/Colors";
@@ -182,7 +181,7 @@ export function PreviewMedia(props: {
 
   return (
     <div className={"image--preview"}>
-      <Image
+      {/* <Image
         src={props.media.src}
         key={props.media.src}
         className={"sidebar-image"}
@@ -192,6 +191,12 @@ export function PreviewMedia(props: {
         height="0"
         sizes=" "
         style={{ width: "auto", height: "auto" }}
+      /> */}
+      <img
+        src={props.media.src}
+        ref={imageRef}
+        className={"sidebar-image"}
+        style={{ objectFit: "contain", width: "100%" }}
       />
       {props.boundingBoxColumnIndex == null &&
         props.boundingBoxColumnIndex !== undefined && (

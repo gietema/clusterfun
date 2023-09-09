@@ -23,6 +23,7 @@ code {
 .image--preview {
   position: relative;
   height:300px;
+  width: 100%;
   @apply flex flex-row items-center justify-center;
 }
 
