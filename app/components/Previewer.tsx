@@ -91,7 +91,7 @@ export default function Previewer({
         return <PlotPage handleMediaIndices={handleMediaIndices} />;
       case "grid":
         return (
-            <Grid
+          <Grid
             back={() => {
               setMediaIndices([]);
               // reset the page in gridvalues
