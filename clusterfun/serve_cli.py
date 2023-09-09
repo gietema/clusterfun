@@ -42,12 +42,8 @@ def main():
     cfg = plot.cfg
 
     # run query to get max 1000 random media columns, to see how to load data.
-    query = f"SELECT {cfg.media} FROM database ORDER BY RANDOM() LIMIT 10000"
-    media = run_query(LocalLoader(cache_dir.stem, cache_dir.parent).db_path, query, fetch_one=False)
     common_media_path = cfg.common_media_path
-    if (not media[0][0].startswith("http") and not media[0][0].startswith("s3://")) and common_media_path is None:
-        common_media_path = os.path.commonpath(media)
-        # df[cfg.media] = df[cfg.media].apply(lambda x: x.replace(common_media_path, "/media"))
     if common_media_path is not None:
+        # mounting here actually works.
         APP.mount("/media", StaticFiles(directory=common_media_path), name="media")
     plot.show(open_browser=True, common_media_path=common_media_path)

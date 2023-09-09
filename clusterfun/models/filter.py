@@ -56,7 +56,7 @@ class Filter(BaseModel):  # pylint: disable=too-few-public-methods
         Returns True if values are valid, False otherwise"""
         if self.column not in columns:
             return False
-        if self.comparison not in [">", "<", "=", "!="]:
+        if self.comparison not in [">", "<", "=", "!=", ">=", "<="]:
             return False
         # validate result of value: should be value of column if categorical else number
         if not str(self.value).isnumeric() and not is_float(self.value) and not filter_value_in_column(self, con):

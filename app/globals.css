@@ -1,0 +1,213 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Oliver";
+  src: url("../public/fonts/Oliver-Regular-400.woff");
+}
+
+/* set the body background to tailwind's bg-gray-900 */
+body {
+  min-heiht: 100vh;
+}
+
+code {
+  @apply text-pink-500;
+}
+
+.logo {
+  font-family: Oliver, serif;
+}
+
+.image--preview {
+  position: relative;
+  height:300px;
+  width: 100%;
+  @apply flex flex-row items-center justify-center;
+}
+
+.image--preview img {
+  max-width: 100%;
+  max-height: 300px;
+}
+
+.grid .image--preview {
+  height: auto;
+}
+
+.grid-media img {
+  max-width: 100%;
+}
+
+.media-col-10 {
+  flex: 0 0 10%;
+  max-width: 10%;
+}
+
+.media-col-9 {
+  flex: 0 0 calc(100% / 9);
+  max-width: calc(100% / 9);
+}
+
+.media-col-8 {
+  flex: 0 0 calc(100% / 8);
+  max-width: calc(100% / 8);
+}
+
+.media-col-7 {
+  flex: 0 0 calc(100% / 7);
+  max-width: calc(100% / 7);
+}
+
+.media-col-6 {
+  flex: 0 0 calc(100% / 6);
+  max-width: calc(100% / 6);
+}
+
+.media-col-5 {
+  flex: 0 0 calc(100% / 5);
+  max-width: calc(100% / 5);
+}
+
+.media-col-4 {
+  flex: 0 0 calc(100% / 4);
+  max-width: calc(100% / 4);
+}
+
+.media-col-3 {
+  flex: 0 0 calc(100% / 3);
+  max-width: calc(100% / 3);
+}
+
+.media-col-2 {
+  flex: 0 0 calc(100% / 2);
+  max-width: calc(100% / 2);
+}
+
+.media-col-1 {
+  flex: 0 0 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.media-col-1 img {
+  object-fit: contain;
+  max-height: calc(100vh - 140px);
+  object-position: left;
+}
+
+
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+.grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.grid-cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.grid-cols-5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.grid-cols-6 {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.grid-cols-7 {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.grid-cols-8 {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+.grid-cols-9 {
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+}
+.grid-cols-10 {
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+}
+
+/* Create a CSS animation */
+@keyframes fadeIn {
+  from {
+      opacity: 0;
+  }
+  to {
+      opacity: 1;
+  }
+}
+
+@keyframes moveUp {
+  0% {
+      transform: translateY(20px);
+  }
+  100% {
+      transform: translateY(0);
+  }
+}
+
+@keyframes moveUpMuch {
+  0% {
+      transform: translateY(50px);
+  }
+  100% {
+      transform: translateY(0);
+  }
+}
+
+
+
+/* Apply the animation to the h1 element */
+.hero {
+  opacity: 0;
+  animation: fadeIn 0.8s ease-in, moveUp 0.8s ease-in forwards;
+  animation-fill-mode: forwards;
+}
+.hero.delay {
+  animation-delay: 0.8s; /* Delay the animation by 1 second */
+}
+
+.hero--instruction {
+  animation: fadeIn 0.8s ease-in, moveUp 0.8s ease-in forwards;
+  animation-fill-mode: forwards;
+}
+
+.dancing-text {
+  display: inline-block;
+  transition: transform 0.8s ease-out;
+}
+
+.dancing-text:hover {
+  animation: dance 1s;
+}
+
+@keyframes dance {
+  0%, 100% {
+      transform: translateY(0);
+  }
+  33% {
+      transform: translateY(-2px);
+  }
+  66% {
+      transform: translateY(2px);
+  }
+  /* 75% {
+      transform: translateY(-5px);
+  } */
+}
+
+/* Add a separate animation for when not hovering */
+.dancing-text:not(:hover) {
+  animation: dance-not-hovering 0.5s forwards;
+}
+
+@keyframes dance-not-hovering {
+  0%, 100% {
+      transform: translateY(0);
+  }
+  50% {
+      transform: translateY(3px); /* Adjust this value for the bounce */
+  }
+}

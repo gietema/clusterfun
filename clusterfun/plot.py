@@ -12,12 +12,15 @@ Classes
 Plot
     A class representing a plot with a unique identifier, data, and configuration.
 """
+import asyncio
 import dataclasses
 import os
 import socket
 import webbrowser
 from functools import partial
 from pathlib import Path
+from sysconfig import get_python_version
+from threading import Thread
 from typing import Any, Dict, Optional
 from uuid import uuid4
 
@@ -40,16 +43,26 @@ def run_server(local_port: int):
     local_port : int
         The local port number to be used for serving the application.
     """
+    # Check if an event loop is already running
+    if asyncio.get_event_loop().is_running():  # Only Python 3.10+
+        loop = asyncio.get_event_loop()
+    else:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
     config = uvicorn.Config(
         "clusterfun.main:APP",
         port=local_port,
-        log_level="info",
+        log_level="warning",
         reload=True,
         root_path=str(Path(__file__).parent),
         reload_dirs=[str(Path(__file__).parent)],
     )
     server = uvicorn.Server(config)
-    server.run()
+    # If the loop is running, create a task. Else, run the coroutine directly.
+    if loop.is_running():
+        asyncio.create_task(server.serve())
+    else:
+        loop.run_until_complete(server.serve())
 
 
 def get_local_port() -> int:
@@ -220,9 +233,6 @@ class Plot:
             print(f"Serving plot on http://localhost:{local_port}")
             run_server_fn = partial(run_server, local_port=local_port)
             run_server_fn()
-            # might run in thread for use in Jupyter Notebooks, not working now.
-            # thread = Thread(target=run_server_fn)
-            # thread.start()
         return LocalStorer().cache_dir / self.uuid
 
     @property
