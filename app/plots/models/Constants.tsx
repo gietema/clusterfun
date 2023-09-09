@@ -1,6 +1,6 @@
-export let API_URL: string
-if (process.env.NODE_ENV === 'development') {
-  API_URL = 'http://localhost:8000'
+export let API_URL: string;
+if (process.env.NODE_ENV === "development") {
+  API_URL = "http://localhost:8000";
 } else {
-  API_URL = 'https://clusterfun.co'
+  API_URL = "";
 }
