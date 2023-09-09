@@ -2,7 +2,6 @@
 import { Provider } from "jotai";
 import Previewer from "./components/Previewer";
 
-
 const ErrorView = ({ clearError }: { clearError: () => void }) => (
   <div className="flex h-screen items-center justify-center  text-center text-white">
     <div>
@@ -17,19 +16,19 @@ const ErrorView = ({ clearError }: { clearError: () => void }) => (
   </div>
 );
 
-
 export default function Home() {
   return (
-      <Provider>
-          <div className="m-2">
-            <Previewer
-              uuidProp={
-                process.env.NODE_ENV === "production"
-                  ? "8e6e40d8-8df2-44d6-b5a3-34594c50a504"
-                  : "recent"
-              }
-            ></Previewer>
-          </div>
-      </Provider>
+    <Provider>
+      <div className="m-2">
+        <Previewer
+          uuidProp={
+            process.env.NODE_ENV === "production" &&
+            process.env.BASE_URL === "https://clusterfun.app"
+              ? "8e6e40d8-8df2-44d6-b5a3-34594c50a504"
+              : "recent"
+          }
+        ></Previewer>
+      </div>
+    </Provider>
   );
 }
