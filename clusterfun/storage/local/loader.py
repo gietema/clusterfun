@@ -71,9 +71,7 @@ class LocalLoader(Loader):
         """Get a single row of data for a given uuid and media id."""
         result = run_query(self.db_path, f"SELECT * FROM database WHERE id = {media_id}", fetch_one=True)
         # index zero should be the id, index 1 the media src, everything else the remaining data
-        src, height, width = load_media(
-            result[1], as_base64=as_base64, common_media_path=self.load_config().common_media_path
-        )
+        src, height, width = load_media(result[1], as_base64=as_base64)
         return MediaItem(index=media_id, src=src, height=height, width=width, information=result[2:])
 
     def get_rows(self, media_indices: MediaIndices) -> List[MediaItem]:
@@ -90,12 +88,37 @@ class LocalLoader(Loader):
         List[MediaItem]
             List of queried items
         """
-        query = get_media_query(media_indices)
+        con, config = None, None
+        if media_indices.filters:
+            con = sqlite3.connect(self.db_path, check_same_thread=False)
+            config = self.load_config()
+        query = get_media_query(media_indices, config=config, con=con)
         result = run_query(self.db_path, query)
         items = []
         for item in result:
             src, height, width = load_media(item[1])
             items.append(MediaItem(index=item[0], src=src, height=height, width=width, information=item[2:]))
+        return items
+
+    def get_rows_metadata(self, media_indices: MediaIndices) -> List[Dict[str, Any]]:
+        """
+        Get the metadata for a list of media items.
+
+        Parameters
+        ----------
+        media_indices : MediaIndices
+            The indices to query
+
+        Returns
+        -------
+        List[Dict[str, Any]]
+            The metadata for the media items
+        """
+        query = get_media_query(media_indices, paginate=False)
+        result = run_query(self.db_path, query)
+        items = []
+        for item in result:
+            items.append({"index": item[0], "information": item[2:]})
         return items
 
     def filter(self, filters: List[Filter]) -> List[Dict[str, Any]]:

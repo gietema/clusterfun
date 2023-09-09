@@ -74,6 +74,12 @@ def filter_view(view_uuid: str, filters: List[Filter]) -> List[Dict[str, Any]]:
     return LocalLoader(view_uuid).filter(filters)
 
 
+@APP.post("/views/{view_uuid}/media-metadata")
+def read_media_metadata(view_uuid: str, media_ids: MediaIndices) -> List[Dict[str, Any]]:
+    """Retrieve metadata for media items associated with a specific plot by their UUID and media IDs."""
+    return LocalLoader(view_uuid).get_rows_metadata(media_ids)
+
+
 @APP.get("/{path:path}", response_class=HTMLResponse)
 async def catch_all(request: Request, path: str):  # pylint: disable=unused-argument
     """Last catch all function to return index html of frontend.

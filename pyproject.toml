@@ -6,7 +6,7 @@ authors = ["Jochem Gietema <jochem@giete.ma>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.8.1"
+python = ">=3.8,<4.0"
 pandas = "*"
 pyarrow = "*"
 fastapi = "*"
@@ -45,6 +45,8 @@ line_length = 120
 [tool.poetry.scripts]
 clusterfun = "clusterfun.serve_cli:main"
 
+[tool.taskipy.tasks]
+dev = "uvicorn clusterfun.main:APP --reload"
 
 [tool.pylint."MESSAGES CONTROL"]
 good-names = [

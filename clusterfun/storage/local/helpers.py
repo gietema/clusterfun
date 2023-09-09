@@ -1,7 +1,7 @@
 """Helper functions for local loading and storing"""
 import sqlite3
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, List, Optional
 
 import orjson
 import pandas as pd
@@ -18,8 +18,6 @@ def format_df_for_db(cfg: Config, df: pd.DataFrame) -> pd.DataFrame:
         df[cfg.bounding_box] = df[cfg.bounding_box].apply(lambda x: [x] if not isinstance(x, list) else x)
         # then convert to json dump for effective storage in db
         df[cfg.bounding_box] = df[cfg.bounding_box].apply(orjson.dumps)  # pylint: disable=no-member
-    if isinstance(df[cfg.media].iloc[0], Path):
-        df[cfg.media] = df[cfg.media].apply(str)
     return df
 
 
@@ -63,15 +61,25 @@ def get_filter_query(con: sqlite3.Connection, config: Config, filters: List[Filt
     return query
 
 
-def get_media_query(media_indices: MediaIndices) -> str:
+def get_media_query(
+    media_indices: MediaIndices, paginate: bool = True, config: Optional[Config] = None, con: Optional[Any] = None
+) -> str:
     """Get the query for the media, used for the grid"""
     if len(media_indices) == 1:
         query = f"SELECT * FROM database WHERE id = {media_indices.media_ids[0]}"
     else:
         query = f"SELECT * FROM database WHERE id IN {str(tuple(media_indices.media_ids))}"
-    if media_indices.sort_column is not None and media_indices.ascending is not None:
+    if media_indices.filters and len(media_indices.filters) > 0:
+        assert con is not None and config is not None, "If filters are provided, con and config must be provided"
+        query += " AND "
+        query += get_filter_query(con, config=config, filters=media_indices.filters)
+    if (
+        media_indices.sort_column is not None
+        and media_indices.sort_column != ""
+        and media_indices.ascending is not None
+    ):
         query += f" ORDER BY {media_indices.sort_column} {'ASC' if media_indices.ascending else 'DESC'}"
-    if len(media_indices.media_ids) > 50:
+    if len(media_indices.media_ids) > 50 and paginate:
         offset = media_indices.page * 50
         query += f" LIMIT 50 OFFSET {offset}"
     return query
