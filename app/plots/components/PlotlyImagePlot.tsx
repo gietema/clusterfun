@@ -1,10 +1,13 @@
 import { Media } from "@/app/plots/models/Media";
 import dynamic from "next/dynamic";
+import { BoundingBox } from "../models/BoundingBox";
+import { colors } from "../models/Colors";
 
 export interface ImagePlotProps {
   media: Media;
   scaleFactor: number;
   shapes?: object[];
+  boundingBoxes: BoundingBox[];
 }
 
 const Plot = dynamic(async () => await import("react-plotly.js"), {
@@ -16,6 +19,7 @@ export default ({
   media,
   scaleFactor,
   shapes,
+  boundingBoxes,
 }: ImagePlotProps): JSX.Element => (
   <Plot
     data={[
@@ -68,6 +72,28 @@ export default ({
         pad: 0,
       },
       shapes: shapes != null ? shapes : [],
+      annotations:
+        boundingBoxes &&
+        boundingBoxes.map((boundingBox, index) => {
+          return {
+            x: boundingBox.xmin * scaleFactor,
+            y: media.height
+              ? media.height - boundingBox.xmin * scaleFactor
+              : 1000 - boundingBox.xmin * scaleFactor,
+            xref: "x",
+            yref: "y",
+            text: boundingBox.label,
+            align: "right",
+            showarrow: false,
+            xanchor: "left",
+            yanchor: "top",
+            font: {
+              color: "white",
+            },
+            bgcolor: colors[index % colors.length],
+            bordercolor: colors[index % colors.length],
+          };
+        }),
     }}
     config={{
       modeBarButtonsToRemove: [

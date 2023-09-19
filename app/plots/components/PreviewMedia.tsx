@@ -6,7 +6,20 @@ import { colors } from "../models/Colors";
 import { Dimension, getContainedSize } from "../models/Dimension";
 import { Media } from "../models/Media";
 
-function parseBoundingBoxes(unparsedBbox: string): BoundingBox[] {
+// Simple debounce function
+const debounce = (func: () => void, wait: number) => {
+  let timeoutId: ReturnType<typeof setTimeout> | null;
+  return () => {
+    if (timeoutId !== null) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(() => {
+      func();
+    }, wait);
+  };
+};
+
+export function parseBoundingBoxes(unparsedBbox: string): BoundingBox[] {
   const bboxes = JSON.parse(unparsedBbox);
   const newBoundingBoxes: BoundingBox[] = [];
   bboxes.forEach((bbox: BoundingBox) => {
@@ -46,15 +59,42 @@ export function PreviewMedia(props: {
   });
   const [bboxElement, setBboxElement] = useState<JSX.Element[]>([]);
   const imageRef = React.useRef(null);
+  const [containerWidth, setContainerWidth] = useState<number>(0);
+  const containerRef = React.useRef(null);
+
+  const recomputeDimsAndBoxes = () => {
+    if (imageRef.current) {
+      trySetDims(imageRef.current);
+    }
+    if (containerRef.current) {
+      // @ts-expect-error
+      setContainerWidth(containerRef.current.offsetWidth);
+    }
+  };
+
+  const debouncedRecompute = debounce(recomputeDimsAndBoxes, 300);
+
+  // Measure the container's width on mount
+  useEffect(() => {
+    recomputeDimsAndBoxes();
+  }, []); // Empty dependency array to ensure it only runs on mount
+
+  // Add an effect to listen for window resize
+  useEffect(() => {
+    window.addEventListener("resize", debouncedRecompute);
+    return () => {
+      window.removeEventListener("resize", debouncedRecompute);
+    };
+  }, []); // Empty dependency array to ensure it only runs on mount and unmount
 
   useEffect(() => {
     if (props.media === undefined) return;
-    // when we get new props, we extract the bounding boxes.
     if (
       props.media.information != null &&
       props.boundingBoxColumnIndex != null
     ) {
-      const bboxValue = props.media.information[props.boundingBoxColumnIndex];
+      const bboxValue =
+        props.media.information[props.boundingBoxColumnIndex - 2];
       if (bboxValue == null) {
         return;
       }
@@ -63,29 +103,33 @@ export function PreviewMedia(props: {
     }
   }, [props.media, props.boundingBoxColumnIndex]);
 
+  function trySetDims(image: HTMLImageElement) {
+    const img = imageRef.current;
+    // @ts-expect-error
+    let width = img.offsetWidth;
+    // @ts-expect-error
+    let height = img.offsetHeight;
+    // image dimension is set by object fit, so need to calculate specifically here.
+    // if (props.columns === 1) {
+    const size = getContainedSize(image);
+    width = size.width;
+    height = size.height;
+    // }
+    setDims({
+      height: isNaN(height) ? 0 : height,
+      // @ts-expect-error
+      naturalWidth: isNaN(img.naturalWidth) ? 0 : img.naturalWidth,
+      // @ts-expect-error
+      naturalHeight: isNaN(img.naturalHeight) ? 0 : img.naturalHeight,
+      width: isNaN(width) ? 0 : width,
+    });
+  }
+
   React.useEffect(() => {
     // When the image is now loaded, we want to compute the size of the image, required for
     // making our bounding box sizes responsive
     if (imageRef.current) {
-      const img = imageRef.current;
-      // @ts-expect-error
-      let width = img.offsetWidth;
-      // @ts-expect-error
-      let height = img.offsetHeight;
-      // image dimension is set by object fit, so need to calculate specifically here.
-      if (props.columns === 1) {
-        const size = getContainedSize(imageRef.current);
-        width = size.width;
-        height = size.height;
-      }
-      setDims({
-        height: isNaN(height) ? 0 : height,
-        // @ts-expect-error
-        naturalWidth: isNaN(img.naturalWidth) ? 0 : img.naturalWidth,
-        // @ts-expect-error
-        naturalHeight: isNaN(img.naturalHeight) ? 0 : img.naturalHeight,
-        width: isNaN(width) ? 0 : width,
-      });
+      trySetDims(imageRef.current);
     }
   }, [props.media, props.columns, props.displayLabel]);
 
@@ -177,27 +221,36 @@ export function PreviewMedia(props: {
     setBboxElement(bboxElement);
   };
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (imageRef.current === null) return;
+      trySetDims(imageRef.current);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   if (props.media === undefined) return <></>;
 
   return (
-    <div className={"image--preview"}>
-      {/* <Image
-        src={props.media.src}
-        key={props.media.src}
-        className={"sidebar-image"}
-        alt={"preview"}
-        ref={imageRef}
-        width="0"
-        height="0"
-        sizes=" "
-        style={{ width: "auto", height: "auto" }}
-      /> */}
+    <div className={"image--preview"} ref={containerRef}>
       <img
         src={props.media.src}
         ref={imageRef}
         className={"sidebar-image"}
         style={{ objectFit: "contain", width: "100%" }}
       />
+      <div
+        style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
+        className="flex justify-center items-center"
+      >
+        <svg className={"sidebar-svg"} width={dims.width} height={dims.height}>
+          {bboxElement}
+        </svg>
+      </div>
       {props.boundingBoxColumnIndex == null &&
         props.boundingBoxColumnIndex !== undefined && (
           <svg
