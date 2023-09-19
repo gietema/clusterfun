@@ -11,7 +11,10 @@ const Plot = dynamic(async () => await import("react-plotly.js"), {
 });
 
 export function isCategorical(data: any[]): boolean {
-  return data.every((value) => typeof value === "string");
+  return data.every(
+    (value) =>
+      typeof value === "string" || value === null || value === undefined,
+  );
 }
 
 interface Props {
@@ -42,26 +45,22 @@ export function MediaVisualization({ mediaIndices }: Props) {
   const uuid = useAtomValue(uuidAtom);
   const config = useAtomValue(configAtom);
   const [mediaMetadata, setMediaMetadata] = useState<MediaMetadata[]>([]);
-  const columns = config?.columns.filter(
-    (columnName) => !["id", "img_path"].includes(columnName),
-  );
+  const columns = config?.columns;
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedColumnName, setSelectedColumnName] = useState(columns?.[0]);
   const [filters, setFilters] = useAtom(filtersAtom);
 
-  const getColumnData = (columnIndex: number): any[] => {
+  const getColumnData = (columnName: string): any[] => {
+    if (columns === undefined || mediaMetadata === undefined) return [];
+    let columnIndex = columns.indexOf(columnName);
     return mediaMetadata.map(
-      (media: MediaMetadata) => media.information?.[columnIndex],
+      (media: MediaMetadata) => media.information?.[columnIndex - 2],
     );
   };
 
-  function handleHistogramClick(
-    points: any[],
-    columnName: string,
-    columnIndex: number,
-  ) {
+  function handleHistogramClick(points: any[], columnName: string) {
     const selectedValues = points[0].pointIndices;
-    const data = getColumnData(columnIndex).filter((value, index) =>
+    const data = getColumnData(columnName).filter((value, index) =>
       selectedValues.includes(index),
     );
     // get min of data
@@ -81,11 +80,7 @@ export function MediaVisualization({ mediaIndices }: Props) {
     setFilters([...newFilters, minFilter, maxFilter]);
   }
 
-  function handleBarClick(
-    points: any[],
-    columnName: string,
-    columnIndex: number,
-  ) {
+  function handleBarClick(points: any[], columnName: string) {
     const label = points[0].label;
     const newFilters = filters.filter((filter) => filter.column !== columnName);
     setFilters([
@@ -95,7 +90,11 @@ export function MediaVisualization({ mediaIndices }: Props) {
   }
 
   useEffect(() => {
-    if ((mediaIndices === undefined || mediaMetadata === undefined) || mediaMetadata.length === mediaIndices.length) {
+    if (
+      mediaIndices === undefined ||
+      mediaMetadata === undefined ||
+      mediaMetadata.length === mediaIndices.length
+    ) {
       return;
     }
     // get the metadata for the mediaIndices via axios
@@ -109,8 +108,8 @@ export function MediaVisualization({ mediaIndices }: Props) {
       });
   });
 
-  const renderPlot = (columnIndex: number, columnName: string) => {
-    const data = getColumnData(columnIndex);
+  const renderPlot = (columnName: string) => {
+    const data = getColumnData(columnName);
     if (isCategorical(data)) {
       // Count occurrences for categorical data
       const counts: { [key: string]: number } = {};
@@ -119,7 +118,10 @@ export function MediaVisualization({ mediaIndices }: Props) {
       });
 
       // Sort counts from highest to lowest
-      const sortedEntries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      let sortedEntries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      if (sortedEntries.length > 50) {
+        sortedEntries = sortedEntries.slice(0, 50);
+      }
 
       return (
         <Plot
@@ -131,22 +133,33 @@ export function MediaVisualization({ mediaIndices }: Props) {
             },
           ]}
           layout={{
+            title: {
+              text: `Top ${sortedEntries.length} ${columnName}`,
+              xref: "paper",
+            },
+            yaxis: {
+              automargin: true,
+            },
+            xaxis: {
+              automargin: true,
+            },
             font: {
               size: 8,
             },
             margin: {
               l: 20,
               r: 20,
-              b: 50,
-              t: 0,
+              b: 0,
+              t: 30,
+              pad: 0,
             },
-            height: 150,
+            height: 300,
           }}
           config={{
             displayModeBar: false,
           }}
           onClick={(event) => {
-            handleBarClick(event.points, columnName, columnIndex);
+            handleBarClick(event.points, columnName);
           }}
         />
       );
@@ -167,16 +180,16 @@ export function MediaVisualization({ mediaIndices }: Props) {
             margin: {
               l: 20,
               r: 0,
-              b: 20,
+              b: 50,
               t: 0,
             },
-            height: 150,
+            height: 200,
           }}
           config={{
             displayModeBar: false,
           }}
           onClick={(event) => {
-            handleHistogramClick(event.points, columnName, columnIndex);
+            handleHistogramClick(event.points, columnName);
           }}
         />
       );
@@ -203,7 +216,6 @@ export function MediaVisualization({ mediaIndices }: Props) {
         <select
           className="me-0 mt-2 grow rounded-e-md border border-l-0 border-gray-300 p-1 text-xs text-gray-900"
           onChange={(event) => {
-            setSelectedIndex(event.target.selectedIndex);
             setSelectedColumnName(event.target.value);
           }}
           value={selectedColumnName}
@@ -215,7 +227,7 @@ export function MediaVisualization({ mediaIndices }: Props) {
           ))}
         </select>
       </div>
-      <div>{renderPlot(selectedIndex, selectedColumnName)}</div>
+      <div style={{ width: "100%" }}>{renderPlot(selectedColumnName)}</div>
     </div>
   );
 }
