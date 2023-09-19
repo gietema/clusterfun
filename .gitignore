@@ -16,3 +16,4 @@ frontend/.next
 *.parquet
 *.tar.gz
 *.whl
+.next/
