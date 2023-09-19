@@ -23,11 +23,12 @@ from clusterfun.validation import validate
 
 
 def grid(  # pylint: disable=missing-function-docstring
-    df: pd.DataFrame, media: str, title: Optional[str] = None, show: bool = True
+    df: pd.DataFrame, media: str, title: Optional[str] = None, bounding_box: Optional[str] = None, show: bool = True
 ) -> Path:  # pylint: disable=too-many-arguments
     cfg = Config(
         type="grid",
         media=media,
+        bounding_box=bounding_box,
         columns=get_columns_for_db(df, media, "grid"),
         title=title,
     )
