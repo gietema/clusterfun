@@ -17,10 +17,10 @@ export default function SortDropdown({
   handleSort,
 }: SortDropDownProps) {
   return (
-    <div className="flex text-xs">
+    <>
       <select
         name=""
-        className={"grow"}
+        className={"grow text-xs"}
         onChange={(e) => handleSort(e.target.value, gridValues.asc)}
         value={gridValues.sortBy}
       >
@@ -46,6 +46,6 @@ export default function SortDropdown({
           icon={gridValues.asc ? faSortAlphaAsc : faSortAlphaDesc}
         />
       </button>
-    </div>
+    </>
   );
 }

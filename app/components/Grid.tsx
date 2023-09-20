@@ -134,14 +134,16 @@ export default function Grid({ back }: GridProps): JSX.Element {
       <div className="w-3/4">
         <div>
           <div
-            className={`grid w-full  grid-cols-1 border-b border-gray-300 pb-0 pe-2 pt-1 text-black lg:grid-cols-5
+            className={`grid w-full  grid-cols-1 border-b border-gray-300 pb-0 pe-2 pt-1 text-black lg:grid-cols-${
+              config.bounding_box ? 6 : 5
+            }
             lg:rounded-md lg:border lg:pt-0
                   `}
           >
             {config.type !== "grid" && (
               <div className="flex flex-row border-b border-gray-300 lg:border-b-0 lg:border-r">
                 <div className="flex flex-row">
-                  <div className="border-r pb-1 pe-1 pt-1">
+                  <div className="border-r pb-1 pe-1 pt-1 flex">
                     <BackButton handleBack={handleBack} />
                   </div>
                   <div className="ms-2 flex items-center text-xs">
@@ -151,11 +153,13 @@ export default function Grid({ back }: GridProps): JSX.Element {
                 </div>
               </div>
             )}
-            {config.type === "grid" && <div></div>}
+            {config.type === "grid" && config.bounding_box === null && (
+              <div></div>
+            )}
             <div
               id="grid-menu-order"
-              className="border-b border-gray-300 py-2 lg:border-b-0 lg:border-r lg:px-2 lg:py-0 lg:pe-2
-                      lg:pt-1 
+              className="border-b flex border-gray-300 py-2 lg:border-b-0 lg:border-r lg:px-2 lg:py-0 lg:pe-2
+                      
                     "
             >
               <SortDropdown
@@ -243,7 +247,7 @@ export default function Grid({ back }: GridProps): JSX.Element {
             className={`grid p-2 grid-cols-${
               gridValues.numberOfColumns && gridValues.numberOfColumns
             } gap-4`}
-            style={{maxHeight: "calc(100vh - 80px)", overflowY: "scroll" }}
+            style={{ maxHeight: "calc(100vh - 80px)", overflowY: "scroll" }}
           >
             {mediaItems.map((media: Media) => {
               return (

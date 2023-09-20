@@ -13,7 +13,7 @@ export default function ShowValueDropdown({
 }: ShowValueDropdownProps) {
   return (
     <select
-      className={"w-full text-xs"}
+      className={"w-full grow text-xs"}
       onChange={(e) =>
         setGridValues({
           ...gridValues,

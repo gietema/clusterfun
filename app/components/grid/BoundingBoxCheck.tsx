@@ -10,8 +10,8 @@ export default function BoundingBoxCheckbox({
   setGridValues,
 }: BoundingBoxCheckboxProps) {
   return (
-    <div className="flex ps-2">
-      <div className="grow flex py-2">
+    <div className="flex lg:ps-2 border-b py-1 lg:py-0 border-gray-300 lg:border-b-0 lg:border-r">
+      <div className="grow flex py-2 lg:py-0">
         <input
           className=""
           type="checkbox"
@@ -25,7 +25,10 @@ export default function BoundingBoxCheckbox({
             });
           }}
         />
-        <label className="text-xs ps-2" htmlFor="flexCheckDefault">
+        <label
+          className="text-xs ps-2 flex items-center flex-row"
+          htmlFor="flexCheckDefault"
+        >
           Show bbox label
         </label>
       </div>

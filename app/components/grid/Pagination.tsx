@@ -11,7 +11,7 @@ export function Pagination(props: {
 }): JSX.Element {
   return (
     <div
-      className="text-x flex grow items-center justify-between border-r border-gray-300 pe-2"
+      className="text-xs py-2 lg:py-0.5 flex grow items-center justify-between border-r border-gray-300 pe-2"
       role="group"
       aria-label="Basic example"
     >

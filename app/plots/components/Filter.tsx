@@ -175,7 +175,7 @@ export const Filter: FC = () => {
                 ))}
             </select>
           </div>
-          <div className="lg:rounded-0 flex w-full border border-gray-300 px-2 lg:m-0 lg:my-0 lg:w-1/3 lg:border-e-0">
+          <div className="lg:rounded-0 flex w-full border-s border-e lg:border border-gray-300 px-2 lg:m-0 lg:my-0 lg:w-1/3 lg:border-e-0">
             <select
               defaultValue=""
               className="my-1 block grow text-xs text-gray-900 lg:my-0"
@@ -194,16 +194,15 @@ export const Filter: FC = () => {
             type="text"
             aria-label="Last name"
             placeholder="..."
-            className="my-1 block w-full border border-gray-300 px-2 text-xs text-gray-900 lg:my-0  lg:w-1/3 lg:border-e-0"
+            className="block w-full py-1 lg:py-0 border-e border-s border-t lg:border border-gray-300 px-2 text-xs text-gray-900 lg:my-0 lg:w-1/3 lg:border-e-0"
             onChange={(e) => setSelectedValue(e.target.value)}
           />
-          <button
-            className="button my-0 w-full border border-gray-300 bg-gray-100 text-xs text-gray-900 hover:text-blue-500 focus:border-blue-500  focus:ring-blue-500 lg:my-0 lg:w-1/3 lg:rounded-e-md"
-            type="button"
+          <div
+            className="button my-0 text-center cursor-pointer py-1 w-full border border-gray-300 bg-gray-100 text-xs text-gray-900 hover:text-blue-500 focus:border-blue-500  focus:ring-blue-500 lg:my-0 lg:w-1/3 lg:rounded-e-md"
             onClick={handleAddFilter}
           >
             Filter
-          </button>
+          </div>
         </div>
       </div>
     </>
