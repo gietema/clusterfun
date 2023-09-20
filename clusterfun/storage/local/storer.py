@@ -50,9 +50,14 @@ class LocalStorer(Storer):
         """Saves the dataframe to a sqlite database"""
         con = sqlite3.connect(self.save_dir / "database.db")
         df = format_df_for_db(cfg, df)
-        df.reset_index(drop=False).rename(columns={"index": "id"})[cfg.columns].to_sql(
-            name="database", con=con, index=False
-        )
+        try:
+            df.reset_index(drop=False).rename(columns={"index": "id"})[cfg.columns].to_sql(
+                name="database", con=con, index=False
+            )
+        except sqlite3.InterfaceError as exc:
+            raise sqlite3.InterfaceError(
+                "This dataframe could not be saved to the database. Check if you have any columns with uncommon value types."
+            ) from exc
         return con
 
     def save_config(self, cfg: Config):
