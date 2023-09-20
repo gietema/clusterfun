@@ -49,9 +49,9 @@ def main():
         ] for _ in range(len(df))]
 
 
-    clt.grid(
-        df, media="image", bounding_box="bbox_1", title="test bounding box", show=True
-    )
+    print(clt.grid(
+        df, media="image", bounding_box="bbox_1", title="test bounding box", show=False,
+    ))
 
 
 if __name__ == "__main__":
