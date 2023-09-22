@@ -7,7 +7,6 @@ from fastapi.staticfiles import StaticFiles
 
 from clusterfun.app import APP
 from clusterfun.plot import Plot
-from clusterfun.storage.local.helpers import run_query
 from clusterfun.storage.local.loader import LocalLoader
 
 

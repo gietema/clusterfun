@@ -56,7 +56,8 @@ class LocalStorer(Storer):
             )
         except sqlite3.InterfaceError as exc:
             raise sqlite3.InterfaceError(
-                "This dataframe could not be saved to the database. Check if you have any columns with uncommon value types."
+                "This dataframe could not be saved to the database. "
+                "Check if you have any columns with uncommon value types."
             ) from exc
         return con
 

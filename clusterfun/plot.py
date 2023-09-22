@@ -19,8 +19,6 @@ import socket
 import webbrowser
 from functools import partial
 from pathlib import Path
-from sysconfig import get_python_version
-from threading import Thread
 from typing import Any, Dict, Optional
 from uuid import uuid4
 
