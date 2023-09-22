@@ -71,7 +71,9 @@ class LocalLoader(Loader):
         """Get a single row of data for a given uuid and media id."""
         result = run_query(self.db_path, f"SELECT * FROM database WHERE id = {media_id}", fetch_one=True)
         # index zero should be the id, index 1 the media src, everything else the remaining data
-        src, height, width = load_media(result[1], as_base64=as_base64, common_media_path=self.load_config().common_media_path)
+        src, height, width = load_media(
+            result[1], as_base64=as_base64, common_media_path=self.load_config().common_media_path
+        )
         return MediaItem(index=media_id, src=src, height=height, width=width, information=result[2:])
 
     def get_rows(self, media_indices: MediaIndices) -> List[MediaItem]:

@@ -102,14 +102,7 @@ def test_it_creates_a_scatter(cache_dir):
         for _ in range(max_len)
     ]
     cache_dir = scatter(
-        df,
-        x="x",
-        y="y",
-        media="media",
-        color="color",
-        title="A title of a plot",
-        bounding_box="bbox",
-        show=False
+        df, x="x", y="y", media="media", color="color", title="A title of a plot", bounding_box="bbox", show=False
     )
     assert isinstance(cache_dir, Path)
     assert (cache_dir / "config.json").exists()
@@ -117,15 +110,7 @@ def test_it_creates_a_scatter(cache_dir):
     assert (cache_dir / "database.db").exists()
 
     # without colour
-    cache_dir = scatter(
-        df,
-        x="x",
-        y="y",
-        media="media",
-        title="A title of a plot",
-        bounding_box="bbox",
-        show=False
-    )
+    cache_dir = scatter(df, x="x", y="y", media="media", title="A title of a plot", bounding_box="bbox", show=False)
     assert isinstance(cache_dir, Path)
     assert (cache_dir / "config.json").exists()
     assert (cache_dir / "data.json").exists()

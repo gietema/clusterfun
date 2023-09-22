@@ -25,6 +25,7 @@ class MediaIndices(BaseModel):  # pylint: disable=too-few-public-methods
     A class representing a set of media indices with optional sorting and pagination.
     Used for selecting a page of media in the grid view.
     """
+
     media_ids: List[int]
     page: int = 0
     sort_column: Optional[str] = None

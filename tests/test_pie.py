@@ -1,7 +1,11 @@
 import pandas as pd
 import numpy as np
-from clusterfun.plot_types.pie_chart import (generate_polar_coordinates, update_coordinates,
-                                             compute_pie_chart_coordinates, format_color)
+from clusterfun.plot_types.pie_chart import (
+    generate_polar_coordinates,
+    update_coordinates,
+    compute_pie_chart_coordinates,
+    format_color,
+)
 
 
 def test_generate_polar_coordinates():
@@ -19,11 +23,13 @@ def test_generate_polar_coordinates():
 
 
 def test_update_coordinates():
-    df = pd.DataFrame({
-        "color": ["A", "A", "B", "B", "C"],
-        "pie_chart_x": [0, 0, 0, 0, 0],
-        "pie_chart_y": [0, 0, 0, 0, 0],
-    })
+    df = pd.DataFrame(
+        {
+            "color": ["A", "A", "B", "B", "C"],
+            "pie_chart_x": [0, 0, 0, 0, 0],
+            "pie_chart_y": [0, 0, 0, 0, 0],
+        }
+    )
 
     color = "color"
     col = "A"

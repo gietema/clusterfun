@@ -3,6 +3,7 @@ from pathlib import Path
 import pandas as pd
 import clusterfun as clt
 
+
 def main():
     df = pd.DataFrame()
     df["x"] = [1, 2, 3]
@@ -19,5 +20,5 @@ def main():
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
