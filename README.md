@@ -1,9 +1,19 @@
 ![example workflow](https://github.com/gietema/clusterfun/actions/workflows/tests.yml/badge.svg)
-
 # Clusterfun
 
-Clusterfun is a python plotting library to explore image data.
+[Clusterfun](https://clusterfun.app) is a python plotting library to explore image data.
 
+* [Getting started](#getting-started)
+* [A simple example](#a-simple-example)
+* [Main features](#main-features)
+* [Default parameters](#default-parameters)
+* [Plot types](#plot-types)
+  + [Histogram](#histogram)
+  + [Scatterplot](#scatterplot)
+  + [Violin plot](#violin-plot)
+  + [Grid](#grid)
+  + [Pie chart](#pie-chart)
+* [Data loading](#data-loading)
 
 ## Getting started
 Clusterfun can be installed with pip:
@@ -24,6 +34,7 @@ import clusterfun as clt
 df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main/wiki-art.csv")
 clt.scatter(df, x="x", y="y", media="img_path", color="painter")
 ```
+![Example plot](data/scatter.png)
 Data can be hosted locally or on AWS S3.
 
 As you can see, a clusterfun plot takes as input a pandas dataframe and column names indicating which columns to use for the visualisation. In this way, it is similar to the seaborn or the plotly library. But in clusterfun, you can:
@@ -32,6 +43,9 @@ As you can see, a clusterfun plot takes as input a pandas dataframe and column n
 - Click on data points to view zoomed in versions of the image related to the data point
 
 This makes clusterfun ideal for quickly visualising image data, which can be useful in the context of building datasets, exploring edge cases and debugging model performance.
+
+
+## Main features
 
 
 ## Default parameters
@@ -75,3 +89,166 @@ The default parameters for the plot types are as follows:
       "label": "ground truth" 
     }
     ```
+
+## Plot types
+The following plot types are available:
+- Histogram
+- Scatterplot
+- Pie chart
+- Violin plot
+- Grid
+
+### Histogram
+```python
+def histogram( 
+    df: pd.DataFrame, 
+    x: str, 
+    media: str, 
+    bins: int = 20, 
+    ...
+) -> Path:
+```
+#### Parameters
+- `df: pd.DataFrame`
+
+  The dataframe with the data to plot
+- `x: str`
+
+  The column name of the data for the histogram
+- `media: str`
+
+  The column name of the media to display
+- `bins: int = 20`
+
+  The number of bins to use for the histogram
+
+#### Example
+```python
+import pandas as pd
+import clusterfun as clt
+
+df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main/wiki-art.csv")
+clt.histogram(df, x="brightness", media="img_path")
+```
+![Example histogram](data/histogram.png)
+
+### Scatterplot
+```def scatter(
+    df: pd.DataFrame,
+    x: str,
+    y: str,
+    ...
+) -> Path:
+```
+#### Parameters
+- `df: pd.DataFrame`
+
+  The dataframe with the data to plot
+- `x: str`
+
+  The column name of the data for the x-axis
+- `y: str`
+
+  The column name of the data for the y-axis
+
+#### Example
+```python
+import pandas as pd
+import clusterfun as clt
+
+df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main/wiki-art.csv")
+clt.scatter(df, x="x", y="y", media="img_path")
+```
+![Example scatter](data/scatter.png)
+
+### Violin plot
+```python
+def violin(
+    df: pd.DataFrame, 
+    y: str, 
+    ...
+) -> Path:
+```
+#### Parameters
+- `df: pd.DataFrame`
+
+  The dataframe with the data to plot
+- `y: str`
+
+  The column name of the data for the y-axis
+
+#### Example
+```python
+import pandas as pd
+import clusterfun as clt
+
+df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main/wiki-art.csv")
+df = df[df.painter.isin(["Pablo Picasso", "Juan Gris", "George Braque", "Fernand Leger"])]
+clt.violin(df, y="brightness", media="img_path")
+```
+![Example violin](data/violin.png)
+
+### Grid
+```python
+def grid(
+    df: pd.DataFrame,
+    media: str,
+    ...
+) -> Path:
+```
+#### Parameters
+- `df: pd.DataFrame`
+
+  The dataframe with the data to plot
+- `media: str`
+
+  The column name of the media to display
+#### Example
+```python
+import pandas as pd
+import clusterfun as clt
+
+df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main/wiki-art.csv")
+clt.grid(df, media="img_path")
+```
+![Example grid](data/grid.png)
+
+### Pie chart
+```python
+def pie(
+    df: pd.DataFrame,
+    color: str,
+) -> Path:
+```
+#### Parameters
+- `df: pd.DataFrame`
+
+  The dataframe with the data to plot
+- `color`
+
+  Column for the pies of the pie chart
+
+#### Example
+```python
+import pandas as pd
+import clusterfun as clt
+
+df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main/wiki-art.csv")
+clt.pie_chart(df, color="painter", media="img_path")
+```
+![Example pie](data/pie.png)
+
+## Data loading
+Clusterfun supports AWS S3 and local data storage and loading.
+The dataframe column corresponding to the media value in the plot will be used to determine where to load the media from.
+```python
+import clusterfun as clt 
+
+df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main/wiki-art.csv") 
+clt.grid(df, media="img_column")
+```
+
+AWS S3 media should start with `s3://`.
+Make sure to set a `AWS_REGION` environment variable to the region where your data is stored.
+
+Support for Google Cloud Storage is coming soon.
