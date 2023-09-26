@@ -54,5 +54,7 @@ class Config:  # pylint: disable=too-many-instance-attributes
     save_method: str = os.getenv("saver", default="local")
     # used for setting ticks quickly
     colors: Optional[List[str]] = None
+    # for the bar chart, used to set the x axis ticks
+    x_names: Optional[List[str]] = None
     # used when data is local
     common_media_path: Optional[str] = None

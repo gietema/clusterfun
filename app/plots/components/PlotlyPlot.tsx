@@ -198,21 +198,7 @@ export default ({
 };
 
 function getXAxis(cfg: Config): object {
-  if (cfg.type !== "violin") {
-    return {
-      showgrid: true,
-      showline: false,
-      zeroline: false,
-      title: {
-        text: cfg.x,
-        font: {
-          color: "black",
-          size: 11,
-        },
-      },
-      autorange: true,
-    };
-  } else {
+  if (cfg.type === "violin") {
     return {
       /* Set the placement of the first tick */
       tick0: 0,
@@ -226,4 +212,32 @@ function getXAxis(cfg: Config): object {
       autorange: true,
     };
   }
+  if (cfg.type == "bar_chart") {
+    return {
+      tick0: 0.35,
+      dtick: 1,
+      rotation: 0,
+      // set the tickvals to the number of unique x values
+      tickvals:
+        cfg.x_names !== undefined &&
+        Array.from({ length: cfg.x_names.length + 1 }, (v, i) => i + 0.35),
+      ticktext: cfg.x_names,
+      autorange: true,
+      automargin: true,
+    };
+  }
+  return {
+    showgrid: true,
+    showline: false,
+    zeroline: false,
+    title: {
+      text: cfg.x,
+      font: {
+        color: "black",
+        size: 11,
+      },
+    },
+    autorange: true,
+    automargin: true,
+  };
 }
