@@ -10,7 +10,9 @@ def main():
     # create a dataframe with the data
     df = pd.read_parquet(Path(__file__).parent.parent / "tests" / "samples" / "wiki_red.parquet")
     # df.img_path = df.img_path.apply(lambda x: f"/Users/jochemgietema/code/clusterfun{x}")
-    df.img_path = df.img_path.apply(lambda x: x.replace("/Users/jochemgietema/code/clusterfun/data", "s3://clusterfun-test-bucket/imgs"))
+    df.img_path = df.img_path.apply(
+        lambda x: x.replace("/Users/jochemgietema/code/clusterfun/data", "s3://clusterfun-test-bucket/imgs")
+    )
     # df['img_path'] = df.img_path.apply(lambda x: f"/Users/jochemgietema/code/clusterfun{x}")
 
     dff = df[[c for c in df.columns if c not in ["emb"]]]
@@ -18,5 +20,5 @@ def main():
     print(x)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
