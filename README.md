@@ -13,6 +13,7 @@
   + [Violin plot](#violin-plot)
   + [Grid](#grid)
   + [Pie chart](#pie-chart)
+  + [Bar chart](#bar-chart)
 * [Data loading](#data-loading)
 
 ## Getting started
@@ -237,6 +238,37 @@ df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main
 clt.pie_chart(df, color="painter", media="img_path")
 ```
 ![Example pie](data/pie.png)
+
+
+### Bar chart
+```python
+def bar_chart( 
+    df: pd.DataFrame, 
+    x: str,
+    media: str, 
+    color: Optional[str] = None,
+    ...
+) -> Path:
+```
+#### Parameters
+- `df: pd.DataFrame`
+  The dataframe with the data to plot
+- `x: str`
+  The column name of the data for the bar chart. One bar per unique value will be plotted.
+- `media: str`
+  The column name of the media to display
+- `color: Optional[str] = None`
+  If added, the color will be used to create a stacked bar chart.
+
+#### Example
+```python
+import pandas as pd
+import clusterfun as clt
+
+df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main/wiki-art.csv")
+clt.bar_chart(df, x="painter", media="img_path", color="style")
+```
+![Example bar](data/bar.png)
 
 ## Data loading
 Clusterfun supports AWS S3 and local data storage and loading.

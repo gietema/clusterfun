@@ -44,8 +44,8 @@ def bar_chart(
 
     cfg = Config(
         type="bar_chart",
-        x="x_count",
-        y="y_count",
+        x="_x",
+        y="_y",
         media=media,
         columns=get_columns_for_db(df, media, "bar_chart", "_y", "_x"),
         color=color,

@@ -17,7 +17,7 @@ export default function SideBar(): JSX.Element {
         style={{
           display: "flex",
           flexDirection: "column",
-          maxHeight: "calc(70vh - 35px)",
+          maxHeight: "calc(100vh - 35px)",
         }}
       >
         <div style={{ maxHeight: "300px" }}>
