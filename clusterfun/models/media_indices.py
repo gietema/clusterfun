@@ -15,7 +15,7 @@ MediaIndices
 """
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel  # pylint: disable=no-name-in-module
 
 from clusterfun.models.filter import Filter  # pylint: disable=no-name-in-module
 

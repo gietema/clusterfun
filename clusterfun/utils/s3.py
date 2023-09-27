@@ -10,12 +10,12 @@ from botocore.client import Config as BotoConfig
 @lru_cache()
 def get_client() -> boto3.client:
     """Get an S3 client."""
-    s3 = boto3.client(
+    client = boto3.client(
         "s3",
         region_name=os.environ.get("AWS_REGION"),
         config=BotoConfig(region_name=os.environ.get("AWS_REGION"), signature_version="s3v4"),
     )
-    return s3
+    return client
 
 
 def get_presigned_url(s3_url: str) -> str:

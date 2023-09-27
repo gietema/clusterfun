@@ -4,14 +4,13 @@ bar_chart.py
 
 This module provides the bar chart plot type for clusterfun.
 """
-from typing import Callable, List, Optional
+from typing import Optional
 
 import numpy as np
 import pandas as pd
 
 from clusterfun.config import Config
 from clusterfun.plot import Plot
-from clusterfun.plot_types import DOCSTRING_STANDARD
 from clusterfun.storage.local.helpers import get_columns_for_db
 from clusterfun.validation import validate
 
@@ -24,7 +23,7 @@ def bar_chart(
     bounding_box: Optional[str] = None,
     title: Optional[str] = None,
     show: bool = True,
-):  # pylint: disable=too-many-arguments,missing-function-docstring
+):  # pylint: disable=too-many-arguments,missing-function-docstring,too-many-locals
     if color is None:
         start_index = 0
         for index, (value, count) in enumerate(df[x].value_counts().items()):
