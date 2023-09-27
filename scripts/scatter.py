@@ -1,23 +1,10 @@
-from pathlib import Path
-
 import pandas as pd
 import clusterfun as clt
 
 
 def main():
-    df = pd.DataFrame()
-    df["x"] = [1, 2, 3]
-    df["y"] = [1, 2, 3]
-    df["media"] = [file for file in (Path(__file__).parent.parent / "data" / "wikiart").rglob("*/*.jpg")][:3]
-    df["color"] = ["red", "blue", "green"]
-    clt.scatter(
-        df,
-        x="x",
-        y="y",
-        media="media",
-        color="color",
-        title="A title of a plot",
-    )
+    df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main/wiki-art.csv")
+    print(clt.scatter(df, x="x", y="y", media="img_path", color="painter", show=False))
 
 
 if __name__ == "__main__":
