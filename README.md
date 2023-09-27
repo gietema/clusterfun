@@ -1,7 +1,7 @@
 ![example workflow](https://github.com/gietema/clusterfun/actions/workflows/tests.yml/badge.svg)
 # Clusterfun
 
-[Clusterfun](https://clusterfun.app) is a python plotting library to explore image data.
+[Clusterfun](https://clusterfun.app) is a python plotting library to explore image data. Play around with a live demo on [https://clusterfun.app](https://clusterfun.app).
 
 * [Getting started](#getting-started)
 * [A simple example](#a-simple-example)
