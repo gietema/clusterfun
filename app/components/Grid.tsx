@@ -135,7 +135,7 @@ export default function Grid({ back }: GridProps): JSX.Element {
         <div>
           <div
             className={`grid w-full  grid-cols-1 border-b border-gray-300 pb-0 pe-2 pt-1 text-black lg:grid-cols-${
-              config.bounding_box ? 6 : 5
+              config.bounding_box ? "6" : "5"
             }
             lg:rounded-md lg:border lg:pt-0
                   `}
