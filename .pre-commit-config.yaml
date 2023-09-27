@@ -11,16 +11,22 @@ repos:
         language: system
         pass_filenames: false
         entry: poetry run isort --profile black .
-      - id: prettier
-        name: prettier
+      - id: ruff
+        name: ruff
         language: system
         pass_filenames: false
-        entry: npx prettier --write .
-      - id: flake8
-        name: flake8
+        entry: poetry run ruff . --line-length 120
+      - id: pylint
+        name: pylint
         language: system
         pass_filenames: false
-        entry: poetry run flake8 .
+        entry: poetry run pylint clusterfun --max-line-length 120
+# do not run the following hooks on the frontend for now
+# - id: prettier
+#   name: prettier
+#   language: system
+#   pass_filenames: false
+#   entry: npx prettier --write .
 #      - id: eslint
 #        name: eslint
 #        language: system
