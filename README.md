@@ -93,11 +93,12 @@ The default parameters for the plot types are as follows:
 
 ## Plot types
 The following plot types are available:
-- Histogram
-- Scatterplot
-- Pie chart
-- Violin plot
+- Bar chart
 - Grid
+- Histogram
+- Pie chart
+- Scatterplot
+- Violin plot
 
 ### Histogram
 ```python
