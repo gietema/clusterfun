@@ -24,7 +24,7 @@
     "eslint-config-next": "13.5.3",
     "jotai": "^2.4.0",
     "next": "13.4.19",
-    "plotly.js": "^2.25.2",
+    "plotly.js": "^2.26.1",
     "postcss": "8.4.28",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "@swc-jotai/react-refresh": "^0.1.0",
-    "@types/plotly.js": "^2.12.26",
+    "@types/plotly.js": "^2.12.27",
     "@types/react-highlight": "^0.12.6",
     "@types/react-plotly.js": "^2.6.0",
     "prettier": "^3.0.2",
