@@ -41,6 +41,9 @@ class Config:  # pylint: disable=too-many-instance-attributes
     colors : Optional[List[str]]
         A list of colors to use for coloring the plot. This is used for setting
         the colors quickly.
+    x_names: Optional[List[str]]
+        A list of names to use for the x axis ticks. This is used for setting
+        the x axis ticks quickly.
     """
 
     type: str
