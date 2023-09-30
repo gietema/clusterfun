@@ -23,26 +23,28 @@ def confusion_matrix(
     bounding_box: Optional[str] = None,
     title: Optional[str] = None,
     show: bool = True,
-):  # pylint: disable=too-many-arguments,missing-function-docstring
+):  # pylint: disable=too-many-arguments,missing-function-docstring,too-many-locals
 
     labels = sorted(df[y_true].unique().tolist())
     for index_label, label in enumerate(labels):
         for index_pred, label_pred in enumerate(labels):
             mask = (df[y_true] == label) & (df[y_pred] == label_pred)
-            n = mask.sum()  # Number of dots in this square
+            number_of_dots_in_square = mask.sum()  # Number of dots in this square
 
             # Generate random angles and radii
-            angles = np.random.uniform(0, 2 * np.pi, n)
+            angles = np.random.uniform(0, 2 * np.pi, number_of_dots_in_square)
             max_radius = 0.3  # Adjust max_radius to change the size of the filled circle
-            radii = np.sqrt(np.random.uniform(0, max_radius**2, n))  # sqrt for uniform distribution
+            radii = np.sqrt(
+                np.random.uniform(0, max_radius**2, number_of_dots_in_square)
+            )  # sqrt for uniform distribution
 
             # Calculate the Cartesian coordinates for each dot
             x_offsets = radii * np.cos(angles)
             y_offsets = radii * np.sin(angles)
 
             # Calculate the final positions of the dots
-            df.loc[mask, "_label"] = np.repeat(index_label, n) + x_offsets + 1
-            df.loc[mask, "_prediction"] = np.repeat(index_pred, n) + y_offsets + 1
+            df.loc[mask, "_label"] = np.repeat(index_label, number_of_dots_in_square) + x_offsets + 1
+            df.loc[mask, "_prediction"] = np.repeat(index_pred, number_of_dots_in_square) + y_offsets + 1
 
     df = df.sort_values(by=["_label", "_prediction"], ascending=True)
 
