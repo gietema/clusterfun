@@ -1,5 +1,3 @@
-import { faCheck, faClipboard } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "highlight.js/styles/atom-one-dark.css";
 import React, { useState } from "react";
 import Highlight from "react-highlight";
@@ -39,9 +37,9 @@ export default function CodeBlock({
               className="button rounded bg-gray-500 p-2 text-xs text-white"
             >
               {copied ? (
-                <FontAwesomeIcon icon={faCheck} className="px-2" />
+                <i className="fa-solid fa-check px-2" />
               ) : (
-                <FontAwesomeIcon icon={faClipboard} className="px-2" />
+                <i className="fa-solid fa-clipboard px-2" />
               )}
               {copied ? "Code copied!" : "Copy code"}
             </button>

@@ -65,6 +65,10 @@ export default function RootLayout({
           property="og:image"
           content="https://clusterfun.app/share-clt.png"
         />
+        <script
+          src="https://kit.fontawesome.com/1c414fe52d.js"
+          crossOrigin="anonymous"
+         />
       </Head>
       <body className={inter.className}>{children}</body>
     </html>
