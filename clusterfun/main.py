@@ -38,43 +38,43 @@ from clusterfun.plot import Plot
 from clusterfun.storage.local.loader import LocalLoader
 
 
-@APP.get("/views/{view_uuid}")
+@APP.get("/api/views/{view_uuid}")
 def read_view(view_uuid: str) -> Dict[str, Any]:
     """Retrieve plot data for its UUID."""
     return Plot.load(view_uuid).as_json()
 
 
-@APP.get("/uuid")
+@APP.get("/api/uuid")
 def get_recent_uuid() -> str:
     """Retrieve the most recent plot UUID as stored in the cache directory."""
     return LocalLoader("recent").cache_dir.stem
 
 
-@APP.get("/views/{view_uuid}/config")
+@APP.get("/api/views/{view_uuid}/config")
 def read_config(view_uuid: str) -> Dict[str, Any]:
     """Retrieve the configuration for a specific plot by its UUID."""
     return dataclasses.asdict(LocalLoader(view_uuid).load_config())
 
 
-@APP.get("/views/{view_uuid}/media/{media_id}")
+@APP.get("/api/views/{view_uuid}/media/{media_id}")
 def read_media(view_uuid: str, media_id: int, as_base64: bool = False) -> MediaItem:
     """Retrieve a media item associated with a specific plot by its UUID and media ID."""
     return LocalLoader(view_uuid).get_row(media_id, as_base64=as_base64)
 
 
-@APP.post("/views/{view_uuid}/media")
+@APP.post("/api/views/{view_uuid}/media")
 def read_medias(view_uuid: str, media_ids: MediaIndices) -> List[MediaItem]:
     """Retrieve multiple media items associated with a specific plot by their UUID and media IDs."""
     return LocalLoader(view_uuid).get_rows(media_ids)
 
 
-@APP.post("/views/{view_uuid}/filter")
+@APP.post("/api/views/{view_uuid}/filter")
 def filter_view(view_uuid: str, filters: List[Filter]) -> List[Dict[str, Any]]:
     """Filter plot based on a list of provided filters."""
     return LocalLoader(view_uuid).filter(filters)
 
 
-@APP.post("/views/{view_uuid}/media-metadata")
+@APP.post("/api/views/{view_uuid}/media-metadata")
 def read_media_metadata(view_uuid: str, media_ids: MediaIndices) -> List[Dict[str, Any]]:
     """Retrieve metadata for media items associated with a specific plot by their UUID and media IDs."""
     return LocalLoader(view_uuid).get_rows_metadata(media_ids)
