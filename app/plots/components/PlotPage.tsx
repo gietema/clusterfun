@@ -41,18 +41,8 @@ export default function PlotPage({
     ) {
       return;
     }
-    // Fetch an image at start of page to fill the side panel
-    // for a scatter on the homepage, we want to show a nice painting by Picasso.
-    // Picasso is index 2, and then we take the painting with index 47.
-    const plotDataIndex =
-      process.env.NODE_ENV === "production" && plotData.length >= 2 ? 2 : 0;
-
-    const idToShow =
-      process.env.NODE_ENV === "production" &&
-      // @ts-expect-error
-      plotData[plotDataIndex].id.length >= 47
-        ? 47
-        : 0;
+    const plotDataIndex = 0;
+    const idToShow = 0;
     // @ts-expect-error
     handlePointHover(plotData[plotDataIndex].id[idToShow]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
