@@ -51,7 +51,7 @@ def get_filter_query(con: sqlite3.Connection, config: Config, filters: List[Filt
         if not filter_item.is_valid(config.columns, con):
             continue
         # Add AND statement if not first or last filter
-        if 0 < idx < (len(filters)):
+        if 0 < idx < len(filters):
             query += " AND "
         # Add filter to query string
         if str(filter_item.value).isnumeric() or is_float(filter_item.value):
@@ -71,8 +71,9 @@ def get_media_query(
         query = f"SELECT * FROM database WHERE id IN {str(tuple(media_indices.media_ids))}"
     if media_indices.filters and len(media_indices.filters) > 0:
         assert con is not None and config is not None, "If filters are provided, con and config must be provided"
-        query += " AND "
-        query += get_filter_query(con, config=config, filters=media_indices.filters)
+        filter_query = get_filter_query(con, config=config, filters=media_indices.filters)
+        if filter_query:
+            query += " AND {filter_query}"
     if (
         media_indices.sort_column is not None
         and media_indices.sort_column != ""
