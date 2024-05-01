@@ -45,6 +45,7 @@ const FilterButton: FC<{ filter: FilterInterface; onRemove: () => void }> = ({
 export const Filter: FC = () => {
   const config = useAtomValue(configAtom);
   const [filters, setFilters] = useAtom(filtersAtom);
+  const [previousFilters, setPreviousFilters] = useState<FilterInterface[]>([])
   const uuid = useAtomValue(uuidAtom);
   const setPlotData = useSetAtom(dataAtom);
   const [selectedColumn, setSelectedColumn] = useState<string>();
@@ -57,7 +58,9 @@ export const Filter: FC = () => {
   const [mediaIndices, setMediaIndices] = useAtom(mediaIndicesAtom); // [0, 1, 2, 3, 4, 5, 6, 7, 8, 9
 
   useEffect(() => {
-    handleFiltering();
+    if (JSON.stringify(filters) !== JSON.stringify(previousFilters)) {
+      handleFiltering();
+    }
   }, [filters]);
 
   const handleFiltering = (): void => {
@@ -131,6 +134,7 @@ export const Filter: FC = () => {
   };
 
   const handleRemoveFilter = (selectedFilter: FilterInterface): void => {
+    setPreviousFilters(filters)
     setFilters((filters) =>
       filters.filter((filter) => filter !== selectedFilter),
     );
