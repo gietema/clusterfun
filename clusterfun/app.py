@@ -34,4 +34,4 @@ FRONTEND_DIR = Path(__file__).parent / "frontend"
 # for production setting
 if os.environ.get("CLUSTERFUN_PROD_URL") is None and (FRONTEND_DIR / "_next").exists():
     # this loads the static files from the frontend directory (CSS etc.)
-    APP.mount("/_next", StaticFiles(directory=FRONTEND_DIR), name="_next")
+    APP.mount("/_next", StaticFiles(directory=FRONTEND_DIR / "_next"), name="_next")
