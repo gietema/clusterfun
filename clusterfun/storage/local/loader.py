@@ -74,7 +74,7 @@ class LocalLoader(Loader):
         src, height, width = load_media(
             result[1], as_base64=as_base64, common_media_path=self.load_config().common_media_path
         )
-        return MediaItem(index=media_id, src=src, height=height, width=width, information=result[2:])
+        return MediaItem(index=media_id, src=src, height=height, width=width, information=list(result[2:]))
 
     def get_rows(self, media_indices: MediaIndices) -> List[MediaItem]:
         """
@@ -99,7 +99,7 @@ class LocalLoader(Loader):
         items = []
         for item in result:
             src, height, width = load_media(item[1])
-            items.append(MediaItem(index=item[0], src=src, height=height, width=width, information=item[2:]))
+            items.append(MediaItem(index=item[0], src=src, height=height, width=width, information=list(item[2:])))
         return items
 
     def get_rows_metadata(self, media_indices: MediaIndices) -> List[Dict[str, Any]]:
