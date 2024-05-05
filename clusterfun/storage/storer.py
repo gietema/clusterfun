@@ -1,17 +1,17 @@
 """
 Base class for storing plots.
 """
+
 import abc
 import base64
 from io import BytesIO
 from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
-import requests
 from PIL import Image
 
 from clusterfun.config import Config
-from clusterfun.utils.s3 import get_presigned_url
+from clusterfun.storage.client import get_storage_client
 
 
 class Storer(abc.ABC):
@@ -67,15 +67,13 @@ def load_media(
         The media, the height of the image, and the width of the image.
         Height and width are only returned if as_base64 is True.
     """
-    if url.startswith("s3://"):
-        url = get_presigned_url(url)
+
+    storage_client = get_storage_client(url, common_media_path)
+    url = storage_client.get_media(url)
+
     if as_base64:
-        if url.startswith("http"):
-            response = requests.get(url, timeout=60)
-            url = BytesIO(response.content)
-        else:
-            # assume local file
-            url = url.replace("/media", common_media_path)
-        image = Image.open(url)
+        image_bytes_or_str = storage_client.get_media_to_local(url)
+        image = Image.open(image_bytes_or_str)
         return f"data:image/png;base64, {image_to_base64(image)}", image.height, image.width
+
     return url, None, None
