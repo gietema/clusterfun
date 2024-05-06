@@ -1,8 +1,7 @@
 """MediaItem model."""
+
 import dataclasses
 from typing import Any, List, Optional
-
-from clusterfun.utils.s3 import get_presigned_url
 
 
 @dataclasses.dataclass
@@ -32,8 +31,3 @@ class MediaItem:
     information: Optional[List[Any]] = None
     width: Optional[int] = None
     height: Optional[int] = None
-
-    def __post_init__(self):
-        """Post init hook. This is used to get a presigned url if the src is a s3 url."""
-        if self.src.startswith("s3://"):
-            self.src = get_presigned_url(self.src)
