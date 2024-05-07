@@ -2,13 +2,11 @@
 
 import os
 from functools import lru_cache
-from io import BytesIO
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple
 
 import boto3
 from botocore.client import Config as BotoConfig
 
-from clusterfun.storage.client.base import BaseStorageClient
 from clusterfun.storage.client.http import HttpStorageClient
 
 
@@ -24,6 +22,8 @@ def get_client() -> boto3.client:
 
 
 class S3StorageClient(HttpStorageClient):
+    """S3 storage client."""
+
     def __init__(self, common_media_path: Optional[str]):
         super().__init__(common_media_path)
         self.client = get_client()
@@ -49,9 +49,6 @@ class S3StorageClient(HttpStorageClient):
             },
             ExpiresIn=3600,
         )
-
-    def get_media_to_local(self, url: str) -> Union[BytesIO, str]:
-        return super().get_media_to_local(url)
 
     def get_bucket_and_key(self, s3_path: str) -> Tuple[str, str]:
         """Extract the bucket name and key from an S3 URL."""

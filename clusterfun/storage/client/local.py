@@ -7,6 +7,8 @@ from clusterfun.storage.client.base import BaseStorageClient
 
 
 class LocalStorageClient(BaseStorageClient):
+    """Utilities for working with local path."""
+
     def __init__(self, common_media_path: Optional[str]) -> None:
         super().__init__(common_media_path)
         if self.common_media_path is None:

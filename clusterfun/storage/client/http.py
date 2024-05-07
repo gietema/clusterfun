@@ -1,7 +1,7 @@
 """Utilities for working with http path."""
 
 from io import BytesIO
-from typing import Optional, Union
+from typing import Union
 
 import requests
 
@@ -9,10 +9,13 @@ from clusterfun.storage.client.base import BaseStorageClient
 
 
 class HttpStorageClient(BaseStorageClient):
-    def __init__(self, common_media_path: Optional[str]) -> None:
-        super().__init__(common_media_path)
+    """Http storage client."""
 
     def get_media(self, uri: str) -> str:
+        """Get media from storage.
+
+        For example, for AWS S3, this could be a signed URL based on the URI.
+        """
         return uri
 
     def get_media_to_local(self, url: str) -> Union[BytesIO, str]:
