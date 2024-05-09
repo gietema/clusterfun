@@ -61,3 +61,4 @@ class Config:  # pylint: disable=too-many-instance-attributes
     x_names: Optional[List[str]] = None
     # used when data is local
     common_media_path: Optional[str] = None
+    color_is_categorical: bool = True

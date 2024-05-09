@@ -32,10 +32,11 @@ def histogram(  # pylint: disable=too-many-arguments,missing-function-docstring
     bounding_box: Optional[str] = None,
     title: Optional[str] = None,
     show: bool = True,
+    color_is_categorical: bool = True,
 ) -> Path:
     if "_x" in df.columns or "_y" in df.columns:
         raise KeyError('"_y" is a protected clusterfun columns and should not be included in the original dataframe.')
-    if color is not None:
+    if color is not None and color_is_categorical:
         dfs = []
         for color_item in df[color].unique():
             data_color = get_x_and_y(df[df[color] == color_item][x], bins)
@@ -56,6 +57,7 @@ def histogram(  # pylint: disable=too-many-arguments,missing-function-docstring
         color=color,
         bounding_box=bounding_box,
         title=title,
+        color_is_categorical=color_is_categorical,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)
