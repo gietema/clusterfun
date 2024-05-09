@@ -39,7 +39,7 @@ def get_data_dict(
         List of colors for each data point. Used for coloring the data points.
     """
     colors = None
-    if cfg.color is not None:
+    if cfg.color is not None and cfg.color_is_categorical:
         return get_data_per_color(cfg, con, query_addition)
     if cfg.type == "grid":
         data = get_grid_data(con, query_addition)
@@ -49,7 +49,9 @@ def get_data_dict(
 
 
 def get_data_standard(
-    cfg: Config, con: sqlite3.Connection, query_addition: Optional[str] = None
+    cfg: Config,
+    con: sqlite3.Connection,
+    query_addition: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """Get data for standard plotly graph, in case there is no color column.
 
@@ -69,12 +71,16 @@ def get_data_standard(
         Data for plotly graph.
         List of dicts with keys: id, x, y, mode, type
     """
+    select_columns = ["id"]
+    if cfg.x is not None:
+        select_columns.append(cfg.x)
     if cfg.y is not None:
-        query = f"SELECT id,{cfg.x},{cfg.y} FROM database"
-    elif cfg.x is not None:
-        query = f"SELECT id,{cfg.x} FROM database"
-    else:
-        query = "SELECT id FROM database"
+        select_columns.append(cfg.y)
+    if cfg.color is not None and not cfg.color_is_categorical:
+        select_columns.append(cfg.color)
+
+    query = f"SELECT {','.join(select_columns)} FROM database"
+
     if query_addition:
         query += f" WHERE {query_addition}"
     res = con.execute(query).fetchall()
@@ -89,6 +95,9 @@ def get_data_standard(
         data[0]["x"] = [x[1] for x in res]
     if cfg.y is not None:
         data[0]["y"] = [x[2] for x in res]
+    if cfg.color is not None and not cfg.color_is_categorical:
+        # Color is always categorical here, index always the last column
+        data[0]["marker"] = {"color": [x[-1] for x in res], "colorscale": "Viridis", "showscale": True}
     return data
 
 

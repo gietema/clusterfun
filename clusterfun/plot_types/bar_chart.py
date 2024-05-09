@@ -23,8 +23,9 @@ def bar_chart(
     bounding_box: Optional[str] = None,
     title: Optional[str] = None,
     show: bool = True,
+    color_is_categorical: bool = True,
 ):  # pylint: disable=too-many-arguments,missing-function-docstring,too-many-locals
-    if color is None:
+    if color is None or not color_is_categorical:
         start_index = 0
         for index, (value, count) in enumerate(df[x].value_counts().items()):
             df.loc[df[x] == value, "_x"] = np.random.uniform(low=start_index + index, high=0.7 + index, size=count)
@@ -55,6 +56,7 @@ def bar_chart(
         bounding_box=bounding_box,
         title=title,
         x_names=x_names,
+        color_is_categorical=color_is_categorical,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

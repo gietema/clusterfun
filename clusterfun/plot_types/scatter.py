@@ -25,6 +25,7 @@ def scatter(
     bounding_box: Optional[str] = None,
     title: Optional[str] = None,
     show: bool = True,
+    color_is_categorical: bool = True,
 ):  # pylint: disable=too-many-arguments,missing-function-docstring
     cfg = Config(
         type="scatter",
@@ -35,6 +36,7 @@ def scatter(
         color=color,
         bounding_box=bounding_box,
         title=title,
+        color_is_categorical=color_is_categorical
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

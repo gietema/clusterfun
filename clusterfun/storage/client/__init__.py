@@ -8,7 +8,12 @@ from clusterfun.storage.client.s3 import S3StorageClient
 
 T = TypeVar("T", bound=BaseStorageClient)
 
-CLIENT_REGISTRY = {"s3": S3StorageClient, "http": HttpStorageClient, "local": LocalStorageClient}
+CLIENT_REGISTRY = {
+    "s3": S3StorageClient,
+    "http": HttpStorageClient,
+    "https": HttpStorageClient,
+    "local": LocalStorageClient,
+}
 
 
 def get_storage_client(uri: str, common_media_path: Optional[str]) -> BaseStorageClient:
