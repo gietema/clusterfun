@@ -57,7 +57,7 @@ def histogram(  # pylint: disable=too-many-arguments,missing-function-docstring
         color=color,
         bounding_box=bounding_box,
         title=title,
-        color_is_categorical=color_is_categorical
+        color_is_categorical=color_is_categorical,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)
