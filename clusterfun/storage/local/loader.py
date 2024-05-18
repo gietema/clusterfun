@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import orjson
+import pandas as pd
 
 from clusterfun.config import Config
 from clusterfun.models.filter import Filter
@@ -132,3 +133,14 @@ class LocalLoader(Loader):
         data = get_data_dict(con, config, query_addition=query)
         con.close()
         return data[0]
+
+    def get_dataframe(self, media_indices: MediaIndices) -> pd.DataFrame:
+        """Get the data as a pandas dataframe."""
+        con = None
+        config = self.load_config()
+        if media_indices.filters:
+            con = sqlite3.connect(self.db_path, check_same_thread=False)
+            config = self.load_config()
+        query = get_media_query(media_indices, config=config, con=con, paginate=False)
+        result = run_query(self.db_path, query)
+        return pd.DataFrame(result, columns=config.columns)
