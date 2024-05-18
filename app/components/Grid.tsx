@@ -5,11 +5,14 @@ import { getMedia } from "@/app/plots/requests/GetMedia";
 import { faSquare } from "@fortawesome/free-regular-svg-icons";
 import { faBarChart, faTableCells } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import axios from "axios";
+import saveAs from "file-saver";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import React, { useEffect, useState } from "react";
 import BackButton from "../plots/components/BackButton";
 import { Filter } from "../plots/components/Filter";
 import SideBar from "../plots/components/SideBar";
+import { API_URL } from "../plots/models/Constants";
 import { getMediaItems } from "../plots/requests/GetMediaItems";
 import { MediaVisualization } from "./MediaStats";
 import {
@@ -123,6 +126,17 @@ export default function Grid({ back }: GridProps): JSX.Element {
     if (back !== undefined) {
       back();
     }
+  }
+
+  function handleDownloadGrid() {
+    axios
+      .post(`${API_URL}/views/${uuid}/download-grid`, {
+        media_ids: mediaIndicesAll[mediaIndicesAll.length - 1],
+      })
+      .then((res) => {
+        const blob = new Blob([res.data], { type: "text/csv;charset=utf-8" });
+        saveAs(blob, "data.csv");
+      });
   }
 
   if (config === undefined || gridValues === undefined) {
@@ -266,6 +280,13 @@ export default function Grid({ back }: GridProps): JSX.Element {
         </div>
       </div>
       <div className="w-1/4">
+        <div
+          className="button w-full cursor-pointer border rounded-md mb-2 border-gray-300 bg-gray-100 py-1 text-center text-xs text-gray-900 hover:bg-gray-300 duration-150 ease-in-out transition-all"
+          onClick={() => handleDownloadGrid()}
+        >
+          Download grid as csv
+        </div>
+
         <SideBar />
       </div>
     </div>

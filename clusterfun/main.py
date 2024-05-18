@@ -28,7 +28,7 @@ import dataclasses
 from typing import Any, Dict, List
 
 from fastapi import Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 
 from clusterfun.app import APP, FRONTEND_DIR
 from clusterfun.models.filter import Filter
@@ -78,6 +78,19 @@ def filter_view(view_uuid: str, filters: List[Filter]) -> List[Dict[str, Any]]:
 def read_media_metadata(view_uuid: str, media_ids: MediaIndices) -> List[Dict[str, Any]]:
     """Retrieve metadata for media items associated with a specific plot by their UUID and media IDs."""
     return LocalLoader(view_uuid).get_rows_metadata(media_ids)
+
+
+@APP.post("/api/views/{view_uuid}/download-grid")
+def download_grid(view_uuid: str, media_indices: MediaIndices) -> FileResponse:
+    """Download the data selected in the grid"""
+    loader = LocalLoader(view_uuid)
+    df = loader.get_dataframe(media_indices=media_indices)
+    # TODO:: include labels
+    return StreamingResponse(
+        iter([df.to_csv(index=False)]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=data.csv"},
+    )
 
 
 @APP.get("/{path:path}", response_class=HTMLResponse)
