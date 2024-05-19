@@ -4,7 +4,7 @@ bar_chart.py
 
 This module provides the bar chart plot type for clusterfun.
 """
-from typing import Optional
+from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -23,6 +23,7 @@ def confusion_matrix(
     bounding_box: Optional[str] = None,
     title: Optional[str] = None,
     show: bool = True,
+    display: Optional[Union[str, List[str]]] = None,
 ):  # pylint: disable=too-many-arguments,missing-function-docstring,too-many-locals
 
     labels = sorted(df[y_true].unique().tolist())
@@ -58,6 +59,7 @@ def confusion_matrix(
         bounding_box=bounding_box,
         title=title,
         x_names=labels,
+        display=display,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

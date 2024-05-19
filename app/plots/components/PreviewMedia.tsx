@@ -59,6 +59,7 @@ export function PreviewMedia(props: {
   });
   const [bboxElement, setBboxElement] = useState<JSX.Element[]>([]);
   const imageRef = React.useRef(null);
+  const audioRef = React.useRef(null);
   const [containerWidth, setContainerWidth] = useState<number>(0);
   const containerRef = React.useRef(null);
 
@@ -100,6 +101,10 @@ export function PreviewMedia(props: {
       }
       const newBoundingBoxes = parseBoundingBoxes(bboxValue);
       setBoundingBoxes(newBoundingBoxes);
+    }
+    if (audioRef.current !== null) {
+      const audioElement: HTMLAudioElement = audioRef.current;
+      audioElement.load();
     }
   }, [props.media, props.boundingBoxColumnIndex]);
 
@@ -235,24 +240,28 @@ export function PreviewMedia(props: {
 
   if (props.media === undefined) return <></>;
 
-  return (
-    <div className={"image--preview"} ref={containerRef}>
-      <img
-        src={props.media.src}
-        ref={imageRef}
-        className={"sidebar-image"}
-        style={{ objectFit: "contain", width: "100%" }}
-      />
-      <div
-        style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
-        className="flex justify-center items-center"
-      >
-        <svg className={"sidebar-svg"} width={dims.width} height={dims.height}>
-          {bboxElement}
-        </svg>
+  if (props.media.type === "audio") {
+    return (
+      <div className={"image--preview"} ref={containerRef}>
+        <audio controls autoPlay ref={audioRef}>
+          <source src={props.media.src} />
+          Your browser does not support the audio element.
+        </audio>
       </div>
-      {props.boundingBoxColumnIndex == null &&
-        props.boundingBoxColumnIndex !== undefined && (
+    );
+  } else {
+    return (
+      <div className={"image--preview"} ref={containerRef}>
+        <img
+          src={props.media.src}
+          ref={imageRef}
+          className={"sidebar-image"}
+          style={{ objectFit: "contain", width: "100%" }}
+        />
+        <div
+          style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
+          className="flex justify-center items-center"
+        >
           <svg
             className={"sidebar-svg"}
             width={dims.width}
@@ -260,7 +269,18 @@ export function PreviewMedia(props: {
           >
             {bboxElement}
           </svg>
-        )}
-    </div>
-  );
+        </div>
+        {props.boundingBoxColumnIndex == null &&
+          props.boundingBoxColumnIndex !== undefined && (
+            <svg
+              className={"sidebar-svg"}
+              width={dims.width}
+              height={dims.height}
+            >
+              {bboxElement}
+            </svg>
+          )}
+      </div>
+    );
+  }
 }

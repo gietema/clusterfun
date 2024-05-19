@@ -6,7 +6,7 @@ This module provides the Config dataclass for clusterfun.
 """
 import dataclasses
 import os
-from typing import List, Optional
+from typing import List, Optional, Union
 
 
 @dataclasses.dataclass
@@ -44,6 +44,12 @@ class Config:  # pylint: disable=too-many-instance-attributes
     x_names: Optional[List[str]]
         A list of names to use for the x axis ticks. This is used for setting
         the x axis ticks quickly.
+    display: Optional[Union[str, List[str]]]
+        When added, the information in these columns will be displayed directly
+        underneath the media. This is useful when you want to quickly review
+        certain types of information related to the media.
+        For audio media types, the columns added here will also be displayed
+        in the grid view for each single audio file.
     """
 
     type: str
@@ -62,3 +68,4 @@ class Config:  # pylint: disable=too-many-instance-attributes
     # used when data is local
     common_media_path: Optional[str] = None
     color_is_categorical: bool = True
+    display: Union[str, List[str]] = None

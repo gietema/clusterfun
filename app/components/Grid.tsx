@@ -273,6 +273,7 @@ export default function Grid({ back }: GridProps): JSX.Element {
                   showColumn={gridValues.showColumnValue}
                   boundingBoxColumn={config.bounding_box}
                   showBboxLabel={gridValues.showBboxLabel}
+                  display={config.display}
                 />
               );
             })}

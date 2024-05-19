@@ -11,7 +11,7 @@ Display a grid of media items using the input DataFrame, media, and optional tit
 
 """
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional, Union
 
 import pandas as pd
 
@@ -23,7 +23,7 @@ from clusterfun.validation import validate
 
 
 def grid(  # pylint: disable=missing-function-docstring
-    df: pd.DataFrame, media: str, title: Optional[str] = None, bounding_box: Optional[str] = None, show: bool = True
+    df: pd.DataFrame, media: str, title: Optional[str] = None, bounding_box: Optional[str] = None, show: bool = True, display: Optional[Union[str, List[str]]] = None,
 ) -> Path:  # pylint: disable=too-many-arguments
     cfg = Config(
         type="grid",
@@ -31,6 +31,7 @@ def grid(  # pylint: disable=missing-function-docstring
         bounding_box=bounding_box,
         columns=get_columns_for_db(df, media, "grid"),
         title=title,
+        display=display,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

@@ -63,6 +63,8 @@ class LocalStorer(Storer):
 
     def save_config(self, cfg: Config):
         """Saves the config to a json file"""
+        if cfg.display is not None and isinstance(cfg.display, str):
+            cfg.display = [cfg.display]
         with open(str(self.save_dir / "config.json"), "w", encoding="utf-8") as f:
             json.dump(dataclasses.asdict(cfg), f, indent=2)
 

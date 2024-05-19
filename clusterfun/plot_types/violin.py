@@ -4,7 +4,7 @@ violin.py
 
 This module provides the violin plot type for clusterfun.
 """
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -24,6 +24,7 @@ def violin(
     bounding_box: Optional[str] = None,
     title: Optional[str] = None,
     show: bool = True,
+    display: Optional[Union[str, List[str]]] = None,
 ):  # pylint: disable=too-many-arguments,missing-function-docstring
     df["x"] = get_violin_x(df, y, color)
     cfg = Config(
@@ -35,6 +36,7 @@ def violin(
         color=color,
         bounding_box=bounding_box,
         title=title,
+        display=display,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

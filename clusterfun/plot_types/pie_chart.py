@@ -19,7 +19,7 @@ The primary use case for this module is to create pie charts for various dataset
 allowing users to visualize categorical data using a scatter plot-based pie chart representation.
 """
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -147,6 +147,7 @@ def pie_chart(  # pylint: disable=too-many-arguments,missing-function-docstring
     bounding_box: Optional[str] = None,
     title: Optional[str] = None,
     show: bool = True,
+    display: Optional[Union[str, List[str]]] = None,
 ) -> Path:
     counts = df[color].value_counts(True).to_dict()
     df = compute_pie_chart_coordinates(df, color, counts)
@@ -161,6 +162,7 @@ def pie_chart(  # pylint: disable=too-many-arguments,missing-function-docstring
         color=color,
         bounding_box=bounding_box,
         title=title,
+        display=display
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

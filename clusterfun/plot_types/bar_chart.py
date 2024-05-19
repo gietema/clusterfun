@@ -4,7 +4,7 @@ bar_chart.py
 
 This module provides the bar chart plot type for clusterfun.
 """
-from typing import Optional
+from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -24,6 +24,7 @@ def bar_chart(
     title: Optional[str] = None,
     show: bool = True,
     color_is_categorical: bool = True,
+    display: Optional[Union[str, List[str]]] = None,
 ):  # pylint: disable=too-many-arguments,missing-function-docstring,too-many-locals
     if color is None or not color_is_categorical:
         start_index = 0
@@ -57,6 +58,7 @@ def bar_chart(
         title=title,
         x_names=x_names,
         color_is_categorical=color_is_categorical,
+        display=display,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

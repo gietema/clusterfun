@@ -12,7 +12,7 @@ get_x_and_y
     Get the x and y values for a histogram plot.
 """
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import pandas as pd
 
@@ -33,6 +33,7 @@ def histogram(  # pylint: disable=too-many-arguments,missing-function-docstring
     title: Optional[str] = None,
     show: bool = True,
     color_is_categorical: bool = True,
+    display: Optional[Union[str, List[str]]] = None,
 ) -> Path:
     if "_x" in df.columns or "_y" in df.columns:
         raise KeyError('"_y" is a protected clusterfun columns and should not be included in the original dataframe.')
@@ -58,6 +59,7 @@ def histogram(  # pylint: disable=too-many-arguments,missing-function-docstring
         bounding_box=bounding_box,
         title=title,
         color_is_categorical=color_is_categorical,
+        display=display,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

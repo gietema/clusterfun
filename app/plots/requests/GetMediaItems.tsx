@@ -19,5 +19,15 @@ export async function getMediaItems(
       ascending: ascending !== undefined ? ascending : null,
       filters: filters !== undefined ? filters : null,
     })
-    .then((r) => r.data);
+    .then((r) => {
+      return r.data.map((media: any) => {
+        return new Media(
+          media.index,
+          media.src,
+          media.information,
+          media.height,
+          media.width,
+        );
+      });
+    });
 }

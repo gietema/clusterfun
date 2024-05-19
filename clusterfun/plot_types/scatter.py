@@ -5,7 +5,7 @@ scatter.py
 This module provides a function to display a scatter plot using the ClusterFun library.
 It allows users to create a scatter plot of two columns of data.
 """
-from typing import Optional
+from typing import List, Optional, Union
 
 import pandas as pd
 
@@ -26,6 +26,7 @@ def scatter(
     title: Optional[str] = None,
     show: bool = True,
     color_is_categorical: bool = True,
+    display: Optional[Union[str, List[str]]] = None,
 ):  # pylint: disable=too-many-arguments,missing-function-docstring
     cfg = Config(
         type="scatter",
@@ -37,6 +38,7 @@ def scatter(
         bounding_box=bounding_box,
         title=title,
         color_is_categorical=color_is_categorical,
+        display=display,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

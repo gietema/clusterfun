@@ -21,4 +21,12 @@ DOCSTRING_STANDARD = """    :param media: str
         - If no color is provided, a default color scheme will be used.
         - The label will be displayed in the top left of the bounding box
     :param title: Optional[str] = None
-        Optional title to display on top of the plot"""
+        Optional title to display on top of the plot
+    
+    :param display: Optional[Union[str, List[str]]]
+        When added, the information in these columns will be displayed directly
+        underneath the media. This is useful when you want to quickly review
+        certain types of information related to the media.
+        For audio media types, the columns added here will also be displayed
+        in the grid view for each single audio file.
+    """

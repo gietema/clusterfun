@@ -1,21 +1,62 @@
-export class Media {
-  index: number
-  src: string
-  information?: any[]
-  width?: number
-  height?: number
+export type MediaType = "image" | "video" | "audio";
 
-  constructor (
+export class Media {
+  index: number;
+  src: string;
+  information?: any[];
+  width?: number;
+  height?: number;
+  type?: MediaType;
+
+  constructor(
     index: number,
     src: string,
     information?: any[],
     height?: number,
-    width?: number
+    width?: number,
+    type?: MediaType,
   ) {
-    this.index = index
-    this.src = src
-    this.information = information
-    this.height = height
-    this.width = width
+    this.index = index;
+    this.src = src;
+    this.information = information;
+    this.height = height;
+    this.width = width;
+    this.type = type;
+    if (this.type === undefined) {
+      this.type = determineMediaType(this.src);
+    }
+    console.log(this.src, this.type);
   }
+}
+
+function determineMediaType(filename: string): MediaType | undefined {
+  const imageExtensions = new Set([
+    "jpg",
+    "jpeg",
+    "png",
+    "gif",
+    "bmp",
+    "tif",
+    "tiff",
+  ]);
+  const audioExtensions = new Set(["mp3", "wav", "aac", "ogg", "flac", "wma"]);
+
+  const parts = filename.split(".");
+  let extension = parts.pop();
+  // remove ? part which can be part of S3 signed url
+  if (extension && extension.includes("?")) {
+    extension = extension.split("?")[0];
+  }
+
+  if (extension) {
+    const lowerCaseExtension = extension.toLowerCase();
+
+    if (imageExtensions.has(lowerCaseExtension)) {
+      return "image";
+    } else if (audioExtensions.has(lowerCaseExtension)) {
+      return "audio";
+    }
+  }
+
+  return undefined;
 }

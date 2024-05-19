@@ -12,6 +12,7 @@ export class Config {
   colors?: string[];
   // used for the bar chart
   x_names?: string[];
+  display?: string[];
 
   constructor(
     type: string,
@@ -26,6 +27,7 @@ export class Config {
     bounding_box?: string,
     colors?: string[],
     x_names?: string[],
+    display?: string[],
   ) {
     this.type = type;
     this.media = media;
@@ -39,5 +41,6 @@ export class Config {
     this.bounding_box = bounding_box;
     this.colors = colors;
     this.x_names = x_names;
+    this.display = display;
   }
 }
