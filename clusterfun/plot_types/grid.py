@@ -23,7 +23,12 @@ from clusterfun.validation import validate
 
 
 def grid(  # pylint: disable=missing-function-docstring
-    df: pd.DataFrame, media: str, title: Optional[str] = None, bounding_box: Optional[str] = None, show: bool = True, display: Optional[Union[str, List[str]]] = None,
+    df: pd.DataFrame,
+    media: str,
+    title: Optional[str] = None,
+    bounding_box: Optional[str] = None,
+    show: bool = True,
+    display: Optional[Union[str, List[str]]] = None,
 ) -> Path:  # pylint: disable=too-many-arguments
     cfg = Config(
         type="grid",

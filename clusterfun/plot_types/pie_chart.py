@@ -162,7 +162,7 @@ def pie_chart(  # pylint: disable=too-many-arguments,missing-function-docstring
         color=color,
         bounding_box=bounding_box,
         title=title,
-        display=display
+        display=display,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)
