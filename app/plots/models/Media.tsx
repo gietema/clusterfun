@@ -39,7 +39,22 @@ function determineMediaType(filename: string): MediaType | undefined {
     "tif",
     "tiff",
   ]);
-  const audioExtensions = new Set(["mp3", "wav", "aac", "ogg", "flac", "wma"]);
+  const audioExtensions = new Set([
+    "mp3",
+    "wav",
+    "aac",
+    "ogg",
+    "flac",
+    "wma",
+    "m4a",
+    "aiff",
+    "midi",
+    "ape",
+    "wavpack",
+    "alac",
+    "ac3",
+    "opus",
+  ]);
 
   const parts = filename.split(".");
   let extension = parts.pop();
