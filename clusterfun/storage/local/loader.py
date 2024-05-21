@@ -109,7 +109,7 @@ class LocalLoader(Loader):
             src, height, width = load_media(item[1])
             labels_item = None
             if str(item[0]) in labels:
-                labels_item = labels[str[item[0]]]
+                labels_item = labels[str(item[0])]
             item = MediaItem(
                 index=item[0], src=src, height=height, width=width, information=list(item[2:]), labels=labels_item
             )

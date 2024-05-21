@@ -12,12 +12,13 @@ export async function getMedia(
       `${API_URL}/views/${uuid}/media/${index}?&as_base64=${asBase64.toString()}`,
     )
     .then((r) => {
-      return new Media(
-        r.data.index,
-        r.data.src,
-        r.data.information,
-        r.data.height,
-        r.data.width,
-      );
+      return new Media({
+        index: r.data.index,
+        src: r.data.src,
+        information: r.data.information,
+        height: r.data.height,
+        width: r.data.width,
+        labels: r.data.labels
+    });
     });
 }

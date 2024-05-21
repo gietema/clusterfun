@@ -21,13 +21,14 @@ export async function getMediaItems(
     })
     .then((r) => {
       return r.data.map((media: any) => {
-        return new Media(
-          media.index,
-          media.src,
-          media.information,
-          media.height,
-          media.width,
-        );
+        return new Media({
+          index: media.index,
+          src: media.src,
+          information: media.information,
+          height: media.height,
+          width: media.width,
+          labels: media.labels,
+        });
       });
     });
 }
