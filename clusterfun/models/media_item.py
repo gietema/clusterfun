@@ -3,6 +3,8 @@
 import dataclasses
 from typing import Any, List, Optional
 
+from pydantic import BaseModel
+
 
 @dataclasses.dataclass
 class MediaItem:
@@ -24,6 +26,8 @@ class MediaItem:
     height : Optional[int], optional
         The height of the media item, by default None
         Used for plotting a single image in a plotly figure.
+    labels: Optional[List[str]], optional
+        The labels of the media item.
     """
 
     index: int
@@ -31,3 +35,10 @@ class MediaItem:
     information: Optional[List[Any]] = None
     width: Optional[int] = None
     height: Optional[int] = None
+    labels: Optional[List[str]] = None
+
+
+class Label(BaseModel):
+    """Simple label model."""
+
+    title: str

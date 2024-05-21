@@ -14,6 +14,7 @@ import { Filter } from "../plots/components/Filter";
 import SideBar from "../plots/components/SideBar";
 import { API_URL } from "../plots/models/Constants";
 import { getMediaItems } from "../plots/requests/GetMediaItems";
+import { deleteLabel, saveLabel } from "../plots/requests/LabelStore";
 import { MediaVisualization } from "./MediaStats";
 import {
   configAtom,
@@ -30,6 +31,7 @@ import BoundingBoxCheckbox from "./grid/BoundingBoxCheck";
 import { Pagination } from "./grid/Pagination";
 import ShowValueDropdown from "./grid/ShowValueDropdown";
 import SortDropdown from "./grid/SortDropDown";
+import LabelPanel from "./label/Panel";
 
 export interface GridValues {
   sortBy: string;
@@ -61,6 +63,7 @@ export default function Grid({ back }: GridProps): JSX.Element {
   const [mediaItems, setMediaItems] = useAtom(mediaItemsAtom);
   const [showStats, setShowStats] = useState(false);
   const [gridValues, setGridValues] = useAtom(gridValuesAtom);
+  const [showLabelPanel, setShowLabelPanel] = useState(false);
 
   useEffect(() => {
     if (config === undefined || uuid === undefined) {
@@ -137,6 +140,43 @@ export default function Grid({ back }: GridProps): JSX.Element {
         const blob = new Blob([res.data], { type: "text/csv;charset=utf-8" });
         saveAs(blob, "data.csv");
       });
+  }
+
+  function updateMediaForLabel(media: Media, label: string) {
+    // save label in db
+    if (media.labels?.includes(label)) {
+      deleteLabel(uuid, [media.index], label)
+        .then((response: object) => console.log("Label deleted:", response))
+        .catch((error: any) => console.error("Error:", error));
+    } else {
+      saveLabel(uuid, [media.index], label)
+        .then((response: object) => {})
+        .catch((error: any) => console.error("Error:", error));
+    }
+    // Update label in mediaItems state using functional update
+    setMediaItems((currentMediaItems) => {
+      return currentMediaItems.map((m) => {
+        if (m.index === media.index) {
+          // Clone the media object to avoid mutating the state directly
+          const updatedMedia = { ...m };
+          if (
+            updatedMedia.labels === undefined ||
+            updatedMedia.labels === null
+          ) {
+            updatedMedia.labels = [];
+          }
+          if (!updatedMedia.labels.includes(label)) {
+            updatedMedia.labels.push(label);
+          } else {
+            updatedMedia.labels = updatedMedia.labels.filter(
+              (l) => l !== label,
+            );
+          }
+          return updatedMedia;
+        }
+        return m;
+      });
+    });
   }
 
   if (config === undefined || gridValues === undefined) {
@@ -274,6 +314,7 @@ export default function Grid({ back }: GridProps): JSX.Element {
                   boundingBoxColumn={config.bounding_box}
                   showBboxLabel={gridValues.showBboxLabel}
                   display={config.display}
+                  updateLabel={updateMediaForLabel}
                 />
               );
             })}
@@ -286,6 +327,21 @@ export default function Grid({ back }: GridProps): JSX.Element {
           onClick={() => handleDownloadGrid()}
         >
           Download grid as csv
+        </div>
+        <div
+          className={`button w-full cursor-pointer border border-gray-300 bg-gray-100 py-1 text-center text-xs text-gray-900 
+        hover:bg-gray-300 duration-150 ease-in-out transition-all
+        ${showLabelPanel ? "rounded-t-md" : "rounded-md mb-2"}`}
+          onClick={() => setShowLabelPanel(!showLabelPanel)}
+        >
+          {showLabelPanel ? "Hide labelling" : "Label"}
+        </div>
+        <div
+          className={`origin-top overflow-hidden transition-transform duration-300 ease-in-out ${
+            showLabelPanel ? "scale-y-100" : "scale-y-0"
+          }`}
+        >
+          {showLabelPanel && <LabelPanel />}
         </div>
 
         <SideBar />

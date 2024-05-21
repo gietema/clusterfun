@@ -7,6 +7,7 @@ export class Media {
   width?: number;
   height?: number;
   type?: MediaType;
+  labels?: string[];
 
   constructor(
     index: number,
@@ -15,17 +16,18 @@ export class Media {
     height?: number,
     width?: number,
     type?: MediaType,
+    labels?: string[],
   ) {
     this.index = index;
     this.src = src;
     this.information = information;
     this.height = height;
     this.width = width;
+    this.labels = labels;
     this.type = type;
     if (this.type === undefined) {
       this.type = determineMediaType(this.src);
     }
-    console.log(this.src, this.type);
   }
 }
 
@@ -72,6 +74,6 @@ function determineMediaType(filename: string): MediaType | undefined {
       return "audio";
     }
   }
-
-  return undefined;
+  // default to image for now.
+  return "image";
 }

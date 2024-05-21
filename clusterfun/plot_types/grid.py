@@ -22,7 +22,7 @@ from clusterfun.storage.local.helpers import get_columns_for_db
 from clusterfun.validation import validate
 
 
-def grid(  # pylint: disable=missing-function-docstring
+def grid(  # pylint: disable=missing-function-docstring, too-many-arguments
     df: pd.DataFrame,
     media: str,
     title: Optional[str] = None,

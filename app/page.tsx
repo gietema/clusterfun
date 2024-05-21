@@ -1,6 +1,7 @@
 "use client"; // This is a client component 👈🏽
 import { Provider } from "jotai";
 import Previewer from "./components/Previewer";
+import { Toaster } from "react-hot-toast";
 
 const ErrorView = ({ clearError }: { clearError: () => void }) => (
   <div className="flex h-screen items-center justify-center  text-center text-white">
@@ -19,6 +20,7 @@ const ErrorView = ({ clearError }: { clearError: () => void }) => (
 export default function Home() {
   return (
     <Provider>
+      <Toaster/>
       <div className="m-2">
         <Previewer
           uuidProp={

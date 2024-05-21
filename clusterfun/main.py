@@ -27,14 +27,16 @@ POST /views/{view_uuid}/filter
 import dataclasses
 from typing import Any, Dict, List
 
+import pandas as pd
 from fastapi import Request
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 
 from clusterfun.app import APP, FRONTEND_DIR
 from clusterfun.models.filter import Filter
 from clusterfun.models.media_indices import MediaIndices
-from clusterfun.models.media_item import MediaItem
+from clusterfun.models.media_item import Label, MediaItem
 from clusterfun.plot import Plot
+from clusterfun.plot_types.grid import grid
 from clusterfun.storage.local.loader import LocalLoader
 
 
@@ -90,6 +92,62 @@ def download_grid(view_uuid: str, media_indices: MediaIndices) -> FileResponse:
         iter([df.to_csv(index=False)]),
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=data.csv"},
+    )
+
+
+@APP.delete("/api/views/{view_uuid}/label")
+def delete_labels(
+    view_uuid: str,
+    label: Label,
+    media_indices: MediaIndices,
+) -> str:
+    """Delete a label for a media item."""
+    loader = LocalLoader(view_uuid)
+    loader.label_manager.delete_label(label.title, media_indices.media_ids)
+    return "OK"
+
+
+@APP.post("/api/views/{view_uuid}/label")
+def save_labels(
+    view_uuid: str,
+    label: Label,
+    media_indices: MediaIndices,
+) -> str:
+    """Save a label for a media item."""
+    loader = LocalLoader(view_uuid)
+    loader.label_manager.save_label(label.title, media_indices.media_ids)
+    return "OK"
+
+
+@APP.post("/api/views/{view_uuid}/labels/download")
+def download_labels(
+    view_uuid: str,
+):
+    """Download all labels for the given view as a csv file."""
+    loader = LocalLoader(view_uuid)
+    df = loader.label_manager.get_dataframe()
+    dff = loader.get_dataframe(MediaIndices(media_ids=df["media_id"].tolist()))
+    df = pd.merge(df, dff, left_on="media_id", right_on="id")
+    return StreamingResponse(
+        iter([df.to_csv(index=False)]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={view_uuid}_labels.csv"},
+    )
+
+
+@APP.post("/api/views/{view_uuid}/labels/{label}")
+def to_grid(view_uuid: str, label: str):
+    """Saved all labeled items for a given label as a grid."""
+    loader = LocalLoader(view_uuid)
+    df = loader.label_manager.get_dataframe(label)
+    cfg = loader.load_config()
+    dff = loader.get_dataframe(MediaIndices(media_ids=df["media_id"].tolist()))
+    df = pd.merge(df, dff, left_on="media_id", right_on="id")
+    return grid(
+        df.drop(columns=["id"]),
+        media=cfg.media,
+        show=False,
+        title=f"Grid of {len(df)} {label} labeled items",
     )
 
 

@@ -2,6 +2,7 @@ export class Config {
   type: string;
   media: string;
   columns: string[];
+  labels: string[];
   title?: string;
   x?: string;
   y?: string;
@@ -18,6 +19,7 @@ export class Config {
     type: string,
     media: string,
     columns: string[],
+    labels: string[],
     title?: string,
     x?: string,
     y?: string,
@@ -32,6 +34,7 @@ export class Config {
     this.type = type;
     this.media = media;
     this.columns = columns;
+    this.labels = labels;
     this.title = title;
     this.x = x;
     this.y = y;

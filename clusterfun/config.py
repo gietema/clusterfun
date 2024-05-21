@@ -50,6 +50,8 @@ class Config:  # pylint: disable=too-many-instance-attributes
         certain types of information related to the media.
         For audio media types, the columns added here will also be displayed
         in the grid view for each single audio file.
+    labels: Optional[List[str]] = None
+        The labels given by the user to the media items.
     """
 
     type: str
@@ -69,3 +71,4 @@ class Config:  # pylint: disable=too-many-instance-attributes
     common_media_path: Optional[str] = None
     color_is_categorical: bool = True
     display: Union[str, List[str]] = None
+    labels: Optional[List[str]] = None

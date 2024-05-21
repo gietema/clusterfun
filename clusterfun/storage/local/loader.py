@@ -15,6 +15,7 @@ from clusterfun.models.media_item import MediaItem
 from clusterfun.storage.loader import Loader
 from clusterfun.storage.local.data import get_data_dict
 from clusterfun.storage.local.helpers import get_filter_query, get_media_query, get_recent_dir, run_query
+from clusterfun.storage.local.label_manager import LabelManager
 from clusterfun.storage.storer import load_media
 
 
@@ -38,6 +39,7 @@ class LocalLoader(Loader):
         if uuid == "recent":
             uuid = get_recent_dir(cache_dir).stem
         self.cache_dir = cache_dir / uuid
+        self.label_manager = LabelManager(cache_dir=self.cache_dir)
 
     @property
     def db_path(self) -> Path:
@@ -66,7 +68,11 @@ class LocalLoader(Loader):
     def load_config(self) -> Config:
         """Loads the config from the json file"""
         with open(self.cache_dir / "config.json", encoding="utf-8") as f:
-            return Config(**json.load(f))
+            config = Config(**json.load(f))
+        # add labels to the config
+        labels = self.label_manager.read_labels()
+        config.labels = list({label for label_list in labels.values() for label in label_list})
+        return config
 
     def get_row(self, media_id: int, as_base64: bool = False) -> MediaItem:
         """Get a single row of data for a given uuid and media id."""
@@ -98,9 +104,17 @@ class LocalLoader(Loader):
         query = get_media_query(media_indices, config=config, con=con)
         result = run_query(self.db_path, query)
         items = []
+        labels = self.label_manager.read_labels()
         for item in result:
             src, height, width = load_media(item[1])
-            items.append(MediaItem(index=item[0], src=src, height=height, width=width, information=list(item[2:])))
+            labels_item = None
+            if str(item[0]) in labels:
+                labels_item = labels[str[item[0]]]
+            item = MediaItem(
+                index=item[0], src=src, height=height, width=width, information=list(item[2:]), labels=labels_item
+            )
+            items.append(item)
+
         return items
 
     def get_rows_metadata(self, media_indices: MediaIndices) -> List[Dict[str, Any]]:
