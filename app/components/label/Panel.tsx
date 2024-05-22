@@ -1,38 +1,55 @@
 import { API_URL } from "@/app/plots/models/Constants";
-import { Media } from "@/app/plots/models/Media";
 import { deleteLabel, saveLabel } from "@/app/plots/requests/LabelStore";
+import {
+  faCaretDown,
+  faDownload,
+  faTableCells,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
 import { saveAs } from "file-saver";
 import { useAtom, useAtomValue } from "jotai";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { configAtom, mediaItemsAtom, uuidAtom } from "../Previewer";
+import {
+  configAtom,
+  mediaIndicesAtom,
+  mediaItemsAtom,
+  uuidAtom,
+} from "../Previewer";
 
 interface LabelPanelProps {
   labels: string[];
   setLabels: (labels: string[]) => void;
 }
 
-type LabelCount = Record<string, number>;
-
-function countItems(media: Media[]): Record<string, number> {
-  const count: LabelCount = {};
-  media.map((mediaItem) => {
-    if (mediaItem.labels === undefined) {
-      return;
-    }
-    mediaItem.labels.map((label) => {
-      if (count[label] === undefined) {
-        count[label] = 0;
-      }
-      count[label] += 1;
-    });
-  });
-
-  return count;
+interface LabelCount {
+  label: string;
+  inCurrentSelection: number;
+  inEntireDataset: number;
 }
 
-export default function LabelPanel(): JSX.Element {
+const fetchLabelCounts = async (
+  mediaIds: number[],
+  uuid: string,
+): Promise<LabelCount[]> => {
+  return axios
+    .post(`${API_URL}/views/${uuid}/labels-count`, {
+      media_ids: mediaIds,
+    })
+    .then((res) => {
+      console.log(res.data, "COUNT");
+      return res.data as LabelCount[];
+    });
+};
+
+interface LabelPanelProps {
+  hideLabel: () => void;
+}
+
+export default function LabelPanel({
+  hideLabel,
+}: LabelPanelProps): JSX.Element {
   const uuid = useAtomValue(uuidAtom);
   const [newLabel, setNewLabel] = useState("");
   const [config, setConfig] = useAtom(configAtom);
@@ -43,6 +60,12 @@ export default function LabelPanel(): JSX.Element {
     }
     return mediaItem.labels.length > 0;
   });
+  let mediaIndicesAll = useAtomValue(mediaIndicesAtom);
+  const mediaIndices =
+    mediaIndicesAll !== undefined
+      ? mediaIndicesAll[mediaIndicesAll.length - 1]
+      : [];
+  const [labelCounts, setLabelCounts] = useState<LabelCount[]>([]);
 
   if (config === undefined) {
     return <></>;
@@ -66,32 +89,45 @@ export default function LabelPanel(): JSX.Element {
     });
   };
 
-  async function saveAsNewGrid(label: string) {
+  async function saveAsNewGrid(currentSelection: boolean, label?: string) {
     if (config === undefined) {
       return;
     }
-
+    let mediaToDownload = currentSelection ? mediaIndices : [];
     axios
-      .post(`${API_URL}/views/${uuid}/labels/${label}`)
+      .post(`${API_URL}/views/${uuid}/label-to-grid`, {
+        label: {
+          title: label === undefined ? "" : label,
+        },
+        media_indices: {
+          media_ids: mediaToDownload,
+        },
+      })
       .then((res) => {
-        const location = res.data;
+        const location = res.data.split("/").pop();
         toast.custom(
           (t) => (
             <div
-              className={`bg-white px-6 py-4 shadow-md rounded-md ${
+              className={`bg-gray-300 text-black px-6 py-4 shadow-md rounded-md ${
                 t.visible ? "animate-enter" : "animate-leave"
               }`}
             >
-              Plot saved. Run <br />
-              <code>clusterfun {location.split("/").pop()}</code>
-              <br />
-              to view the plot. <br />
-              <button
-                className="bg-blue-500 text-white px-2 py-1 rounded-md mt-2"
-                onClick={() => toast.dismiss(t.id)}
-              >
-                Close
-              </button>
+              Plot saved. To view the plot, run <br />
+              <div className="my-2">
+                <code className="bg-gray-800 text-white p-2">
+                  <span className="text-pink-500">clusterfun</span> {location}
+                </code>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  className="bg-blue-500 text-white px-2 py-1 rounded-md mt-2
+                  hover:bg-blue-600 duration-150 ease-in-out transition-all
+                "
+                  onClick={() => toast.dismiss(t.id)}
+                >
+                  Close
+                </button>
+              </div>
             </div>
           ),
           {
@@ -105,25 +141,21 @@ export default function LabelPanel(): JSX.Element {
       });
   }
 
-  async function download() {
-    // download the labels as a csv
-    // get the media items of the currently labeled images
-    const mediaItemsWithLabel: Media[] = mediaItems.filter((mediaItem) => {
-      if (mediaItem.labels === undefined || mediaItem.labels === null) {
-        return false;
-      }
-      return mediaItem.labels.length > 0;
-    });
-    // add the labels
-    // then download as csv
-    if (config === undefined) {
-      console.log("config is undefined");
-      return;
-    }
-    axios.post(`${API_URL}/views/${uuid}/labels/download`, {}).then((res) => {
-      const blob = new Blob([res.data], { type: "text/csv;charset=utf-8" });
-      saveAs(blob, `${uuid}_labels.csv`);
-    });
+  async function download(currentSelection: boolean, label?: string) {
+    let mediaToDownload = currentSelection ? mediaIndices : [];
+    axios
+      .post(`${API_URL}/views/${uuid}/label-download`, {
+        label: {
+          title: label === undefined ? "" : label,
+        },
+        media_indices: {
+          media_ids: mediaToDownload,
+        },
+      })
+      .then((res) => {
+        const blob = new Blob([res.data], { type: "text/csv;charset=utf-8" });
+        saveAs(blob, `${uuid}_labels.csv`);
+      });
   }
 
   function shouldDeselect(label: string): boolean {
@@ -175,102 +207,196 @@ export default function LabelPanel(): JSX.Element {
     });
   }
 
+  useEffect(() => {
+    fetchLabelCounts(mediaIndices, uuid).then((data) => setLabelCounts(data));
+  }, [mediaIndices, mediaItems]);
+
+  const totalInCurrentSelection = labelCounts.reduce(
+    (total, labelCount) => total + labelCount.inCurrentSelection,
+    0,
+  );
+  const totalInEntireDataset = labelCounts.reduce(
+    (total, labelCount) => total + labelCount.inEntireDataset,
+    0,
+  );
+
   return (
-    <div className="w-full p-2 bg-gray-100 border border-t-0 border-gray-300 mb-3 rounded-b-md">
-      {config.labels.length > 0 && (
-        <div className="text-sm font-bold">Labels</div>
-      )}
-      {config.labels.map((label) => (
-        <div
-          key={label}
-          className="flex items-center justify-between border-t border-gray-300 pt-1"
-        >
-          <div className="text-xs">{label}</div>
-          <div className="flex">
-            <button
-              onClick={() => selectAll(label, shouldDeselect(label))}
-              className="border border-gray-300 px-1 py-1 text-xs me-1
-                hover:bg-gray-300 
-              "
-            >
-              {
-                // if all media items have this label, show deselect all
-                shouldDeselect(label) ? "Deselect all" : "Select all"
-              }
-            </button>
-            {
-              // only show button to save as new grid if there is at least one label for this label selected
-              mediaWithLabels.filter((media) => {
-                if (media.labels === undefined) {
-                  return false;
-                }
-                return media.labels.includes(label);
-              }).length > 0 && (
-                <button
-                  className="button border px-1 py-1 text-xs
-                  hover:bg-gray-300 duration-150 ease-in-out transition-all border-gray-300
-                "
-                  onClick={() => saveAsNewGrid(label)}
-                >
-                  Save as new grid
-                </button>
-              )
-            }
-            {
-              // if there are labels, we should not be able to delete any,
-              // because that would mess with the label index and the media items
-              mediaWithLabels.length === 0 && (
-                <button
-                  className="button border p-1 text-xs border-gray-300"
-                  onClick={() => handleDeleteLabel(label)}
-                >
-                  Delete
-                </button>
-              )
-            }
-          </div>
-        </div>
-      ))}
+    <div className="w-full px-2 bg-gray-100 border border-gray-300  mt-2 rounded-b-md">
       {mediaWithLabels.length > 0 && (
-        <div className="pb-4">
-          {/* <span className="text-sm font-bold">Label count</span> <br />
-          {Object.entries(countItems(mediaWithLabels)).map(([label, count]) => (
-            <div
-              key={label}
-              className="flex items-center justify-between border-t py-2 border-gray-300"
-            >
-              <div className="text-xs">{label}</div>
-              <div className="text-xs">{count}</div>
-            </div>
-          ))} */}
-          <div className="border-t border-gray-300">
-            <button
-              className="w-full rounded-md text-xs px-2 py-1 bg-gray-300 my-2 hover:bg-gray-400
-                 duration-150 ease-in-out transition-all
-              "
-              onClick={() => download()}
-            >
-              Download as csv
-            </button>
-          </div>
+        <div className="">
+          <table className="text-xs w-full border-collapse mt-2">
+            <thead>
+              <tr>
+                <th className="border px-4 py-2"></th>
+                <th className="border px-4 py-2">Label</th>
+                <th className="text-xs border px-4 py-2">Count in selection</th>
+                <th className="border px-4 py-2">Count in all data</th>
+              </tr>
+            </thead>
+            <tbody>
+              {labelCounts.map((labelCount) => (
+                <tr key={labelCount.label}>
+                  <td className="border py-2 text-center w-24">
+                    <button
+                      className="px-2 py-1 text-blue-500 rounded hover:text-blue-600"
+                      onClick={() =>
+                        selectAll(
+                          labelCount.label,
+                          shouldDeselect(labelCount.label),
+                        )
+                      }
+                    >
+                      {shouldDeselect(labelCount.label)
+                        ? "Deselect all"
+                        : "Select all"}
+                    </button>
+                  </td>
+                  <td className="border px-4 py-2">{labelCount.label}</td>
+                  <td className="border px-4 py-2 text-center">
+                    <div className="flex flex-end justify-between w-full">
+                      <div className="flex justify-center flex-col">
+                        {labelCount.inCurrentSelection}
+                      </div>
+                      <div className="flex gap-1">
+                        {labelCount.inCurrentSelection > 0 && (
+                          <>
+                            <button
+                              className="p-2 text-blue-500 hover:text-blue-700"
+                              onClick={() => download(true, labelCount.label)}
+                            >
+                              <FontAwesomeIcon icon={faDownload} />
+                              <span className="ms-2">Download</span>
+                            </button>
+                            <button
+                              className="p-2 text-blue-500 hover:text-blue-700"
+                              onClick={() =>
+                                saveAsNewGrid(true, labelCount.label)
+                              }
+                            >
+                              <FontAwesomeIcon icon={faTableCells} />
+                              <span className="ms-2">Save as grid</span>
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="border px-4 py-2 text-center">
+                    <div className="flex flex-end justify-between w-full">
+                      <div className="flex justify-center flex-col">
+                        {labelCount.inEntireDataset}
+                      </div>
+                      <div className="flex gap-1">
+                        {labelCount.inEntireDataset > 0 && (
+                          <>
+                            <button
+                              className="p-2 text-blue-500 hover:text-blue-700"
+                              onClick={() => download(false, labelCount.label)}
+                            >
+                              <FontAwesomeIcon icon={faDownload} />
+                              <span className="ms-2">Download</span>
+                            </button>
+                            <button
+                              className="p-2 text-blue-500 hover:text-blue-700"
+                              onClick={() =>
+                                saveAsNewGrid(false, labelCount.label)
+                              }
+                            >
+                              <FontAwesomeIcon icon={faTableCells} />
+                              <span className="ms-2">Save as grid</span>
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {labelCounts.length > 1 && (
+                <tr>
+                  <td></td>
+                  <td className="border px-4 py-2 text-left">
+                    <b>Total</b>
+                  </td>
+                  <td className="border px-4 py-2 text-center">
+                    <div className="flex justify-between">
+                      <div className="flex justify-center flex-col">
+                        {totalInCurrentSelection}
+                      </div>
+                      <div className="flex gap-1">
+                        <div className="flex justify-center flex-col">
+                          <button
+                            className="p-2 text-blue-500 hover:text-blue-700"
+                            onClick={() => download(true)}
+                          >
+                            <FontAwesomeIcon icon={faDownload} />
+                            <span className="ms-2">Download</span>
+                          </button>
+                        </div>
+                        <button
+                          className="p-2 text-blue-500 hover:text-blue-700"
+                          onClick={() => saveAsNewGrid(true)}
+                        >
+                          <FontAwesomeIcon icon={faTableCells} />
+                          <span className="ms-2">Save as grid</span>
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="border px-4 py-2 text-center">
+                    <div className="flex justify-between">
+                      <div className="flex justify-center flex-col">
+                        {totalInEntireDataset}
+                      </div>
+                      <div className="flex gap-1">
+                        <button
+                          className="p-2 text-blue-500 hover:text-blue-700"
+                          onClick={() => download(false)}
+                        >
+                          <FontAwesomeIcon icon={faDownload} />
+                          <span className="ms-2">Download</span>
+                        </button>
+                        <button
+                          className="p-2 text-blue-500 hover:text-blue-700"
+                          onClick={() => download(false)}
+                        >
+                          <FontAwesomeIcon icon={faTableCells} />
+                          <span className="ms-2">Save as grid</span>
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       )}
       <div className="mt-2 border-t border-gray-300 py-2">
-        <input
-          placeholder="Label name"
-          type="text"
-          className="w-full border rounded-md py-1 ps-2 text-sm"
-          value={newLabel}
-          onChange={(e) => setNewLabel(e.target.value)}
-        />
-        <button
-          className="button mt-2 px-2 border py-1 text-xs bg-gray-300 text-start rounded-md
-            hover:bg-gray-400 duration-150 ease-in-out transition-all
-          "
-          onClick={handleAddLabel}
-        >
-          Add label
-        </button>
+        <div className="flex items-center ">
+          <input
+            placeholder="Label name"
+            type="text"
+            className="border rounded-l-md py-1 px-2 text-xs flex-grow"
+            value={newLabel}
+            onChange={(e) => setNewLabel(e.target.value)}
+          />
+          <button
+            className="button px-2 border py-1 text-xs bg-blue-500 rounded-r-md hover:bg-blue-600 text-white duration-150 ease-in-out transition-all"
+            onClick={handleAddLabel}
+          >
+            Add label
+          </button>
+        </div>
+      </div>
+
+      <div
+        className="bg-gray-300 text-xs cursor-pointer flex justify-center flex-col -ms-2 h-4 -me-2 text-gray-500 rounded-b-md text-center caret-container"
+        onClick={() => {
+          hideLabel();
+        }}
+      >
+        <FontAwesomeIcon icon={faCaretDown} className="caret-icon" />
       </div>
     </div>
   );

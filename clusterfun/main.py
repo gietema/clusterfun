@@ -37,6 +37,7 @@ from clusterfun.models.media_indices import MediaIndices
 from clusterfun.models.media_item import Label, MediaItem
 from clusterfun.plot import Plot
 from clusterfun.plot_types.grid import grid
+from clusterfun.storage.local.label_manager import count_labels
 from clusterfun.storage.local.loader import LocalLoader
 
 
@@ -119,15 +120,23 @@ def save_labels(
     return "OK"
 
 
-@APP.post("/api/views/{view_uuid}/labels/download")
+@APP.post("/api/views/{view_uuid}/label-download")
 def download_labels(
     view_uuid: str,
+    label: Label,
+    media_indices: MediaIndices,
 ):
     """Download all labels for the given view as a csv file."""
     loader = LocalLoader(view_uuid)
-    df = loader.label_manager.get_dataframe()
+    df = loader.label_manager.get_dataframe(label=label.title if label.title != "" else None)
+
+    # limit to selection if media_indices is provided
+    if len(media_indices.media_ids) > 0:
+        df = df[df["media_id"].isin(media_indices.media_ids)]
+
     dff = loader.get_dataframe(MediaIndices(media_ids=df["media_id"].tolist()))
     df = pd.merge(df, dff, left_on="media_id", right_on="id")
+
     return StreamingResponse(
         iter([df.to_csv(index=False)]),
         media_type="text/csv",
@@ -135,20 +144,40 @@ def download_labels(
     )
 
 
-@APP.post("/api/views/{view_uuid}/labels/{label}")
-def to_grid(view_uuid: str, label: str):
+@APP.post("/api/views/{view_uuid}/labels-count")
+def count(view_uuid: str, media_indices: MediaIndices) -> List[Dict[str, Any]]:
+    """Count the number of labels for the given view."""
+    loader = LocalLoader(view_uuid)
+    labels = loader.label_manager.read_labels()
+    return count_labels(labels, media_indices.media_ids)
+
+
+@APP.post("/api/views/{view_uuid}/label-to-grid")
+def to_grid(
+    view_uuid: str,
+    label: Label,
+    media_indices: MediaIndices,
+) -> str:
     """Saved all labeled items for a given label as a grid."""
     loader = LocalLoader(view_uuid)
-    df = loader.label_manager.get_dataframe(label)
+    df = loader.label_manager.get_dataframe(label.title if label.title != "" else None)
+
+    # limit to selection if media_indices is provided
+    if len(media_indices.media_ids) > 0:
+        df = df[df["media_id"].isin(media_indices.media_ids)]
+
     cfg = loader.load_config()
     dff = loader.get_dataframe(MediaIndices(media_ids=df["media_id"].tolist()))
     df = pd.merge(df, dff, left_on="media_id", right_on="id")
-    return grid(
+
+    url = grid(
         df.drop(columns=["id"]),
         media=cfg.media,
         show=False,
-        title=f"Grid of {len(df)} {label} labeled items",
+        title=f"Grid of {len(df)} {label.title} labeled items",
     )
+    print(url)
+    return str(url)
 
 
 @APP.get("/{path:path}", response_class=HTMLResponse)

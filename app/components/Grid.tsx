@@ -3,7 +3,11 @@ import MediaGridItem from "@/app/components/grid/MediaGridItem";
 import { Media } from "@/app/plots/models/Media";
 import { getMedia } from "@/app/plots/requests/GetMedia";
 import { faSquare } from "@fortawesome/free-regular-svg-icons";
-import { faBarChart, faTableCells } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBarChart,
+  faCaretDown,
+  faTableCells,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
 import saveAs from "file-saver";
@@ -187,6 +191,9 @@ export default function Grid({ back }: GridProps): JSX.Element {
     <div className="flex">
       <div className="w-3/4">
         <div>
+          {config.title && (
+            <div className="text-xs font-bold mb-2">{config.title}</div>
+          )}
           <div
             className={`grid w-full  grid-cols-1 border-b border-gray-300 pb-0 pe-2 pt-1 text-black lg:grid-cols-6
             lg:rounded-md lg:border lg:pt-0
@@ -294,6 +301,26 @@ export default function Grid({ back }: GridProps): JSX.Element {
             <Filter />
           </div>
         </div>
+        <div>
+          <div
+            className={`w-full text-center text-xs bg-gray-300 mt-2 ${showLabelPanel ? "-mb-2 h-3 rounded-t-md" : "rounded-md flex justify-center flex-col py-1 cursor-pointer hover:text-gray-500"}`}
+            onClick={() => setShowLabelPanel(!showLabelPanel)}
+          >
+            {showLabelPanel === false && (
+              <div>
+                <span className="me-2">Labelling</span>
+                <FontAwesomeIcon icon={faCaretDown} className="text-gray-500" />
+              </div>
+            )}
+          </div>
+          {showLabelPanel && (
+            <LabelPanel
+              hideLabel={() => {
+                setShowLabelPanel(false);
+              }}
+            />
+          )}
+        </div>
         <div className="">
           <div
             className={`grid p-2 grid-cols-${
@@ -327,21 +354,6 @@ export default function Grid({ back }: GridProps): JSX.Element {
           onClick={() => handleDownloadGrid()}
         >
           Download grid as csv
-        </div>
-        <div
-          className={`button w-full cursor-pointer border border-gray-300 bg-gray-100 py-1 text-center text-xs text-gray-900 
-        hover:bg-gray-300 duration-150 ease-in-out transition-all
-        ${showLabelPanel ? "rounded-t-md" : "rounded-md mb-2"}`}
-          onClick={() => setShowLabelPanel(!showLabelPanel)}
-        >
-          {showLabelPanel ? "Hide labelling" : "Label"}
-        </div>
-        <div
-          className={`origin-top overflow-hidden transition-transform duration-300 ease-in-out ${
-            showLabelPanel ? "scale-y-100" : "scale-y-0"
-          }`}
-        >
-          {showLabelPanel && <LabelPanel />}
         </div>
 
         <SideBar />

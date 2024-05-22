@@ -1,7 +1,8 @@
 """Label storer for CRUD label management"""
 import json
+from collections import Counter
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
@@ -10,7 +11,7 @@ class LabelManager:
     """CRUD for labels"""
 
     def __init__(self, cache_dir: Path):
-        self.cache_dir = cache_dir  # Replace with your actual base URL
+        self.cache_dir = cache_dir
 
     def _get_labels_key(self) -> str:
         """Constructs the key for the labels JSON file."""
@@ -62,3 +63,45 @@ class LabelManager:
         if label:
             df = df[df[label] == 1]
         return df
+
+
+def count_labels(data: Dict[int, List[str]], selection: List[int]) -> List[Dict[str, Any]]:
+    """Count labels
+
+    Params
+    ------
+    data: Dict[int, List[str]]
+        int: media_id
+        List[str]: labels
+    selection: List[str]
+        An optional selection of labels
+
+    Returns
+    -------
+    List[Dict[str, Any]]
+        For each label, return a dictionary with:
+            - the label
+            - the count of the label for the current selection
+            - the count of the label for all data
+    """
+    # Flatten the labels for the entire dataset
+    all_labels = []
+    for labels in data.values():
+        all_labels.extend(labels)
+    # Flatten the labels for the selected ids
+    selected_labels = []
+    for media_id in selection:
+        if str(media_id) in data:
+            selected_labels.extend(data[str(media_id)])
+    # Count labels in the entire dataset
+    total_counter = Counter(all_labels)
+    # Count labels in the selection
+    selection_counter = Counter(selected_labels)
+    # Combine the results into a list of dictionaries
+    result = []
+    all_unique_labels = set(total_counter.keys()).union(set(selection_counter.keys()))
+    for label in all_unique_labels:
+        result.append(
+            {"label": label, "inCurrentSelection": selection_counter[label], "inEntireDataset": total_counter[label]}
+        )
+    return result
