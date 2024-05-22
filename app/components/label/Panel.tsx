@@ -1,7 +1,7 @@
 import { API_URL } from "@/app/plots/models/Constants";
 import { deleteLabel, saveLabel } from "@/app/plots/requests/LabelStore";
 import {
-  faCaretDown,
+  faCaretUp,
   faDownload,
   faTableCells,
 } from "@fortawesome/free-solid-svg-icons";
@@ -391,7 +391,7 @@ export default function LabelPanel({
           hideLabel();
         }}
       >
-        <FontAwesomeIcon icon={faCaretDown} className="caret-icon" />
+        <FontAwesomeIcon icon={faCaretUp} className="caret-icon" />
       </div>
     </div>
   );
