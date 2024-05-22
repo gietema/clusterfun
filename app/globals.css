@@ -211,3 +211,9 @@ code {
       transform: translateY(3px); /* Adjust this value for the bounce */
   }
 }
+
+
+.caret-container:hover .caret-icon {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease-in-out;
+}

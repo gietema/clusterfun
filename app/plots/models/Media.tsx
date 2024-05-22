@@ -1,5 +1,14 @@
 export type MediaType = "image" | "video" | "audio";
 
+interface MediaParams {
+  index: number;
+  src: string;
+  information?: any[];
+  width?: number;
+  height?: number;
+  type?: MediaType;
+  labels?: string[];
+}
 export class Media {
   index: number;
   src: string;
@@ -7,25 +16,19 @@ export class Media {
   width?: number;
   height?: number;
   type?: MediaType;
+  labels?: string[];
 
-  constructor(
-    index: number,
-    src: string,
-    information?: any[],
-    height?: number,
-    width?: number,
-    type?: MediaType,
-  ) {
-    this.index = index;
-    this.src = src;
-    this.information = information;
-    this.height = height;
-    this.width = width;
-    this.type = type;
+  constructor(params: MediaParams) {
+    this.index = params.index;
+    this.src = params.src;
+    this.information = params.information;
+    this.height = params.height;
+    this.width = params.width;
+    this.labels = params.labels;
+    this.type = params.type;
     if (this.type === undefined) {
       this.type = determineMediaType(this.src);
     }
-    console.log(this.src, this.type);
   }
 }
 
@@ -72,6 +75,6 @@ function determineMediaType(filename: string): MediaType | undefined {
       return "audio";
     }
   }
-
-  return undefined;
+  // default to image for now.
+  return "image";
 }

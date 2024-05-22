@@ -3,7 +3,11 @@ import MediaGridItem from "@/app/components/grid/MediaGridItem";
 import { Media } from "@/app/plots/models/Media";
 import { getMedia } from "@/app/plots/requests/GetMedia";
 import { faSquare } from "@fortawesome/free-regular-svg-icons";
-import { faBarChart, faTableCells } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBarChart,
+  faCaretDown,
+  faTableCells,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
 import saveAs from "file-saver";
@@ -14,6 +18,7 @@ import { Filter } from "../plots/components/Filter";
 import SideBar from "../plots/components/SideBar";
 import { API_URL } from "../plots/models/Constants";
 import { getMediaItems } from "../plots/requests/GetMediaItems";
+import { deleteLabel, saveLabel } from "../plots/requests/LabelStore";
 import { MediaVisualization } from "./MediaStats";
 import {
   configAtom,
@@ -30,6 +35,7 @@ import BoundingBoxCheckbox from "./grid/BoundingBoxCheck";
 import { Pagination } from "./grid/Pagination";
 import ShowValueDropdown from "./grid/ShowValueDropdown";
 import SortDropdown from "./grid/SortDropDown";
+import LabelPanel from "./label/Panel";
 
 export interface GridValues {
   sortBy: string;
@@ -61,6 +67,7 @@ export default function Grid({ back }: GridProps): JSX.Element {
   const [mediaItems, setMediaItems] = useAtom(mediaItemsAtom);
   const [showStats, setShowStats] = useState(false);
   const [gridValues, setGridValues] = useAtom(gridValuesAtom);
+  const [showLabelPanel, setShowLabelPanel] = useState(false);
 
   useEffect(() => {
     if (config === undefined || uuid === undefined) {
@@ -139,6 +146,43 @@ export default function Grid({ back }: GridProps): JSX.Element {
       });
   }
 
+  function updateMediaForLabel(media: Media, label: string) {
+    // save label in db
+    if (media.labels?.includes(label)) {
+      deleteLabel(uuid, [media.index], label)
+        .then((response: object) => console.log("Label deleted:", response))
+        .catch((error: any) => console.error("Error:", error));
+    } else {
+      saveLabel(uuid, [media.index], label)
+        .then((response: object) => {})
+        .catch((error: any) => console.error("Error:", error));
+    }
+    // Update label in mediaItems state using functional update
+    setMediaItems((currentMediaItems) => {
+      return currentMediaItems.map((m) => {
+        if (m.index === media.index) {
+          // Clone the media object to avoid mutating the state directly
+          const updatedMedia = { ...m };
+          if (
+            updatedMedia.labels === undefined ||
+            updatedMedia.labels === null
+          ) {
+            updatedMedia.labels = [];
+          }
+          if (!updatedMedia.labels.includes(label)) {
+            updatedMedia.labels.push(label);
+          } else {
+            updatedMedia.labels = updatedMedia.labels.filter(
+              (l) => l !== label,
+            );
+          }
+          return updatedMedia;
+        }
+        return m;
+      });
+    });
+  }
+
   if (config === undefined || gridValues === undefined) {
     return <></>;
   }
@@ -147,6 +191,9 @@ export default function Grid({ back }: GridProps): JSX.Element {
     <div className="flex">
       <div className="w-3/4">
         <div>
+          {config.title && (
+            <div className="text-xs font-bold mb-2">{config.title}</div>
+          )}
           <div
             className={`grid w-full  grid-cols-1 border-b border-gray-300 pb-0 pe-2 pt-1 text-black lg:grid-cols-6
             lg:rounded-md lg:border lg:pt-0
@@ -254,6 +301,26 @@ export default function Grid({ back }: GridProps): JSX.Element {
             <Filter />
           </div>
         </div>
+        <div>
+          <div
+            className={`w-full text-center text-xs bg-gray-300 mt-2 ${showLabelPanel ? "-mb-2 h-3 rounded-t-md" : "rounded-md flex justify-center flex-col py-1 cursor-pointer hover:text-gray-500"}`}
+            onClick={() => setShowLabelPanel(!showLabelPanel)}
+          >
+            {showLabelPanel === false && (
+              <div>
+                <span className="me-2">Labelling</span>
+                <FontAwesomeIcon icon={faCaretDown} className="text-gray-500" />
+              </div>
+            )}
+          </div>
+          {showLabelPanel && (
+            <LabelPanel
+              hideLabel={() => {
+                setShowLabelPanel(false);
+              }}
+            />
+          )}
+        </div>
         <div className="">
           <div
             className={`grid p-2 grid-cols-${
@@ -274,6 +341,7 @@ export default function Grid({ back }: GridProps): JSX.Element {
                   boundingBoxColumn={config.bounding_box}
                   showBboxLabel={gridValues.showBboxLabel}
                   display={config.display}
+                  updateLabel={updateMediaForLabel}
                 />
               );
             })}
