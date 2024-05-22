@@ -18,11 +18,6 @@ import {
   uuidAtom,
 } from "../Previewer";
 
-interface LabelPanelProps {
-  labels: string[];
-  setLabels: (labels: string[]) => void;
-}
-
 interface LabelCount {
   label: string;
   inCurrentSelection: number;
