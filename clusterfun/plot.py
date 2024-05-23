@@ -151,6 +151,8 @@ class Plot:
         if not str(df[cfg.media].iloc[0]).startswith("http") and not str(df[cfg.media].iloc[0]).startswith("s3://"):
             # assume all media paths are local and replace with /media
             common_media_path = os.path.commonpath(df[cfg.media].tolist())
+            if os.path.isfile(common_media_path):
+                common_media_path = os.path.dirname(common_media_path)
             # store common media path in config
             cfg.common_media_path = common_media_path
             df[cfg.media] = df[cfg.media].astype(str).str.replace(str(common_media_path), "/media")
