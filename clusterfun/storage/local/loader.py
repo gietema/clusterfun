@@ -97,16 +97,15 @@ class LocalLoader(Loader):
         List[MediaItem]
             List of queried items
         """
-        con, config = None, None
+        con, config = None, self.load_config()
         if media_indices.filters:
             con = sqlite3.connect(self.db_path, check_same_thread=False)
-            config = self.load_config()
         query = get_media_query(media_indices, config=config, con=con)
         result = run_query(self.db_path, query)
         items = []
         labels = self.label_manager.read_labels()
         for item in result:
-            src, height, width = load_media(item[1])
+            src, height, width = load_media(item[1], common_media_path=config.common_media_path)
             labels_item = None
             if str(item[0]) in labels:
                 labels_item = labels[str(item[0])]
