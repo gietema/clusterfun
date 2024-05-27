@@ -2,7 +2,7 @@
 
 # Clusterfun
 
-[Clusterfun](https://clusterfun.app) is a python plotting library to explore image data. Play around with a live demo on [https://clusterfun.app](https://clusterfun.app).
+[Clusterfun](https://clusterfun.app) is a python plotting library to explore image and audio data. Play around with a live demo on [https://clusterfun.app](https://clusterfun.app).
 
 - [Getting started](#getting-started)
 - [A simple example](#a-simple-example)
