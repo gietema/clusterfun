@@ -5,6 +5,7 @@ scatter.py
 This module provides a function to display a scatter plot using the ClusterFun library.
 It allows users to create a scatter plot of two columns of data.
 """
+
 from typing import List, Optional, Union
 
 import pandas as pd

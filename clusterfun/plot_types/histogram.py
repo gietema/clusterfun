@@ -11,6 +11,7 @@ histogram
 get_x_and_y
     Get the x and y values for a histogram plot.
 """
+
 from pathlib import Path
 from typing import List, Optional, Union
 

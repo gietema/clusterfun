@@ -1,4 +1,5 @@
 """Storer class for saving the data locally"""
+
 import dataclasses
 import json
 import os

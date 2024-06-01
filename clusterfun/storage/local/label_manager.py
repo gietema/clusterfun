@@ -1,4 +1,5 @@
 """Label storer for CRUD label management"""
+
 import json
 from collections import Counter
 from pathlib import Path

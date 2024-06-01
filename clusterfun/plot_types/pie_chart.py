@@ -18,6 +18,7 @@ format_color: Formats the 'color' column in the DataFrame based on the provided 
 The primary use case for this module is to create pie charts for various datasets,
 allowing users to visualize categorical data using a scatter plot-based pie chart representation.
 """
+
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 

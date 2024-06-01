@@ -1,4 +1,5 @@
 """Helper functions for local loading and storing"""
+
 import sqlite3
 from pathlib import Path
 from typing import Any, List, Optional

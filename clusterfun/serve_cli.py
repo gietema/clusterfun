@@ -1,4 +1,5 @@
 """File to serve a plot from local storage using its unique identifier."""
+
 import argparse
 import os
 from pathlib import Path

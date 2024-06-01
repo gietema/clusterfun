@@ -1,4 +1,5 @@
 """LocalLoader class for loading data from the local filesystem."""
+
 import json
 import os
 import sqlite3

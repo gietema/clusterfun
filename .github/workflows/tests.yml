@@ -58,7 +58,7 @@ jobs:
         run: poetry run isort --profile black .
       
       - name: Lint with Ruff
-        run: poetry run ruff . --line-length 120
+        run: poetry run ruff check . --line-length 120
       
       - name: Lint with pylint
         run: poetry run pylint clusterfun --max-line-length 120

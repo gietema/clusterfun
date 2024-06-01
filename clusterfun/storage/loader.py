@@ -1,4 +1,5 @@
 """Base class for data loader."""
+
 import abc
 from typing import Any, Dict, List, Tuple
 

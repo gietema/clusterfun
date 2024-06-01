@@ -4,6 +4,7 @@ data.py
 
 This module contains functions for formatting the data to be used in the plotly plots.
 """
+
 import sqlite3
 from typing import Any, Dict, List, Optional, Tuple
 

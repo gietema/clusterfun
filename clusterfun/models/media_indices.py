@@ -13,6 +13,7 @@ Classes
 MediaIndices
     A class representing a set of media indices with optional sorting and pagination.
 """
+
 from typing import List, Optional
 
 from pydantic import BaseModel  # pylint: disable=no-name-in-module

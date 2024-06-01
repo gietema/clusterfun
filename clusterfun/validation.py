@@ -21,6 +21,7 @@ ColumnNotFoundException
 EmptyDataFrameException
     Exception raised when the DataFrame is empty.
 """
+
 import pandas as pd
 
 from clusterfun.config import Config

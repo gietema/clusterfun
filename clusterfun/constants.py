@@ -1,4 +1,5 @@
 """Constants used in clusterfun."""
+
 # from https://github.com/plotly/plotly.js/blob/master/src/components/color/attributes.js
 # used for determining the colors in the plotly plot.
 COLORS = [

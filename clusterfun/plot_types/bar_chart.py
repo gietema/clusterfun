@@ -4,6 +4,7 @@ bar_chart.py
 
 This module provides the bar chart plot type for clusterfun.
 """
+
 from typing import List, Optional, Union
 
 import numpy as np

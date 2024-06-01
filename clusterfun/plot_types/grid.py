@@ -10,6 +10,7 @@ grid(df: pd.DataFrame, media: str, title: Optional[str] = None, show: bool = Tru
 Display a grid of media items using the input DataFrame, media, and optional title and show parameters.
 
 """
+
 from pathlib import Path
 from typing import List, Optional, Union
 

@@ -1,6 +1,7 @@
 """
 This module contains all the plot types that can be used to visualize the data.
 """
+
 DOCSTRING_STANDARD = """    :param media: str
         The column name of the media to display on the plot.
         This should be a list of strings that can be decoded by one of the implemented storers.

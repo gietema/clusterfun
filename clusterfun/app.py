@@ -4,6 +4,7 @@ app.py
 
 This module provides the FastAPI app for the clusterfun web app.
 """
+
 import os
 from pathlib import Path
 

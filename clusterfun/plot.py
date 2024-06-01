@@ -12,6 +12,7 @@ Classes
 Plot
     A class representing a plot with a unique identifier, data, and configuration.
 """
+
 import asyncio
 import dataclasses
 import os

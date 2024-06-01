@@ -18,6 +18,7 @@ filter_value_in_column(filter: Filter, con) -> bool
 is_float(element: Any) -> bool
     Determines if an element can be converted to a float.
 """
+
 from typing import Any, List, Union
 
 from pydantic import BaseModel  # pylint: disable=no-name-in-module

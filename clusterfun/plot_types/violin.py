@@ -4,6 +4,7 @@ violin.py
 
 This module provides the violin plot type for clusterfun.
 """
+
 from typing import Callable, List, Optional, Union
 
 import numpy as np

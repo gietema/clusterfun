@@ -24,6 +24,7 @@ POST /views/{view_uuid}/filter
     Filter plot based on a list of provided filters.
 
 """
+
 import dataclasses
 from typing import Any, Dict, List
 

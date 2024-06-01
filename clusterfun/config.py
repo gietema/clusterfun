@@ -4,6 +4,7 @@ config.py
 
 This module provides the Config dataclass for clusterfun.
 """
+
 import dataclasses
 import os
 from typing import List, Optional, Union

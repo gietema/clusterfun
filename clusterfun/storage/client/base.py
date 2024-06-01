@@ -1,4 +1,5 @@
 """Base class for storage clients."""
+
 from abc import ABC, abstractmethod
 from io import BytesIO
 from typing import Optional, Union

@@ -1,4 +1,5 @@
 """Storage client module."""
+
 from typing import Optional, TypeVar, cast
 
 from clusterfun.storage.client.base import BaseStorageClient

@@ -12,6 +12,7 @@ Available functions are:
 - scatter
 - violin
 """
+
 from clusterfun.plot_types.bar_chart import bar_chart  # noqa: F401
 from clusterfun.plot_types.confusion_matrix import confusion_matrix  # noqa: F401
 from clusterfun.plot_types.grid import grid  # noqa: F401
