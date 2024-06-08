@@ -34,6 +34,7 @@ bumpversion = "^0.6.0"
 jupyter = "^1.0.0"
 ruff = "^0.4.7"
 
+taskipy = "^1.12.2"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
@@ -50,6 +51,12 @@ clusterfun = "clusterfun.serve_cli:main"
 
 [tool.taskipy.tasks]
 dev = "uvicorn clusterfun.main:APP --reload"
+histogram = "python scripts/histogram.py"
+scatter = "python scripts/scatter.py"
+pie = "python scripts/pie.py"
+violin = "python scripts/violin.py"
+grid = "python scripts/grid.py"
+audio = "python scripts/audio.py"
 
 [tool.pylint."MESSAGES CONTROL"]
 good-names = [
