@@ -53,6 +53,10 @@ class Config:  # pylint: disable=too-many-instance-attributes
         in the grid view for each single audio file.
     labels: Optional[List[str]] = None
         The labels given by the user to the media items.
+    vline: Optional[float] = None
+        The value for a vertical line.
+    hline: Optional[float] = None
+        The value for a horizontal line.
     """
 
     type: str
@@ -73,3 +77,5 @@ class Config:  # pylint: disable=too-many-instance-attributes
     color_is_categorical: bool = True
     display: Union[str, List[str]] = None
     labels: Optional[List[str]] = None
+    vline: Optional[float] = None
+    hline: Optional[float] = None

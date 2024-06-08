@@ -35,6 +35,8 @@ def histogram(  # pylint: disable=too-many-arguments,missing-function-docstring
     show: bool = True,
     color_is_categorical: bool = True,
     display: Optional[Union[str, List[str]]] = None,
+    hline: Optional[float] = None,
+    vline: Optional[float] = None,
 ) -> Path:
     if "_x" in df.columns or "_y" in df.columns:
         raise KeyError('"_y" is a protected clusterfun columns and should not be included in the original dataframe.')
@@ -61,6 +63,8 @@ def histogram(  # pylint: disable=too-many-arguments,missing-function-docstring
         title=title,
         color_is_categorical=color_is_categorical,
         display=display,
+        vline=vline,
+        hline=hline,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)
@@ -76,6 +80,12 @@ histogram.__doc__ = (
                 The number of bins to use for the histogram
             """
     + DOCSTRING_STANDARD
+    + """
+        hline: Optional[float] = None
+            Optional horizontal line to draw on the plot
+        vline: Optional[float] = None
+            Optional vertical line to draw on the plot
+    """
 )
 
 

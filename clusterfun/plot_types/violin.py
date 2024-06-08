@@ -26,6 +26,8 @@ def violin(
     title: Optional[str] = None,
     show: bool = True,
     display: Optional[Union[str, List[str]]] = None,
+    hline: Optional[float] = None,
+    vline: Optional[float] = None,
 ):  # pylint: disable=too-many-arguments,missing-function-docstring
     df["x"] = get_violin_x(df, y, color)
     cfg = Config(
@@ -38,6 +40,8 @@ def violin(
         bounding_box=bounding_box,
         title=title,
         display=display,
+        hline=hline,
+        vline=vline,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)
@@ -51,6 +55,12 @@ violin.__doc__ = (
         The column name to create the violin plot
     """
     + DOCSTRING_STANDARD
+    + """
+        hline: Optional[float] = None
+            Optional horizontal line to draw on the plot
+        vline: Optional[float] = None
+            Optional vertical line to draw on the plot
+    """
 )
 
 

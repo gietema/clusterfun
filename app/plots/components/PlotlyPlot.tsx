@@ -58,32 +58,30 @@ export default ({
       t: 0,
       pad: 0,
     },
-    // legend: {
-    //   x: window.innerWidth < 768 ? 0.5 : undefined,
-    //   xanchor: window.innerWidth < 768 ? 'center' : 'right',
-    //   y: window.innerWidth < 768 ? 1.1 : undefined,
-    //   yanchor: 'bottom',
-    //   font: {
-    //     color: 'black',
-    //     size: window.innerWidth < 768 ? 10 : 12
-    //   }
-    // }
   });
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    setLayout((prevState: any) => ({
-      ...prevState,
-      xaxis: getXAxis(config),
-      yaxis: {
-        ...prevState.yaxis,
-        title: {
-          text: config.y,
+    setLayout((prevState: any) => {
+      const newShapes = [
+        ...(config.hline && typeof config.hline === 'number' ? [createHLine(config.hline)] : []),
+        ...(config.vline && typeof config.vline === 'number' ? [createVLine(config.vline)] : [])
+      ];
+      return {
+        ...prevState,
+        xaxis: getXAxis(config),
+        yaxis: {
+          ...prevState.yaxis,
+          title: {
+            text: config.y,
+          },
         },
-      },
-      datarevision: revision,
-    }));
+        shapes: newShapes,
+        datarevision: revision,
+      };
+    });
   }, [config, revision]);
+  
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -241,3 +239,39 @@ function getXAxis(cfg: Config): object {
     automargin: true,
   };
 }
+
+
+function createHLine(y: number) {
+  return {
+    type: 'line',
+    x0: 0,
+    x1: 1,
+    y0: y,
+    y1: y,
+    xref: 'paper',
+    yref: 'y',
+    line: {
+      color: 'rgba(255,0,0,0.5)',
+      width: 2,
+      dash: 'dash',
+    },
+  };
+}
+
+function createVLine(x: number) {
+  return {
+    type: 'line',
+    x0: x,
+    x1: x,
+    y0: 0,
+    y1: 1,
+    xref: 'x',
+    yref: 'paper',
+    line: {
+      color: 'rgba(255,0,0,0.5)',
+      width: 2,
+      dash: 'dash',
+    },
+  };
+}
+

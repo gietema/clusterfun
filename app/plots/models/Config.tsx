@@ -14,6 +14,8 @@ export class Config {
   // used for the bar chart
   x_names?: string[];
   display?: string[];
+  hline?: number;
+  vline?: number;
 
   constructor(
     type: string,
@@ -30,6 +32,8 @@ export class Config {
     colors?: string[],
     x_names?: string[],
     display?: string[],
+    hline?: number,
+    vline?: number
   ) {
     this.type = type;
     this.media = media;
@@ -45,5 +49,7 @@ export class Config {
     this.colors = colors;
     this.x_names = x_names;
     this.display = display;
+    this.hline = hline;
+    this.vline = vline;
   }
 }

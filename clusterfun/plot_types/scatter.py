@@ -28,6 +28,8 @@ def scatter(
     show: bool = True,
     color_is_categorical: bool = True,
     display: Optional[Union[str, List[str]]] = None,
+    hline: Optional[float] = None,
+    vline: Optional[float] = None,
 ):  # pylint: disable=too-many-arguments,missing-function-docstring
     cfg = Config(
         type="scatter",
@@ -40,6 +42,8 @@ def scatter(
         title=title,
         color_is_categorical=color_is_categorical,
         display=display,
+        vline=vline,
+        hline=hline,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)
@@ -55,4 +59,10 @@ scatter.__doc__ = (
             The column name of the data to plot on the y-axis.
         """
     + DOCSTRING_STANDARD
+    + """
+        hline: Optional[float] = None
+            Optional horizontal line to draw on the plot
+        vline: Optional[float] = None
+            Optional vertical line to draw on the plot
+    """
 )
