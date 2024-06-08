@@ -2,13 +2,14 @@ import BackButton from "@/app/plots/components/BackButton";
 import getImagePlot from "@/app/plots/components/ImagePlot";
 import { Config } from "@/app/plots/models/Config";
 import { Media } from "@/app/plots/models/Media";
-import { useAtomValue } from "jotai";
-import { useEffect, useState } from "react";
+import { useAtomValue, useSetAtom } from "jotai";
+import { useCallback, useEffect, useState } from "react";
 import { parseBoundingBoxes } from "../plots/components/PreviewMedia";
 import SideBar from "../plots/components/SideBar";
 import { BoundingBox } from "../plots/models/BoundingBox";
 import { colors } from "../plots/models/Colors";
-import { configAtom, mediaAtom } from "./Previewer";
+import { configAtom, mediaAtom, mediaIndexAtom, mediaItemsAtom, uuidAtom } from "./Previewer";
+import { getMedia } from "../plots/requests/GetMedia";
 
 interface MediaPageProps {
   mediaIndex?: number;
@@ -16,18 +17,70 @@ interface MediaPageProps {
   back?: () => void;
 }
 
-export default function MediaPage({ back }: MediaPageProps): JSX.Element {
+export default function MediaPage({ mediaIndex, back }: MediaPageProps): JSX.Element {
   const config = useAtomValue<Config | undefined>(configAtom);
   const media = useAtomValue<Media | undefined>(mediaAtom);
+  const setMediaIndex = useSetAtom(mediaIndexAtom);
   const scaleFactor = 1;
   const [shapes, setShapes] = useState<Array<object>>([]);
   const [boundingBoxes, setBoundingBoxes] = useState<BoundingBox[]>([]);
+  const mediaItems = useAtomValue<Media[]>(mediaItemsAtom);
+  const setSideMedia = useSetAtom(mediaAtom);
+  const uuid = useAtomValue(uuidAtom);
 
   function handleBack(): void {
     if (back !== undefined) {
       back();
     }
   }
+
+  function getNextMedia(mediaList: Media[], currentIndex: number): Media | null {
+    const currentMediaIndex = mediaList.findIndex(media => media.index === currentIndex);
+    if (currentMediaIndex === -1 || currentMediaIndex >= mediaList.length - 1) {
+      return null; // No next media, or already at the end of the list
+    }
+    return mediaList[currentMediaIndex + 1];
+  }
+  
+  function getPreviousMedia(mediaList: Media[], currentIndex: number): Media | null {
+    const currentMediaIndex = mediaList.findIndex(media => media.index === currentIndex);
+    if (currentMediaIndex <= 0) {
+      return null; // No previous media, or already at the start of the list
+    }
+    return mediaList[currentMediaIndex - 1];
+  }
+
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.key === "ArrowLeft"  && mediaIndex !== undefined) {
+        const previousMedia = getPreviousMedia(mediaItems, mediaIndex);
+        console.log(previousMedia, "previous");
+        if (previousMedia !== null) {
+          setMediaIndex(previousMedia.index);
+          getMedia(uuid, previousMedia.index, true).then((media: Media) => {
+            setSideMedia(media);
+          });
+        }
+      } else if (event.key === "ArrowRight" && mediaIndex !== undefined) {
+        const nextMedia = getNextMedia(mediaItems, mediaIndex);
+        console.log(nextMedia, "next");
+        if (nextMedia !== null) {
+          setMediaIndex(nextMedia.index);
+          getMedia(uuid, nextMedia.index, true).then((media: Media) => {
+            setSideMedia(media);
+          });
+        }
+      }
+    },
+    [setMediaIndex, mediaIndex]
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   useEffect(() => {
     if (media === undefined || config === undefined) return;

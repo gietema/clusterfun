@@ -84,7 +84,8 @@ export default function Grid({ back }: GridProps): JSX.Element {
 
   function handleClick(index: number): void {
     if (index != null && uuid != null) {
-      getMedia(uuid, index, true).then((media) => {
+        setMediaIndex(index);
+        getMedia(uuid, index, true).then((media: Media) => {
         setSideMedia(media);
         setShowPage("media");
       });
