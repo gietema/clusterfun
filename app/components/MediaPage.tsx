@@ -10,6 +10,8 @@ import { BoundingBox } from "../plots/models/BoundingBox";
 import { colors } from "../plots/models/Colors";
 import { configAtom, mediaAtom, mediaIndexAtom, mediaItemsAtom, uuidAtom } from "./Previewer";
 import { getMedia } from "../plots/requests/GetMedia";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 
 interface MediaPageProps {
   mediaIndex?: number;
@@ -53,27 +55,37 @@ export default function MediaPage({ mediaIndex, back }: MediaPageProps): JSX.Ele
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
       if (event.key === "ArrowLeft"  && mediaIndex !== undefined) {
-        const previousMedia = getPreviousMedia(mediaItems, mediaIndex);
-        console.log(previousMedia, "previous");
-        if (previousMedia !== null) {
-          setMediaIndex(previousMedia.index);
-          getMedia(uuid, previousMedia.index, true).then((media: Media) => {
-            setSideMedia(media);
-          });
-        }
+          handlePreviousMedia();
       } else if (event.key === "ArrowRight" && mediaIndex !== undefined) {
-        const nextMedia = getNextMedia(mediaItems, mediaIndex);
-        console.log(nextMedia, "next");
-        if (nextMedia !== null) {
-          setMediaIndex(nextMedia.index);
-          getMedia(uuid, nextMedia.index, true).then((media: Media) => {
-            setSideMedia(media);
-          });
-        }
+          handleNextMedia();
       }
     },
     [setMediaIndex, mediaIndex]
   );
+
+  function handleNextMedia(): void {
+    if (mediaIndex !== undefined) {
+      const nextMedia = getNextMedia(mediaItems, mediaIndex);
+      if (nextMedia !== null) {
+        setMediaIndex(nextMedia.index);
+        getMedia(uuid, nextMedia.index, true).then((media: Media) => {
+          setSideMedia(media);
+        });
+      }
+    }
+  }
+
+  function handlePreviousMedia(): void {
+    if (mediaIndex !== undefined) {
+      const previousMedia = getPreviousMedia(mediaItems, mediaIndex);
+      if (previousMedia !== null) {
+        setMediaIndex(previousMedia.index);
+        getMedia(uuid, previousMedia.index, true).then((media: Media) => {
+          setSideMedia(media);
+        });
+      }
+    }
+  }
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -120,7 +132,37 @@ export default function MediaPage({ mediaIndex, back }: MediaPageProps): JSX.Ele
   return (
     <div className="flex">
       <div className="w-3/4">
-        <BackButton handleBack={handleBack} />
+        <div className="flex justify-between">
+          <div className="py-2">
+            <BackButton handleBack={handleBack} />
+          </div>
+          <div className="flex gap-2 text-xs py-2">
+            {
+              mediaIndex !== undefined && getPreviousMedia(mediaItems, mediaIndex) !== null && (
+                <div className="flex justify-center flex-row cursor-pointer hover:text-blue-500"
+                  onClick={handlePreviousMedia}
+                >
+                  <span className="me-1">
+                    <FontAwesomeIcon icon={faArrowLeft} />
+                  </span>
+                  Previous image
+                </div>
+              )
+            }
+            {
+              mediaIndex !== undefined && getNextMedia(mediaItems, mediaIndex) !== null && (
+                <div className="flex justify-center flex-row cursor-pointer hover:text-blue-500"
+                  onClick={handleNextMedia}
+                >
+                  Next image
+                  <span className="ms-1">
+                    <FontAwesomeIcon icon={faArrowRight} />
+                  </span>
+                </div>
+              )
+            }
+          </div>
+        </div>
         <div className="p-2">
           {media !== undefined &&
             getImagePlot({
