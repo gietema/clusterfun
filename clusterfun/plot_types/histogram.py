@@ -38,6 +38,7 @@ def histogram(  # pylint: disable=too-many-arguments,missing-function-docstring
     hline: Optional[float] = None,
     vline: Optional[float] = None,
 ) -> Path:
+    # pylint: disable=too-many-locals
     if "_x" in df.columns or "_y" in df.columns:
         raise KeyError('"_y" is a protected clusterfun columns and should not be included in the original dataframe.')
     if color is not None and color_is_categorical:
