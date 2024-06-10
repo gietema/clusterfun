@@ -22,7 +22,7 @@
     "eslint": "8.56.0",
     "eslint-config-next": "14.2.3",
     "file-saver": "^2.0.5",
-    "jotai": "^2.4.0",
+    "jotai": "^2.8.3",
     "next": "14.2.0",
     "plotly.js": "^2.33.0",
     "postcss": "8.4.38",
