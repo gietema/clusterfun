@@ -96,7 +96,6 @@ code {
   object-fit: contain;
   max-height: calc(100vh - 140px);
   object-position: left;
-  height: 100vh;
 }
 
 .grid-cols-1 img {
