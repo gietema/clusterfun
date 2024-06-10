@@ -96,6 +96,7 @@ code {
   object-fit: contain;
   max-height: calc(100vh - 140px);
   object-position: left;
+  height: 100vh;
 }
 
 .grid-cols-1 img {
@@ -103,6 +104,7 @@ code {
   max-height: calc(100vh - 140px);
   object-position: center;
 }
+
 .grid-cols-1 {
   grid-template-columns: repeat(1, minmax(0, 1fr));
 }
