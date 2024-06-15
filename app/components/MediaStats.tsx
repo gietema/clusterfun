@@ -69,12 +69,12 @@ export function MediaVisualization({ mediaIndices }: Props) {
     const minFilter = {
       column: columnName,
       comparison: ">=",
-      value: minimum,
+      values: [String(minimum)],
     };
     const maxFilter = {
       column: columnName,
       comparison: "<=",
-      value: maximum,
+      values: [String(maximum)],
     };
     const newFilters = filters.filter((filter) => filter.column !== columnName);
     setFilters([...newFilters, minFilter, maxFilter]);
@@ -85,7 +85,7 @@ export function MediaVisualization({ mediaIndices }: Props) {
     const newFilters = filters.filter((filter) => filter.column !== columnName);
     setFilters([
       ...newFilters,
-      { column: columnName, comparison: "=", value: label },
+      { column: columnName, comparison: "=", values: [label] },
     ]);
   }
 

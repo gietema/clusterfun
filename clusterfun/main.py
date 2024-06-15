@@ -26,11 +26,12 @@ POST /views/{view_uuid}/filter
 """
 
 import dataclasses
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 import pandas as pd
 from fastapi import Request
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from pydantic import BaseModel
 
 from clusterfun.app import APP, FRONTEND_DIR
 from clusterfun.models.filter import Filter
@@ -179,6 +180,30 @@ def to_grid(
     )
     print(url)
     return str(url)
+
+
+class ColumnInfo(BaseModel):
+    """A class representing a column with name and dtype attributes."""
+    name: str
+    dtype: str
+
+
+@APP.get("/api/views/{view_uuid}/columns", response_model=List[ColumnInfo])
+def columns(view_uuid: str) -> List[ColumnInfo]:
+    """Get the columns of the view."""
+    df = LocalLoader(view_uuid).get_dataframe()
+    column_info = []
+    for col in df.columns:
+        column_info.append(ColumnInfo(name=col, dtype=str(df[col].dtype)))
+    return column_info
+
+
+@APP.get("/api/views/{view_uuid}/columns/{column}/values", response_model=List[Dict[str, Union[str, int]]])
+def column_values(view_uuid: str, column: str) -> List[str]:
+    """Get the columns of the view."""
+    df = LocalLoader(view_uuid).get_dataframe()
+    value_counts = df[column].sort_values().astype(str).value_counts()
+    return [{"label": value, "count": count} for value, count in value_counts.items()]
 
 
 @APP.get("/{path:path}", response_class=HTMLResponse)

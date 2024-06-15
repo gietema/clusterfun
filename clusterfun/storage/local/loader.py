@@ -148,13 +148,14 @@ class LocalLoader(Loader):
         con.close()
         return data[0]
 
-    def get_dataframe(self, media_indices: MediaIndices) -> pd.DataFrame:
+    def get_dataframe(self, media_indices: Optional[MediaIndices] = None) -> pd.DataFrame:
         """Get the data as a pandas dataframe."""
-        con = None
-        config = self.load_config()
-        if media_indices.filters:
-            con = sqlite3.connect(self.db_path, check_same_thread=False)
+        con = sqlite3.connect(self.db_path)
+        if media_indices is not None:
             config = self.load_config()
-        query = get_media_query(media_indices, config=config, con=con, paginate=False)
-        result = run_query(self.db_path, query)
-        return pd.DataFrame(result, columns=config.columns)
+            query = get_media_query(media_indices, config=config, con=con, paginate=False)
+        else:
+            query = "SELECT * FROM database"
+        df = pd.read_sql_query(query, con)
+        con.close()
+        return df

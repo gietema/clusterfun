@@ -55,10 +55,16 @@ def get_filter_query(con: sqlite3.Connection, config: Config, filters: List[Filt
         if 0 < idx < len(filters):
             query += " AND "
         # Add filter to query string
-        if str(filter_item.value).isnumeric() or is_float(filter_item.value):
-            query += f"{filter_item.column} {filter_item.comparison} {filter_item.value}"
+        value_str = ""
+        for value in filter_item.values:
+            if str(value).isnumeric() or is_float(value):
+                value_str += f"{value},"
+            else:
+                value_str += f"'{value}',"
+        if filter_item.comparison in ["IN", "NOT IN"]:
+            query += f"{filter_item.column} {filter_item.comparison} ({value_str[:-1]})"
         else:
-            query += f"{filter_item.column} {filter_item.comparison} '{filter_item.value}'"
+            query += f"{filter_item.column} {filter_item.comparison} {value_str[:-1]}"
     return query
 
 
@@ -74,7 +80,7 @@ def get_media_query(
         assert con is not None and config is not None, "If filters are provided, con and config must be provided"
         filter_query = get_filter_query(con, config=config, filters=media_indices.filters)
         if filter_query:
-            query += " AND {filter_query}"
+            query += f" AND {filter_query}"
     if (
         media_indices.sort_column is not None
         and media_indices.sort_column != ""

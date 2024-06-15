@@ -11,7 +11,8 @@ import { colors } from "../plots/models/Colors";
 import { configAtom, mediaAtom, mediaIndexAtom, mediaItemsAtom, uuidAtom } from "./Previewer";
 import { getMedia } from "../plots/requests/GetMedia";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faArrowRight, faRedo, faUndo } from "@fortawesome/free-solid-svg-icons";
+import PlotlyImagePlot from "../plots/components/PlotlyImagePlot";
 
 interface MediaPageProps {
   mediaIndex?: number;
@@ -29,6 +30,12 @@ export default function MediaPage({ mediaIndex, back }: MediaPageProps): JSX.Ele
   const mediaItems = useAtomValue<Media[]>(mediaItemsAtom);
   const setSideMedia = useSetAtom(mediaAtom);
   const uuid = useAtomValue(uuidAtom);
+  const [rotatedSrc, setRotatedSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    setRotatedSrc(null);
+  }, [mediaIndex]);
+
 
   function handleBack(): void {
     if (back !== undefined) {
@@ -129,6 +136,57 @@ export default function MediaPage({ mediaIndex, back }: MediaPageProps): JSX.Ele
     setShapes(shapes);
   }, [boundingBoxes, media]);
 
+  function rotateClockwise() {
+    if (media === undefined) return;
+    rotateImage(rotatedSrc || media.src, 90);
+  }
+
+  function rotateCounterclockwise() {
+    if (media === undefined) return;
+    rotateImage(rotatedSrc || media.src, -90);
+  }
+
+  function rotateImage(base64Image: string, degrees: number) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const image = new Image();
+
+    image.onload = () => {
+      if (degrees % 180 === 0) {
+        canvas.width = image.width;
+        canvas.height = image.height;
+      } else {
+        canvas.width = image.height;
+        canvas.height = image.width;
+      }
+
+      if (ctx === null) {
+        return;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate((degrees * Math.PI) / 180);
+      ctx.drawImage(image, -image.width / 2, -image.height / 2);
+
+      ctx.restore();
+
+      // update the media width and height
+      const temp = media;
+      if (temp !== undefined) {
+        temp.width = canvas.width;
+        temp.height = canvas.height;
+        setSideMedia(temp);
+      }
+
+      setRotatedSrc(canvas.toDataURL());
+    };
+
+    image.src = base64Image;
+  }
+
   return (
     <div className="flex">
       <div className="w-3/4">
@@ -136,6 +194,13 @@ export default function MediaPage({ mediaIndex, back }: MediaPageProps): JSX.Ele
           <div className="py-2">
             <BackButton handleBack={handleBack} />
           </div>
+          <div className="text-xs flex gap-2">
+          <div className="flex justify-center flex-col cursor-pointer hover:text-blue-500" onClick={rotateCounterclockwise}>
+              <FontAwesomeIcon icon={faUndo} />
+            </div>
+            <div className="flex justify-center flex-col cursor-pointer hover:text-blue-500" onClick={rotateClockwise}>
+              <FontAwesomeIcon icon={faRedo} />
+            </div>
           <div className="flex gap-2 text-xs py-2">
             {
               mediaIndex !== undefined && getPreviousMedia(mediaItems, mediaIndex) !== null && (
@@ -162,15 +227,19 @@ export default function MediaPage({ mediaIndex, back }: MediaPageProps): JSX.Ele
               )
             }
           </div>
+          </div>
         </div>
         <div className="p-2">
-          {media !== undefined &&
-            getImagePlot({
-              media,
-              scaleFactor,
-              shapes,
-              boundingBoxes,
-            })}
+          {media !== undefined && (
+            <div style={{ height: "calc(100vh - 80px)" }}>
+            <PlotlyImagePlot
+              media={{ ...media, src: rotatedSrc || media.src }}
+              scaleFactor={scaleFactor}
+              shapes={shapes}
+              boundingBoxes={boundingBoxes}
+            />
+          </div>
+          )}
         </div>
       </div>
       <div className="w-1/4">

@@ -95,7 +95,7 @@ export default function Previewer({
             back={() => {
               setMediaIndices([]);
               // reset the page in gridvalues
-              setGridValues({ ...gridValues, page: 0 });
+              setGridValues((prevValues) => ({ ...prevValues, page: 0 }));
               setShowPage("plot");
             }}
           />
@@ -107,7 +107,7 @@ export default function Previewer({
               mediaIndex={mediaIndex}
               back={() => {
                 setMediaIndex(undefined);
-                if (mediaIndices !== undefined && mediaIndices.length > 0) {
+                if (mediaIndices.length > 0) {
                   setShowPage("grid");
                 } else {
                   setShowPage("plot");

@@ -14,7 +14,7 @@ import saveAs from "file-saver";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import React, { useEffect, useState } from "react";
 import BackButton from "../plots/components/BackButton";
-import { Filter } from "../plots/components/Filter";
+import { Filter } from "../plots/components/FilterContext";
 import SideBar from "../plots/components/SideBar";
 import { API_URL } from "../plots/models/Constants";
 import { getMediaItems } from "../plots/requests/GetMediaItems";

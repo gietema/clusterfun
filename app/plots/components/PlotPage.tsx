@@ -10,7 +10,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { Data } from "plotly.js";
 import { useEffect, useState } from "react";
 import { getMedia } from "../requests/GetMedia";
-import { Filter } from "./Filter";
+import { Filter } from "./FilterContext";
 import PlotlyPlot from "./PlotlyPlot";
 import SideBar from "./SideBar";
 

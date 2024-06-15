@@ -34,13 +34,13 @@ class Filter(BaseModel):  # pylint: disable=too-few-public-methods
         The column name to filter on.
     comparison : str
         The comparison operator to use for filtering.
-    value : Union[str, float, int]
+    values: List[Union[str, float, int]]
         The value to filter on.
     """
 
     column: str
     comparison: str
-    value: Union[str, float, int]
+    values: List[Union[str, float, int]]
 
     def is_valid(self, columns: List[str], con) -> bool:
         """
@@ -55,17 +55,39 @@ class Filter(BaseModel):  # pylint: disable=too-few-public-methods
         -------
         bool
         Returns True if values are valid, False otherwise"""
-        if self.column not in columns:
-            return False
-        if self.comparison not in [">", "<", "=", "!=", ">=", "<="]:
-            return False
-        # validate result of value: should be value of column if categorical else number
-        if not str(self.value).isnumeric() and not is_float(self.value) and not filter_value_in_column(self, con):
-            return False
+
+        def value_is_valid(value) -> bool:
+            if self.column not in columns:
+                return False
+            if self.comparison not in [">", "<", "=", "!=", ">=", "<=", "IN", "NOT IN"]:
+                return False
+            # validate result of value: should be value of column if categorical else number
+            if (
+                not str(value).isnumeric()
+                and not is_float(value)
+                and not filter_value_in_column(self.column, value, con)
+            ):
+                return False
+            if value == "":
+                return False
+            return True
+
+        if isinstance(self.values, list):
+            if len(self.values) == 0:
+                return False
+            for val in self.values:
+                if not value_is_valid(val):
+                    return False
+        else:
+            if not value_is_valid(self.values):
+                return False
         return True
 
+    def __str__(self):
+        return f"{self.column} {self.comparison} {self.values}"
 
-def filter_value_in_column(filter_item: Filter, con) -> bool:
+
+def filter_value_in_column(column, value, con) -> bool:
     """
     Check if a value exists in a column in a database table.
 
@@ -81,10 +103,10 @@ def filter_value_in_column(filter_item: Filter, con) -> bool:
     bool
         True if the value exists in the column, False otherwise.
     """
-    query = f"SELECT DISTINCT {filter_item.column} FROM database"
+    query = f"SELECT DISTINCT {column} FROM database"
     result = con.execute(query).fetchall()
     result = [x[0] for x in result]
-    return filter_item.value in result
+    return value in result
 
 
 def is_float(element: Any) -> bool:
