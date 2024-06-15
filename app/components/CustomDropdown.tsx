@@ -82,8 +82,8 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
               {getIcon(
                 options.find((opt) => opt.value === selectedOption)?.dtype,
               ) && (
-                // @ts-ignore
                 <FontAwesomeIcon
+                  // @ts-ignore
                   icon={getIcon(
                     options.find((opt) => opt.value === selectedOption)?.dtype,
                   )}
