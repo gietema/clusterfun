@@ -1,5 +1,4 @@
 import BackButton from "@/app/plots/components/BackButton";
-import getImagePlot from "@/app/plots/components/ImagePlot";
 import { Config } from "@/app/plots/models/Config";
 import { Media } from "@/app/plots/models/Media";
 import { useAtomValue, useSetAtom } from "jotai";
