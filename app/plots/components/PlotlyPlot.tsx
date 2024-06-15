@@ -16,6 +16,11 @@ const Plot = dynamic(async () => await import("react-plotly.js"), {
   ssr: false,
 });
 
+function sortData(data: any[]): any[] {
+  // Example: Sort data based on the name of the traces
+  return data.sort((a, b) => (a.name > b.name ? 1 : -1));
+}
+
 // eslint-disable-next-line react/display-name,import/no-anonymous-default-export
 export default ({
   revision,
@@ -64,8 +69,12 @@ export default ({
   useEffect(() => {
     setLayout((prevState: any) => {
       const newShapes = [
-        ...(config.hline && typeof config.hline === 'number' ? [createHLine(config.hline)] : []),
-        ...(config.vline && typeof config.vline === 'number' ? [createVLine(config.vline)] : [])
+        ...(config.hline && typeof config.hline === "number"
+          ? [createHLine(config.hline)]
+          : []),
+        ...(config.vline && typeof config.vline === "number"
+          ? [createVLine(config.vline)]
+          : []),
       ];
       return {
         ...prevState,
@@ -81,7 +90,6 @@ export default ({
       };
     });
   }, [config, revision]);
-  
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -108,6 +116,39 @@ export default ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    setLayout((prevState: any) => {
+      const newShapes = [
+        ...(config.hline && typeof config.hline === "number"
+          ? [createHLine(config.hline)]
+          : []),
+        ...(config.vline && typeof config.vline === "number"
+          ? [createVLine(config.vline)]
+          : []),
+      ];
+
+      // Sort the data before setting it to the layout
+      const sortedData = sortData(data);
+
+      return {
+        ...prevState,
+        xaxis: getXAxis(config),
+        yaxis: {
+          ...prevState.yaxis,
+          title: {
+            text: config.y,
+          },
+        },
+        shapes: newShapes,
+        data: sortedData,
+        datarevision: revision,
+        legend: {
+          traceorder: "normal", // Use 'normal' for default order, 'reversed' for reversed order
+        },
+      };
+    });
+  }, [config, revision, data]);
 
   // Update the onRelayout event handler to update the layout state
   function onRelayout(e: any): void {
@@ -240,38 +281,36 @@ function getXAxis(cfg: Config): object {
   };
 }
 
-
 function createHLine(y: number) {
   return {
-    type: 'line',
+    type: "line",
     x0: 0,
     x1: 1,
     y0: y,
     y1: y,
-    xref: 'paper',
-    yref: 'y',
+    xref: "paper",
+    yref: "y",
     line: {
-      color: 'rgba(255,0,0,0.5)',
+      color: "rgba(255,0,0,0.5)",
       width: 2,
-      dash: 'dash',
+      dash: "dash",
     },
   };
 }
 
 function createVLine(x: number) {
   return {
-    type: 'line',
+    type: "line",
     x0: x,
     x1: x,
     y0: 0,
     y1: 1,
-    xref: 'x',
-    yref: 'paper',
+    xref: "x",
+    yref: "paper",
     line: {
-      color: 'rgba(255,0,0,0.5)',
+      color: "rgba(255,0,0,0.5)",
       width: 2,
-      dash: 'dash',
+      dash: "dash",
     },
   };
 }
-
