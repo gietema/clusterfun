@@ -10,7 +10,7 @@ import { getFilteredPlotData } from "../plots/requests/GetFilteredPlotData";
 import { getPlotData } from "../plots/requests/GetPlotData";
 import { getUuid } from "../plots/requests/GetUuid";
 import Grid, { GridValues } from "./Grid";
-import MediaPage from "./MediaPage";
+import MediaPage from "./MediaPage/MediaPage";
 
 export const dataAtom = atom<Data[] | undefined>(undefined);
 export const configAtom = atom<Config | undefined>(undefined);

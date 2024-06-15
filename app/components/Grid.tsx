@@ -50,6 +50,119 @@ export interface GridProps {
   back: () => void;
 }
 
+function handleColumnNumber(e: React.ChangeEvent<HTMLInputElement>, gridValues: GridValues, setGridValues: (value: GridValues) => void): void {
+  const value = parseInt(e.target.value);
+  setGridValues({ ...gridValues, numberOfColumns: value });
+}
+
+function handleClick(index: number, uuid: string | undefined, setMediaIndex: (index: number) => void, setSideMedia: (media: Media) => void, setShowPage: (page: string) => void): void {
+  if (index != null && uuid != null) {
+    setMediaIndex(index);
+    getMedia(uuid, index, true).then((media: Media) => {
+      setSideMedia(media);
+      setShowPage("media");
+    });
+  }
+}
+
+function handleHover(index: number, uuid: string | undefined, setMediaIndex: (index: number) => void, setSideMedia: (media: Media) => void): void {
+  setMediaIndex(index);
+  if (index === undefined || uuid === undefined) {
+    return;
+  }
+  getMedia(uuid, index, false).then((media) => {
+    setSideMedia(media);
+  });
+}
+
+function handleSort(column: string, ascending: boolean, config: any, gridValues: GridValues, setGridValues: (value: GridValues) => void, updateMedia: (column: string | undefined, ascending: boolean | undefined) => void): void {
+  if (config === undefined || !config.columns.includes(column)) {
+    return;
+  }
+  setGridValues({
+    ...gridValues,
+    sortBy: column,
+    asc: ascending,
+  });
+  updateMedia(column, ascending);
+}
+
+function updateMedia(
+  column: string | undefined,
+  ascending: boolean | undefined,
+  mediaIndices: number[],
+  uuid: string | undefined,
+  gridValues: GridValues,
+  setMediaItems: (items: Media[]) => void,
+): void {
+  if (mediaIndices === undefined || uuid === undefined) {
+    return;
+  }
+  getMediaItems(
+    uuid,
+    mediaIndices,
+    gridValues.page,
+    column === undefined ? gridValues.sortBy : column,
+    ascending === undefined ? gridValues.asc : ascending,
+  ).then((media) => {
+    setMediaItems(media);
+  });
+}
+
+function handleBack(back: () => void): void {
+  if (back !== undefined) {
+    back();
+  }
+}
+
+function handleDownloadGrid(uuid: string | undefined, mediaIndicesAll: number[][]): void {
+  axios
+    .post(`${API_URL}/views/${uuid}/download-grid`, {
+      media_ids: mediaIndicesAll[mediaIndicesAll.length - 1],
+    })
+    .then((res) => {
+      const blob = new Blob([res.data], { type: "text/csv;charset=utf-8" });
+      saveAs(blob, "data.csv");
+    });
+}
+
+function updateMediaForLabel(media: Media, label: string, uuid: string | undefined, setMediaItems: (items: (currentMediaItems: Media[]) => Media[]) => void): void {
+  if (uuid === undefined) {
+    return;
+  }
+  if (media.labels?.includes(label)) {
+    deleteLabel(uuid, [media.index], label)
+      .then((response: object) => console.log("Label deleted:", response))
+      .catch((error: any) => console.error("Error:", error));
+  } else {
+    saveLabel(uuid, [media.index], label)
+      .then((response: object) => {})
+      .catch((error: any) => console.error("Error:", error));
+  }
+  setMediaItems((currentMediaItems) => {
+    return currentMediaItems.map((m) => {
+      if (m.index === media.index) {
+        const updatedMedia = { ...m };
+        if (
+          updatedMedia.labels === undefined ||
+          updatedMedia.labels === null
+        ) {
+          updatedMedia.labels = [];
+        }
+        if (!updatedMedia.labels.includes(label)) {
+          updatedMedia.labels.push(label);
+        } else {
+          updatedMedia.labels = updatedMedia.labels.filter(
+            (l) => l !== label,
+          );
+        }
+        return updatedMedia;
+      }
+      return m;
+    });
+  });
+}
+
 export default function Grid({ back }: GridProps): JSX.Element {
   let mediaIndicesAll = useAtomValue(mediaIndicesAtom);
   const mediaIndices =
@@ -73,116 +186,8 @@ export default function Grid({ back }: GridProps): JSX.Element {
     if (config === undefined || uuid === undefined) {
       return;
     }
-    updateMedia(undefined, undefined);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    updateMedia(undefined, undefined, mediaIndices, uuid, gridValues, setMediaItems);
   }, [mediaIndices]);
-
-  function handleColumnNumber(e: React.ChangeEvent<HTMLInputElement>): void {
-    const value = parseInt(e.target.value);
-    setGridValues({ ...gridValues, numberOfColumns: value });
-  }
-
-  function handleClick(index: number): void {
-    if (index != null && uuid != null) {
-        setMediaIndex(index);
-        getMedia(uuid, index, true).then((media: Media) => {
-        setSideMedia(media);
-        setShowPage("media");
-      });
-    }
-  }
-
-  function handleHover(index: number): void {
-    setMediaIndex(index);
-    if (index === undefined) return;
-    getMedia(uuid, index, false).then((media) => {
-      setSideMedia(media);
-    });
-  }
-  function handleSort(column: string, ascending: boolean): void {
-    if (config === undefined || !config.columns.includes(column)) {
-      return;
-    }
-    setGridValues({
-      ...gridValues,
-      sortBy: column,
-      asc: ascending,
-    });
-    updateMedia(column, ascending);
-  }
-
-  function updateMedia(
-    column: string | undefined,
-    ascending: boolean | undefined,
-  ): void {
-    if (mediaIndices === undefined || uuid === undefined) {
-      return;
-    }
-    // get the media if the mediaIndices change
-    getMediaItems(
-      uuid,
-      mediaIndices,
-      gridValues.page,
-      column === undefined ? gridValues.sortBy : column,
-      ascending === undefined ? gridValues.asc : ascending,
-    ).then((media) => {
-      setMediaItems(media);
-    });
-  }
-
-  function handleBack(): void {
-    if (back !== undefined) {
-      back();
-    }
-  }
-
-  function handleDownloadGrid() {
-    axios
-      .post(`${API_URL}/views/${uuid}/download-grid`, {
-        media_ids: mediaIndicesAll[mediaIndicesAll.length - 1],
-      })
-      .then((res) => {
-        const blob = new Blob([res.data], { type: "text/csv;charset=utf-8" });
-        saveAs(blob, "data.csv");
-      });
-  }
-
-  function updateMediaForLabel(media: Media, label: string) {
-    // save label in db
-    if (media.labels?.includes(label)) {
-      deleteLabel(uuid, [media.index], label)
-        .then((response: object) => console.log("Label deleted:", response))
-        .catch((error: any) => console.error("Error:", error));
-    } else {
-      saveLabel(uuid, [media.index], label)
-        .then((response: object) => {})
-        .catch((error: any) => console.error("Error:", error));
-    }
-    // Update label in mediaItems state using functional update
-    setMediaItems((currentMediaItems) => {
-      return currentMediaItems.map((m) => {
-        if (m.index === media.index) {
-          // Clone the media object to avoid mutating the state directly
-          const updatedMedia = { ...m };
-          if (
-            updatedMedia.labels === undefined ||
-            updatedMedia.labels === null
-          ) {
-            updatedMedia.labels = [];
-          }
-          if (!updatedMedia.labels.includes(label)) {
-            updatedMedia.labels.push(label);
-          } else {
-            updatedMedia.labels = updatedMedia.labels.filter(
-              (l) => l !== label,
-            );
-          }
-          return updatedMedia;
-        }
-        return m;
-      });
-    });
-  }
 
   if (config === undefined || gridValues === undefined) {
     return <></>;
@@ -204,7 +209,7 @@ export default function Grid({ back }: GridProps): JSX.Element {
               <div className="flex flex-row border-b border-gray-300 lg:border-b-0 lg:border-r">
                 <div className="flex flex-row">
                   <div className="border-r pb-1 pe-1 pt-1 flex">
-                    <BackButton handleBack={handleBack} />
+                    <BackButton handleBack={() => handleBack(back)} />
                   </div>
                   <div className="ms-2 flex items-center text-xs">
                     {mediaIndices !== undefined ? mediaIndices.length : 0}{" "}
@@ -225,7 +230,7 @@ export default function Grid({ back }: GridProps): JSX.Element {
               <SortDropdown
                 columns={config.columns}
                 gridValues={gridValues}
-                handleSort={handleSort}
+                handleSort={(column: string, ascending: boolean) => handleSort(column, ascending, config, gridValues, setGridValues, (col, asc) => updateMedia(col, asc, mediaIndices, uuid, gridValues, setMediaItems))}
               />
             </div>
             {config.bounding_box != null && (
@@ -256,7 +261,7 @@ export default function Grid({ back }: GridProps): JSX.Element {
                   min={1}
                   max={10}
                   value={gridValues.numberOfColumns}
-                  onChange={(e) => handleColumnNumber(e)}
+                  onChange={(e) => handleColumnNumber(e, gridValues, setGridValues)}
                 />
               </div>
               <FontAwesomeIcon icon={faTableCells} className="ms-1" />
@@ -334,15 +339,15 @@ export default function Grid({ back }: GridProps): JSX.Element {
                 <MediaGridItem
                   media={media}
                   key={media.index}
-                  handleClick={handleClick}
-                  handleHover={handleHover}
+                  handleClick={(index: number) => handleClick(index, uuid, setMediaIndex, setSideMedia, setShowPage)}
+                  handleHover={(index: number) => handleHover(index, uuid, setMediaIndex, setSideMedia)}
                   infoColumns={config.columns}
                   columns={gridValues.numberOfColumns}
                   showColumn={gridValues.showColumnValue}
                   boundingBoxColumn={config.bounding_box}
                   showBboxLabel={gridValues.showBboxLabel}
                   display={config.display}
-                  updateLabel={updateMediaForLabel}
+                  updateLabel={(media, label) => updateMediaForLabel(media, label, uuid, setMediaItems)}
                 />
               );
             })}
@@ -352,7 +357,7 @@ export default function Grid({ back }: GridProps): JSX.Element {
       <div className="w-1/4">
         <div
           className="button w-full cursor-pointer border rounded-md mb-2 border-gray-300 bg-gray-100 py-1 text-center text-xs text-gray-900 hover:bg-gray-300 duration-150 ease-in-out transition-all"
-          onClick={() => handleDownloadGrid()}
+          onClick={() => handleDownloadGrid(uuid, mediaIndicesAll)}
         >
           Download grid as csv
         </div>
