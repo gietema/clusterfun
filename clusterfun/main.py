@@ -198,10 +198,14 @@ def columns(view_uuid: str) -> List[ColumnInfo]:
     return column_info
 
 
-@APP.get("/api/views/{view_uuid}/columns/{column}/values", response_model=List[Dict[str, Union[str, int]]])
-def column_values(view_uuid: str, column: str) -> List[str]:
+@APP.post("/api/views/{view_uuid}/columns/{column}/values", response_model=List[Dict[str, Union[str, int]]])
+def column_values(
+    view_uuid: str, 
+    column: str, 
+    media_indices: MediaIndices,
+) -> List[Dict[str, Union[str, int]]]:
     """Get the columns of the view."""
-    df = LocalLoader(view_uuid).get_dataframe()
+    df = LocalLoader(view_uuid).get_dataframe(media_indices=media_indices if len(media_indices.media_ids) > 0 else None)
     value_counts = df[column].sort_values().astype(str).value_counts()
     return [{"label": value, "count": count} for value, count in value_counts.items()]
 

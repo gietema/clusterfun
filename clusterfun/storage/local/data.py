@@ -157,7 +157,9 @@ def get_data_per_color(
         colors.append(color)
         query = f"SELECT id,{cfg.x},{cfg.y},{cfg.color} FROM database WHERE {cfg.color} = '{color}'"
         if query_addition:
-            query += f" AND {query_addition}"
+            if not query_addition.lstrip(" ").startswith("AND"):
+                query_addition = "AND " + query_addition
+            query += f" {query_addition}"
         res_query: List[Any] = con.execute(query).fetchall()
         data.append(
             {

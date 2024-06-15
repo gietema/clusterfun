@@ -53,7 +53,7 @@ const FiltersManager: React.FC = () => {
   const columnOptions = columns.map(col => ({ value: col.name, label: col.name, dtype: col.dtype }));
 
   return (
-    <div className="container mx-auto p-4 pe-0 pt-0">
+    <div className="container mx-auto p-4 pe-0 ps-0 pt-0">
       <div className={`flex flex-col ${showFilters ? "" : "hidden"}`}>
         {filters.map((filter, index) => (
             <Filter
@@ -67,8 +67,8 @@ const FiltersManager: React.FC = () => {
       </div>
       <div className="text-right">
       {(filters.length > 0 && showFilters) && (
-        <button className="bg-emerald-900 text-white py-2 px-3 rounded
-        hover:bg-emerald-500 focus:outline-none focus:ring focus:ring-emerald-500 focus:ring-opacity-50
+        <button className="bg-blue-900 text-white py-2 px-3 rounded
+        hover:bg-blue-500 focus:outline-none focus:ring focus:ring-blue-500 focus:ring-opacity-50
             transition duration-300 ease-in-out text-xs
         "
         onClick={addFilter}
@@ -80,8 +80,8 @@ const FiltersManager: React.FC = () => {
         setShowFilters(!showFilters)
         filters.length === 0 && addFilter()
       }} className={`text-white py-2 px-3 rounded
-        focus:outline-none focus:ring focus:ring-emerald-500 focus:ring-opacity-50
-          transition duration-300 ease-in-out text-xs ms-1 ${showFilters ? 'bg-emerald-500 hover:bg-emerald-900' : 'bg-emerald-900 hover:bg-emerald-500'}`}>
+        focus:outline-none focus:ring focus:ring-blue-500 focus:ring-opacity-50
+          transition duration-300 ease-in-out text-xs ms-1 ${showFilters ? 'bg-blue-500 hover:bg-blue-900' : 'bg-blue-900 hover:bg-blue-500'}`}>
         <><FontAwesomeIcon icon={faFilter} /> <span className="ms-1">Filters
             {filters.length > 0 && ` (${filters.length})`}
           </span></>

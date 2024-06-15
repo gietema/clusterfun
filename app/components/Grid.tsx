@@ -50,12 +50,22 @@ export interface GridProps {
   back: () => void;
 }
 
-function handleColumnNumber(e: React.ChangeEvent<HTMLInputElement>, gridValues: GridValues, setGridValues: (value: GridValues) => void): void {
+function handleColumnNumber(
+  e: React.ChangeEvent<HTMLInputElement>,
+  gridValues: GridValues,
+  setGridValues: (value: GridValues) => void,
+): void {
   const value = parseInt(e.target.value);
   setGridValues({ ...gridValues, numberOfColumns: value });
 }
 
-function handleClick(index: number, uuid: string | undefined, setMediaIndex: (index: number) => void, setSideMedia: (media: Media) => void, setShowPage: (page: string) => void): void {
+function handleClick(
+  index: number,
+  uuid: string | undefined,
+  setMediaIndex: (index: number) => void,
+  setSideMedia: (media: Media) => void,
+  setShowPage: (page: string) => void,
+): void {
   if (index != null && uuid != null) {
     setMediaIndex(index);
     getMedia(uuid, index, true).then((media: Media) => {
@@ -65,7 +75,12 @@ function handleClick(index: number, uuid: string | undefined, setMediaIndex: (in
   }
 }
 
-function handleHover(index: number, uuid: string | undefined, setMediaIndex: (index: number) => void, setSideMedia: (media: Media) => void): void {
+function handleHover(
+  index: number,
+  uuid: string | undefined,
+  setMediaIndex: (index: number) => void,
+  setSideMedia: (media: Media) => void,
+): void {
   setMediaIndex(index);
   if (index === undefined || uuid === undefined) {
     return;
@@ -75,7 +90,17 @@ function handleHover(index: number, uuid: string | undefined, setMediaIndex: (in
   });
 }
 
-function handleSort(column: string, ascending: boolean, config: any, gridValues: GridValues, setGridValues: (value: GridValues) => void, updateMedia: (column: string | undefined, ascending: boolean | undefined) => void): void {
+function handleSort(
+  column: string,
+  ascending: boolean,
+  config: any,
+  gridValues: GridValues,
+  setGridValues: (value: GridValues) => void,
+  updateMedia: (
+    column: string | undefined,
+    ascending: boolean | undefined,
+  ) => void,
+): void {
   if (config === undefined || !config.columns.includes(column)) {
     return;
   }
@@ -115,7 +140,10 @@ function handleBack(back: () => void): void {
   }
 }
 
-function handleDownloadGrid(uuid: string | undefined, mediaIndicesAll: number[][]): void {
+function handleDownloadGrid(
+  uuid: string | undefined,
+  mediaIndicesAll: number[][],
+): void {
   axios
     .post(`${API_URL}/views/${uuid}/download-grid`, {
       media_ids: mediaIndicesAll[mediaIndicesAll.length - 1],
@@ -126,7 +154,12 @@ function handleDownloadGrid(uuid: string | undefined, mediaIndicesAll: number[][
     });
 }
 
-function updateMediaForLabel(media: Media, label: string, uuid: string | undefined, setMediaItems: (items: (currentMediaItems: Media[]) => Media[]) => void): void {
+function updateMediaForLabel(
+  media: Media,
+  label: string,
+  uuid: string | undefined,
+  setMediaItems: (items: (currentMediaItems: Media[]) => Media[]) => void,
+): void {
   if (uuid === undefined) {
     return;
   }
@@ -143,18 +176,13 @@ function updateMediaForLabel(media: Media, label: string, uuid: string | undefin
     return currentMediaItems.map((m) => {
       if (m.index === media.index) {
         const updatedMedia = { ...m };
-        if (
-          updatedMedia.labels === undefined ||
-          updatedMedia.labels === null
-        ) {
+        if (updatedMedia.labels === undefined || updatedMedia.labels === null) {
           updatedMedia.labels = [];
         }
         if (!updatedMedia.labels.includes(label)) {
           updatedMedia.labels.push(label);
         } else {
-          updatedMedia.labels = updatedMedia.labels.filter(
-            (l) => l !== label,
-          );
+          updatedMedia.labels = updatedMedia.labels.filter((l) => l !== label);
         }
         return updatedMedia;
       }
@@ -186,7 +214,14 @@ export default function Grid({ back }: GridProps): JSX.Element {
     if (config === undefined || uuid === undefined) {
       return;
     }
-    updateMedia(undefined, undefined, mediaIndices, uuid, gridValues, setMediaItems);
+    updateMedia(
+      undefined,
+      undefined,
+      mediaIndices,
+      uuid,
+      gridValues,
+      setMediaItems,
+    );
   }, [mediaIndices]);
 
   if (config === undefined || gridValues === undefined) {
@@ -230,7 +265,24 @@ export default function Grid({ back }: GridProps): JSX.Element {
               <SortDropdown
                 columns={config.columns}
                 gridValues={gridValues}
-                handleSort={(column: string, ascending: boolean) => handleSort(column, ascending, config, gridValues, setGridValues, (col, asc) => updateMedia(col, asc, mediaIndices, uuid, gridValues, setMediaItems))}
+                handleSort={(column: string, ascending: boolean) =>
+                  handleSort(
+                    column,
+                    ascending,
+                    config,
+                    gridValues,
+                    setGridValues,
+                    (col, asc) =>
+                      updateMedia(
+                        col,
+                        asc,
+                        mediaIndices,
+                        uuid,
+                        gridValues,
+                        setMediaItems,
+                      ),
+                  )
+                }
               />
             </div>
             {config.bounding_box != null && (
@@ -261,7 +313,9 @@ export default function Grid({ back }: GridProps): JSX.Element {
                   min={1}
                   max={10}
                   value={gridValues.numberOfColumns}
-                  onChange={(e) => handleColumnNumber(e, gridValues, setGridValues)}
+                  onChange={(e) =>
+                    handleColumnNumber(e, gridValues, setGridValues)
+                  }
                 />
               </div>
               <FontAwesomeIcon icon={faTableCells} className="ms-1" />
@@ -339,15 +393,27 @@ export default function Grid({ back }: GridProps): JSX.Element {
                 <MediaGridItem
                   media={media}
                   key={media.index}
-                  handleClick={(index: number) => handleClick(index, uuid, setMediaIndex, setSideMedia, setShowPage)}
-                  handleHover={(index: number) => handleHover(index, uuid, setMediaIndex, setSideMedia)}
+                  handleClick={(index: number) =>
+                    handleClick(
+                      index,
+                      uuid,
+                      setMediaIndex,
+                      setSideMedia,
+                      setShowPage,
+                    )
+                  }
+                  handleHover={(index: number) =>
+                    handleHover(index, uuid, setMediaIndex, setSideMedia)
+                  }
                   infoColumns={config.columns}
                   columns={gridValues.numberOfColumns}
                   showColumn={gridValues.showColumnValue}
                   boundingBoxColumn={config.bounding_box}
                   showBboxLabel={gridValues.showBboxLabel}
                   display={config.display}
-                  updateLabel={(media, label) => updateMediaForLabel(media, label, uuid, setMediaItems)}
+                  updateLabel={(media, label) =>
+                    updateMediaForLabel(media, label, uuid, setMediaItems)
+                  }
                 />
               );
             })}
@@ -356,7 +422,7 @@ export default function Grid({ back }: GridProps): JSX.Element {
       </div>
       <div className="w-1/4">
         <div
-          className="button w-full cursor-pointer border rounded-md mb-2 border-gray-300 bg-gray-100 py-1 text-center text-xs text-gray-900 hover:bg-gray-300 duration-150 ease-in-out transition-all"
+          className="button w-full cursor-pointer border rounded-md ms-1 mb-2 border-gray-300 bg-gray-100 py-1 text-center text-xs text-gray-900 hover:bg-gray-300 duration-150 ease-in-out transition-all"
           onClick={() => handleDownloadGrid(uuid, mediaIndicesAll)}
         >
           Download grid as csv

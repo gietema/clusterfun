@@ -1,6 +1,6 @@
 // components/CustomDropdown.tsx
-import { useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faHashtag,
   faWater,
@@ -10,8 +10,8 @@ import {
   faCalendar,
   faClock,
   faHourglass,
-  faArrowsAltH
-} from '@fortawesome/free-solid-svg-icons';
+  faArrowsAltH,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface Option {
   value: string;
@@ -27,38 +27,42 @@ interface CustomDropdownProps {
 
 const getIcon = (dtype?: string) => {
   switch (dtype) {
-    case 'int64':
+    case "int64":
       return faHashtag;
-    case 'float64':
+    case "float64":
       return faWater;
-    case 'bool':
+    case "bool":
       return faToggleOn;
-    case 'object':
+    case "object":
       return faBox;
-    case 'category':
+    case "category":
       return faList;
-    case 'datetime64[ns]':
+    case "datetime64[ns]":
       return faCalendar;
-    case 'timedelta[ns]':
+    case "timedelta[ns]":
       return faClock;
-    case 'Period':
+    case "Period":
       return faHourglass;
-    case 'Interval':
+    case "Interval":
       return faArrowsAltH;
-    case 'Sparse[int]':
+    case "Sparse[int]":
       return faHashtag; // Use faHashtag as a placeholder
-    case 'Sparse[float]':
+    case "Sparse[float]":
       return faWater; // Use faWater as a placeholder
-    case 'Sparse[bool]':
+    case "Sparse[bool]":
       return faToggleOn; // Use faToggleOn as a placeholder
-    case 'Sparse[object]':
+    case "Sparse[object]":
       return faBox; // Use faBox as a placeholder
     default:
       return null;
   }
 };
 
-const CustomDropdown: React.FC<CustomDropdownProps> = ({ options, selectedOption, handleDropdownChange }) => {
+const CustomDropdown: React.FC<CustomDropdownProps> = ({
+  options,
+  selectedOption,
+  handleDropdownChange,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSelect = (value: string) => {
@@ -71,18 +75,26 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({ options, selectedOption
       <div className="w-full">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded leading-tight focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+          className="w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded leading-tight focus:outline-none focus:ring-blue-500 focus:border-blue-500"
         >
           {selectedOption ? (
             <div className="flex items-center">
-              {getIcon(options.find(opt => opt.value === selectedOption)?.dtype) && (
+              {getIcon(
+                options.find((opt) => opt.value === selectedOption)?.dtype,
+              ) && (
                 // @ts-ignore
-                <FontAwesomeIcon icon={getIcon(options.find(opt => opt.value === selectedOption)?.dtype)} className="mr-2" />
+                <FontAwesomeIcon
+                  icon={getIcon(
+                    options.find((opt) => opt.value === selectedOption)?.dtype,
+                  )}
+                  className="mr-2"
+                />
               )}
-              {options.find(opt => opt.value === selectedOption)?.label || selectedOption}
+              {options.find((opt) => opt.value === selectedOption)?.label ||
+                selectedOption}
             </div>
           ) : (
-            '-'
+            "-"
           )}
         </button>
         {isOpen && (
