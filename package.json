@@ -39,7 +39,7 @@
     "@types/file-saver": "^2.0.7",
     "@types/plotly.js": "^2.29.4",
     "@types/react-highlight": "^0.12.8",
-    "@types/react-plotly.js": "^2.6.0",
+    "@types/react-plotly.js": "^2.6.3",
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.6.2"
   }
