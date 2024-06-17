@@ -35,7 +35,7 @@
     "typescript": "5.2.2"
   },
   "devDependencies": {
-    "@swc-jotai/react-refresh": "^0.1.0",
+    "@swc-jotai/react-refresh": "^0.1.1",
     "@types/file-saver": "^2.0.7",
     "@types/plotly.js": "^2.29.4",
     "@types/react-highlight": "^0.12.8",
