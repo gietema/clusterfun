@@ -1,0 +1,3 @@
+name: cifar10
+url: https://s3.amazonaws.com/fast-ai-imageclas/cifar10.tgz
+data_dir: cifar10
