@@ -184,6 +184,7 @@ def to_grid(
 
 class ColumnInfo(BaseModel):
     """A class representing a column with name and dtype attributes."""
+
     name: str
     dtype: str
 
@@ -200,8 +201,8 @@ def columns(view_uuid: str) -> List[ColumnInfo]:
 
 @APP.post("/api/views/{view_uuid}/columns/{column}/values", response_model=List[Dict[str, Union[str, int]]])
 def column_values(
-    view_uuid: str, 
-    column: str, 
+    view_uuid: str,
+    column: str,
     media_indices: MediaIndices,
 ) -> List[Dict[str, Union[str, int]]]:
     """Get the columns of the view."""
