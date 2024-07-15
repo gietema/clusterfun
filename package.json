@@ -40,7 +40,7 @@
     "@types/plotly.js": "^2.29.5",
     "@types/react-highlight": "^0.12.8",
     "@types/react-plotly.js": "^2.6.3",
-    "prettier": "^3.3.2",
+    "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.5"
   }
 }
