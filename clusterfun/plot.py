@@ -33,7 +33,7 @@ from clusterfun.storage.local.loader import LocalLoader
 from clusterfun.storage.local.storer import LocalStorer
 
 
-def run_server(local_port: int):
+def run_server(local_host: str, local_port: int):
     """
     This function runs the FastAPI server for the clusterfun web app.
 
@@ -50,6 +50,7 @@ def run_server(local_port: int):
         asyncio.set_event_loop(loop)
     config = uvicorn.Config(
         "clusterfun.main:APP",
+        host=local_host,
         port=local_port,
         log_level="warning",
         reload=True,
@@ -230,9 +231,10 @@ class Plot:
             if common_media_path is not None:
                 APP.media_directory = common_media_path
             local_port = get_local_port()
-            webbrowser.open(f"http://localhost:{local_port}")
-            print(f"Serving plot on http://localhost:{local_port}")
-            run_server_fn = partial(run_server, local_port=local_port)
+            host = os.environ.get("CLUSTERFUN_HOST", "localhost")
+            webbrowser.open(f"http://{host}:{local_port}")
+            print(f"Serving plot on http://{host}:{local_port}")
+            run_server_fn = partial(run_server, local_port=local_port, local_host=host)
             run_server_fn()
         return LocalStorer().cache_dir / self.uuid
 
@@ -250,5 +252,6 @@ class Plot:
             url = f"{os.environ['CLUSTERFUN_BASE_URL']}/views/{self.uuid}"
         else:
             local_port = os.environ.get("CLUSTERFUN_PORT", "8000")
-            url = f"http://localhost:{local_port}/views/{self.uuid}"
+            host = os.environ.get("CLUSTERFUN_HOST", "localhost")
+            url = f"http://{host}:{local_port}/views/{self.uuid}"
         return url
