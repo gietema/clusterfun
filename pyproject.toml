@@ -8,7 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
 pandas = "^2.0.0"
-pyarrow = ">=13,<15"
+pyarrow = ">=13,<17"
 fastapi = "*"
 uvicorn = "*"
 orjson = "*"
