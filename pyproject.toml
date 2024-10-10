@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "clusterfun"
-version = "0.6.0a7"
+version = "0.6.1"
 description = "Clusterfun - a plotting library to inspect data"
 authors = ["Jochem Gietema <jochem@giete.ma>"]
 readme = "README.md"
