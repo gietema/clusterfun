@@ -16,7 +16,7 @@
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@types/node": "22.8.7",
     "@types/react": "18.3.12",
-    "@types/react-dom": "18.3.0",
+    "@types/react-dom": "18.3.1",
     "autoprefixer": "10.4.20",
     "axios": "^1.7.7",
     "eslint": "9.14.0",
