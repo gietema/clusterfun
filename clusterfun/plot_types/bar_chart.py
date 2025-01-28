@@ -26,18 +26,19 @@ def bar_chart(
     show: bool = True,
     color_is_categorical: bool = True,
     display: Optional[Union[str, List[str]]] = None,
+    sort_by_count: bool = True,
 ):  # pylint: disable=too-many-arguments,missing-function-docstring,too-many-locals
     if color is None or not color_is_categorical:
         start_index = 0
-        for index, (value, count) in enumerate(df[x].value_counts().items()):
+        for index, (value, count) in enumerate(df[x].value_counts(sort=sort_by_count).items()):
             df.loc[df[x] == value, "_x"] = np.random.uniform(low=start_index + index, high=0.7 + index, size=count)
             df.loc[df[x] == value, "_y"] = np.random.uniform(low=0, high=count, size=count)
     else:
         start_index = 0
-        for x_index, (x_value, _) in enumerate(df[x].value_counts().items()):
+        for x_index, (x_value, _) in enumerate(df[x].value_counts(sort=sort_by_count).items()):
             data = df[df[x] == x_value]
             stacked_y_ref = 0
-            for y_value, y_count in data[color].value_counts().items():
+            for y_value, y_count in data[color].value_counts(sort=sort_by_count).items():
                 df.loc[(df[x] == x_value) & (df[color] == y_value), "_x"] = np.random.uniform(
                     low=start_index + x_index, high=0.7 + x_index, size=y_count
                 )
@@ -46,7 +47,7 @@ def bar_chart(
                 )
                 stacked_y_ref += y_count
 
-    x_names = df[x].value_counts().keys().tolist()
+    x_names = df[x].value_counts(sort=sort_by_count).keys().tolist()
 
     cfg = Config(
         type="bar_chart",
@@ -98,5 +99,5 @@ def add_x_count_column(data: pd.DataFrame, x: str) -> pd.DataFrame:
     Adds a count column for the unique values in column x of the DataFrame.
     """
     x_count_column_name = f"{x}_count"
-    data[x_count_column_name] = data[x].map(data[x].value_counts())
+    data[x_count_column_name] = data[x].map(data[x].value_counts(sort=sort_by_count))
     return data
