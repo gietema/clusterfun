@@ -101,7 +101,7 @@ def get_recent_dir(directory: Path) -> Path:
     return max(directories, key=lambda d: d.stat().st_ctime)
 
 
-def run_query(db_path: Path, query: str, fetch_one: bool = False) -> List:
+def run_query(db_path: Path, query: str, params: Optional[tuple] = None, fetch_one: bool = False) -> List:
     """Run a query on the database
 
     Parameters
@@ -110,6 +110,8 @@ def run_query(db_path: Path, query: str, fetch_one: bool = False) -> List:
         Path to the database
     query : str
         Query to run
+    params : Optional[tuple], optional
+        Parameters for parameterized queries, by default None
     fetch_one : bool, optional
         Whether to fetch one result or all results, by default False
 
@@ -119,7 +121,10 @@ def run_query(db_path: Path, query: str, fetch_one: bool = False) -> List:
         List of results
     """
     con = sqlite3.connect(db_path, check_same_thread=False)
-    result = con.execute(query)
+    if params is not None:
+        result = con.execute(query, params)
+    else:
+        result = con.execute(query)
     result = result.fetchone() if fetch_one else result.fetchall()
     con.close()
     result_list = list(result)

@@ -18,7 +18,7 @@ export async function getMedia(
         information: r.data.information,
         height: r.data.height,
         width: r.data.width,
-        labels: r.data.labels
-    });
+        labels: r.data.labels,
+      });
     });
 }

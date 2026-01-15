@@ -51,9 +51,13 @@ export default function PlotPage({
   function handlePointHover(index: number | undefined): void {
     setMediaIndex(index);
     if (index === undefined) return;
-    getMedia(uuid, index, false).then((media) => {
-      setSideMedia(media);
-    });
+    getMedia(uuid, index, false)
+      .then((media) => {
+        setSideMedia(media);
+      })
+      .catch((error) => {
+        console.error("Error fetching media on hover:", error);
+      });
   }
 
   function handleFilterData(plotData: Data[]): void {
@@ -63,10 +67,14 @@ export default function PlotPage({
 
   const handleMediaClick = async (index: number | undefined): Promise<void> => {
     if (index != null && uuid != null) {
-      getMedia(uuid, index, true).then((media) => {
-        setSideMedia(media);
-        setShowPage("media");
-      });
+      getMedia(uuid, index, true)
+        .then((media) => {
+          setSideMedia(media);
+          setShowPage("media");
+        })
+        .catch((error) => {
+          console.error("Error fetching media on click:", error);
+        });
     }
   };
 
