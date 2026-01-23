@@ -270,16 +270,6 @@ export function PreviewMedia(props: {
             {bboxElement}
           </svg>
         </div>
-        {props.boundingBoxColumnIndex == null &&
-          props.boundingBoxColumnIndex !== undefined && (
-            <svg
-              className={"sidebar-svg"}
-              width={dims.width}
-              height={dims.height}
-            >
-              {bboxElement}
-            </svg>
-          )}
       </div>
     );
   }

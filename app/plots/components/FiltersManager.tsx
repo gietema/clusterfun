@@ -31,7 +31,7 @@ const FiltersManager: React.FC = () => {
       }
     };
     fetchColumns();
-  }, []);
+  }, [uuid]);
 
   const addFilter = () => {
     setShowFilters(true);

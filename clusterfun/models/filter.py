@@ -103,7 +103,11 @@ def filter_value_in_column(column, value, con) -> bool:
     bool
         True if the value exists in the column, False otherwise.
     """
-    query = f"SELECT DISTINCT {column} FROM database"
+    # Validate column name to prevent SQL injection - only allow alphanumeric and underscore
+    if not column.replace("_", "").isalnum():
+        return False
+    # Use identifier quoting for column name (double quotes in SQLite)
+    query = f'SELECT DISTINCT "{column}" FROM database'
     result = con.execute(query).fetchall()
     result = [x[0] for x in result]
     return value in result

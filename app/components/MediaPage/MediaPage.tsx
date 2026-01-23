@@ -53,7 +53,9 @@ export default function MediaPage({ mediaIndex, back }: MediaPageProps): JSX.Ele
       const nextMedia = getNextMedia(mediaItems, mediaIndex);
       if (nextMedia) {
         setMediaIndex(nextMedia.index);
-        getMedia(uuid, nextMedia.index, true).then((media) => setSideMedia(media));
+        getMedia(uuid, nextMedia.index, true)
+          .then((media) => setSideMedia(media))
+          .catch((error) => console.error("Error fetching next media:", error));
       }
     }
   };
@@ -63,7 +65,9 @@ export default function MediaPage({ mediaIndex, back }: MediaPageProps): JSX.Ele
       const previousMedia = getPreviousMedia(mediaItems, mediaIndex);
       if (previousMedia) {
         setMediaIndex(previousMedia.index);
-        getMedia(uuid, previousMedia.index, true).then((media) => setSideMedia(media));
+        getMedia(uuid, previousMedia.index, true)
+          .then((media) => setSideMedia(media))
+          .catch((error) => console.error("Error fetching previous media:", error));
       }
     }
   };
@@ -71,9 +75,7 @@ export default function MediaPage({ mediaIndex, back }: MediaPageProps): JSX.Ele
   const handleRotateClockwise = () => {
     if (!media) return;
     rotateImage(rotatedSrc || media.src, 90, (src, width, height) => {
-      media.width = width;
-      media.height = height;
-      setSideMedia(media);
+      setSideMedia({ ...media, width, height });
       setRotatedSrc(src);
     });
   };
@@ -81,9 +83,7 @@ export default function MediaPage({ mediaIndex, back }: MediaPageProps): JSX.Ele
   const handleRotateCounterclockwise = () => {
     if (!media) return;
     rotateImage(rotatedSrc || media.src, -90, (src, width, height) => {
-      media.width = width;
-      media.height = height;
-      setSideMedia(media);
+      setSideMedia({ ...media, width, height });
       setRotatedSrc(src);
     });
   };
@@ -91,7 +91,7 @@ export default function MediaPage({ mediaIndex, back }: MediaPageProps): JSX.Ele
   useEffect(() => {
     if (!media || !config || !config.bounding_box) return;
     const boundingBoxColumnIndex = config.columns.indexOf(config.bounding_box);
-    if (media.information && boundingBoxColumnIndex !== null) {
+    if (media.information && boundingBoxColumnIndex !== -1) {
       const bboxValue = media.information[boundingBoxColumnIndex - 2];
       if (!bboxValue) return;
       setBoundingBoxes(parseBoundingBoxes(bboxValue));
