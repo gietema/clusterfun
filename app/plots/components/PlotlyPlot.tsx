@@ -144,6 +144,7 @@ export default ({
         data: sortedData,
         datarevision: revision,
         legend: {
+            title: { text: config.color ? config.color : "" },
           traceorder: "normal", // Use 'normal' for default order, 'reversed' for reversed order
         },
       };
