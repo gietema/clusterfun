@@ -19,12 +19,13 @@ is_float(element: Any) -> bool
     Determines if an element can be converted to a float.
 """
 
-from typing import Any, List, Union
+import sqlite3
+from typing import Any, Dict, List, Union
 
-from pydantic import BaseModel  # pylint: disable=no-name-in-module
+from pydantic import BaseModel
 
 
-class Filter(BaseModel):  # pylint: disable=too-few-public-methods
+class Filter(BaseModel):
     """
     A class representing a filter with column, comparison, and value attributes.
 
@@ -87,15 +88,38 @@ class Filter(BaseModel):  # pylint: disable=too-few-public-methods
         return f"{self.column} {self.comparison} {self.values}"
 
 
-def filter_value_in_column(column, value, con) -> bool:
+_column_values_cache: Dict[str, Dict[str, set]] = {}
+
+
+def _get_column_values(column: str, con: sqlite3.Connection) -> set:
+    """Get cached distinct values for a column. Cache is keyed by database path + column."""
+    db_path = con.execute("PRAGMA database_list").fetchone()[2] or ""
+    cache_key = db_path
+    if cache_key not in _column_values_cache:
+        _column_values_cache[cache_key] = {}
+    if column not in _column_values_cache[cache_key]:
+        cursor = con.execute("PRAGMA table_info(database)")
+        valid_columns = {row[1] for row in cursor.fetchall()}
+        if column not in valid_columns:
+            _column_values_cache[cache_key][column] = set()
+        else:
+            result = con.execute(f"SELECT DISTINCT [{column}] FROM database").fetchall()
+            _column_values_cache[cache_key][column] = {x[0] for x in result}
+    return _column_values_cache[cache_key][column]
+
+
+def filter_value_in_column(column: str, value: Any, con: sqlite3.Connection) -> bool:
     """
     Check if a value exists in a column in a database table.
+    Uses a per-database cache to avoid repeated DISTINCT queries.
 
     Parameters
     ----------
-    filter_item : Filter
-        A Filter object containing the column name and value to check.
-    con : connection
+    column : str
+        The column name to check.
+    value : Any
+        The value to check for in the column.
+    con : sqlite3.Connection
         A connection object to the database.
 
     Returns
@@ -103,10 +127,7 @@ def filter_value_in_column(column, value, con) -> bool:
     bool
         True if the value exists in the column, False otherwise.
     """
-    query = f"SELECT DISTINCT {column} FROM database"
-    result = con.execute(query).fetchall()
-    result = [x[0] for x in result]
-    return value in result
+    return value in _get_column_values(column, con)
 
 
 def is_float(element: Any) -> bool:

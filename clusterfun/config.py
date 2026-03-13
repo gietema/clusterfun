@@ -75,7 +75,7 @@ class Config:  # pylint: disable=too-many-instance-attributes
     # used when data is local
     common_media_path: Optional[str] = None
     color_is_categorical: bool = True
-    display: Union[str, List[str]] = None
+    display: Optional[Union[str, List[str]]] = None
     labels: Optional[List[str]] = None
     vline: Optional[float] = None
     hline: Optional[float] = None

@@ -13,7 +13,10 @@ from clusterfun.constants import COLORS
 
 
 def get_data_dict(
-    con: sqlite3.Connection, cfg: Config, query_addition: Optional[str] = None
+    con: sqlite3.Connection,
+    cfg: Config,
+    query_addition: Optional[str] = None,
+    query_params: Optional[List] = None,
 ) -> Tuple[List[Dict[str, Any]], Optional[List[str]]]:
     """Get data for plotly graph. Used to store directly to disk here.
     - Used when saving the data for the first time. By saving the data in the right format once,
@@ -29,7 +32,9 @@ def get_data_dict(
         Configuration object
     query_addition : Optional[str], optional
         Additional query string to add to the query, by default None
-        Used for filtering data
+        Used for filtering data. Should use ? placeholders for values.
+    query_params : Optional[List], optional
+        Parameters for the query placeholders, by default None
 
     Returns
     -------
@@ -41,11 +46,11 @@ def get_data_dict(
     """
     colors = None
     if cfg.color is not None and cfg.color_is_categorical:
-        return get_data_per_color(cfg, con, query_addition)
+        return get_data_per_color(cfg, con, query_addition, query_params)
     if cfg.type == "grid":
-        data = get_grid_data(con, query_addition)
+        data = get_grid_data(con, query_addition, query_params)
     else:
-        data = get_data_standard(cfg, con, query_addition)
+        data = get_data_standard(cfg, con, query_addition, query_params)
     return data, colors
 
 
@@ -53,6 +58,7 @@ def get_data_standard(
     cfg: Config,
     con: sqlite3.Connection,
     query_addition: Optional[str] = None,
+    query_params: Optional[List] = None,
 ) -> List[Dict[str, Any]]:
     """Get data for standard plotly graph, in case there is no color column.
 
@@ -64,7 +70,9 @@ def get_data_standard(
         Database connection
     query_addition : Optional[str], optional
         Additional query string to add to the query, by default None
-        Used for filtering data
+        Used for filtering data. Should use ? placeholders for values.
+    query_params : Optional[List], optional
+        Parameters for the query placeholders, by default None
 
     Returns
     -------
@@ -82,9 +90,15 @@ def get_data_standard(
 
     query = f"SELECT {','.join(select_columns)} FROM database"
 
+    params: List = []
     if query_addition:
         query += f" WHERE {query_addition}"
-    res = con.execute(query).fetchall()
+        if query_params:
+            params.extend(query_params)
+    if params:
+        res = con.execute(query, params).fetchall()
+    else:
+        res = con.execute(query).fetchall()
     data = [
         {
             "id": [x[0] for x in res],
@@ -102,7 +116,11 @@ def get_data_standard(
     return data
 
 
-def get_grid_data(con: sqlite3.Connection, query_addition: Optional[str] = None) -> List[Dict[str, List[int]]]:
+def get_grid_data(
+    con: sqlite3.Connection,
+    query_addition: Optional[str] = None,
+    query_params: Optional[List] = None,
+) -> List[Dict[str, List[int]]]:
     """Get data for the grid. The grid is a special case as it does not have x and y values,
     so we can be more efficient here.
 
@@ -112,7 +130,9 @@ def get_grid_data(con: sqlite3.Connection, query_addition: Optional[str] = None)
         Database connection
     query_addition : Optional[str], optional
         Additional query string to add to the query, by default None
-        Used when filtering data.
+        Used when filtering data. Should use ? placeholders for values.
+    query_params : Optional[List], optional
+        Parameters for the query placeholders, by default None
 
     Returns
     -------
@@ -120,17 +140,29 @@ def get_grid_data(con: sqlite3.Connection, query_addition: Optional[str] = None)
         Data for the grid
     """
     query = "SELECT id FROM database"
+    params: List = []
     if query_addition:
         query += f" WHERE {query_addition}"
-    res = con.execute(query).fetchall()
+        if query_params:
+            params.extend(query_params)
+    if params:
+        res = con.execute(query, params).fetchall()
+    else:
+        res = con.execute(query).fetchall()
     data = [{"id": [x[0] for x in res]}]
     return data
 
 
 def get_data_per_color(
-    cfg: Config, con: sqlite3.Connection, query_addition: Optional[str] = None
+    cfg: Config,
+    con: sqlite3.Connection,
+    query_addition: Optional[str] = None,
+    query_params: Optional[List] = None,
 ) -> Tuple[List[Dict[str, Any]], List[str]]:
     """Get data for plotly graph per color.
+
+    Uses a single query to fetch all data, then groups by color in Python
+    to avoid N+1 query overhead.
 
     Parameters
     ----------
@@ -140,7 +172,9 @@ def get_data_per_color(
         Database connection
     query_addition : Optional[str], optional
         Additional query string to add to the query, by default None
-        Used when filtering data.
+        Used when filtering data. Should use ? placeholders for values.
+    query_params : Optional[List], optional
+        Parameters for the query placeholders, by default None
 
     Returns
     -------
@@ -150,25 +184,40 @@ def get_data_per_color(
 
         List of colors for each data point. Used for coloring the data points.
     """
+    query = f"SELECT id,{cfg.x},{cfg.y},{cfg.color} FROM database"
+    params: List = []
+    if query_addition:
+        where = query_addition.lstrip(" ")
+        if where.startswith("AND"):
+            where = where[3:].lstrip(" ")
+        query += f" WHERE {where}"
+        if query_params:
+            params.extend(query_params)
+
+    if params:
+        all_rows: List[Any] = con.execute(query, params).fetchall()
+    else:
+        all_rows = con.execute(query).fetchall()
+
+    # Group rows by color value in Python
+    grouped: Dict[Any, List[Any]] = {}
+    for row in all_rows:
+        color_val = row[3]
+        if color_val not in grouped:
+            grouped[color_val] = []
+        grouped[color_val].append(row)
+
     colors, data = [], []
-    res = con.execute(f"SELECT DISTINCT {cfg.color} FROM database")
-    results: List[Any] = res.fetchall()
-    for idx, color in enumerate([x[0] for x in results]):
-        colors.append(color)
-        query = f"SELECT id,{cfg.x},{cfg.y},{cfg.color} FROM database WHERE {cfg.color} = '{color}'"
-        if query_addition:
-            if not query_addition.lstrip(" ").startswith("AND"):
-                query_addition = "AND " + query_addition
-            query += f" {query_addition}"
-        res_query: List[Any] = con.execute(query).fetchall()
+    for idx, (color_val, rows) in enumerate(grouped.items()):
+        colors.append(color_val)
         data.append(
             {
-                "id": [x[0] for x in res_query],
-                "x": [x[1] for x in res_query],
-                "y": [x[2] for x in res_query],
+                "id": [r[0] for r in rows],
+                "x": [r[1] for r in rows],
+                "y": [r[2] for r in rows],
                 "mode": "markers",
                 "type": "scattergl",
-                "name": color,
+                "name": color_val,
                 "marker": {
                     "color": COLORS[idx % len(COLORS)],
                     "opacity": 1.0 if cfg.type != "histogram" else 0.5,

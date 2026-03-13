@@ -1,153 +1,101 @@
-import { PreviewMedia } from "@/app/plots/components/PreviewMedia";
-import { Media } from "@/app/plots/models/Media";
-import { faFileAudio } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+"use client";
 import { useAtomValue } from "jotai";
 import { useEffect, useRef } from "react";
-import { configAtom, uuidAtom } from "../Previewer";
+import { faFileAudio } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { configAtom } from "@/app/store/atoms";
+import type { Media } from "@/app/types";
+import PreviewMedia from "../shared/PreviewMedia";
 import MediaLabels from "./MediaLabels";
 
-export default function MediaGridItem(props: {
+interface MediaGridItemProps {
   media: Media;
-  handleClick: Function;
-  handleHover: Function;
-  infoColumns: string[];
   columns: number;
   showColumn?: string;
   boundingBoxColumn?: string;
   showBboxLabel: boolean;
   display?: string[];
-  updateLabel: (media: Media, label: string) => void;
-}): JSX.Element {
-  let info: JSX.Element = <></>;
-  const elementRef = useRef<HTMLDivElement>(null);
-  const uuid = useAtomValue(uuidAtom);
+  infoColumns: string[];
+  onClick: () => void;
+  onHover: () => void;
+  onLabelToggle: (label: string) => void;
+}
+
+export default function MediaGridItem({
+  media, columns, showColumn, boundingBoxColumn, showBboxLabel,
+  display, infoColumns, onClick, onHover, onLabelToggle,
+}: MediaGridItemProps) {
   const config = useAtomValue(configAtom);
-
-  if (config === undefined || config.labels === undefined) {
-    return <></>;
-  }
+  const elementRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const currentElement = elementRef.current;
-    if (currentElement) {
-      currentElement.addEventListener("keydown", keyPressHandler);
-    }
-
-    return () => {
-      if (currentElement) {
-        currentElement.removeEventListener("keydown", keyPressHandler);
+    const el = elementRef.current;
+    if (!el || !config?.labels) return;
+    const handler = (e: KeyboardEvent) => {
+      const key = parseInt(e.key);
+      if (key >= 1 && key <= 9 && key <= config.labels.length) {
+        onLabelToggle(config.labels[key - 1]);
       }
     };
-  }, [config, props.media.index]);
+    el.addEventListener("keydown", handler);
+    return () => el.removeEventListener("keydown", handler);
+  }, [config, media.index, onLabelToggle]);
 
-  useEffect(() => {
-    // Attach the event listener
-    const currentElement = elementRef.current;
-    if (currentElement) {
-      currentElement.addEventListener("keydown", keyPressHandler);
-    }
-    // Clean up
-    return () => {
-      if (currentElement) {
-        currentElement.removeEventListener("keydown", keyPressHandler);
-      }
-    };
-  }, []); // Empty dependency array means this runs once on mount
+  if (!config?.labels) return null;
 
-  if (props.showColumn != null && props.media.information != null) {
-    const columnIndex = props.infoColumns.slice(2).indexOf(props.showColumn);
-    info = (
-      <div className="truncate">
-        <div>
-          <small>{props.media.information[columnIndex]}</small>
-        </div>
-      </div>
-    );
-  }
+  const bboxIndex = boundingBoxColumn
+    ? infoColumns.indexOf(boundingBoxColumn)
+    : undefined;
 
-  function keyPressHandler(event: any) {
-    if (config === undefined || config.labels === undefined) {
-      return;
-    }
-    const key = event.key;
-    if (["1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(key)) {
-      // only add the label if the number is equal or less than the number of labels
-      if (Number(key) <= config.labels.length) {
-        handleLabel(Number(key) - 1);
-      }
-    }
-  }
-
-  function handleLabel(labelIndex: number) {
-    if (config === undefined || config.labels === undefined) {
-      return;
-    }
-    const label = config.labels[labelIndex];
-    props.updateLabel(props.media, label);
-  }
+  const columnValue =
+    showColumn && media.information
+      ? media.information[infoColumns.slice(2).indexOf(showColumn)]
+      : undefined;
 
   return (
     <div
-      ref={elementRef} // Attach the ref to the div
-      tabIndex={0} // Make it focusable
-      key={`${props.media.index}-${props.media.src}`}
-      onClick={() => props.handleClick(props.media.index)}
+      ref={elementRef}
+      tabIndex={0}
+      onClick={onClick}
       onMouseEnter={() => {
-        props.handleHover(props.media.index);
-        // focus the div
+        onHover();
         elementRef.current?.focus();
       }}
     >
-      {props.media.type !== "audio" ? (
+      {media.type !== "audio" ? (
         <PreviewMedia
-          media={props.media}
-          boundingBoxColumnIndex={
-            props.boundingBoxColumn != null
-              ? props.infoColumns.indexOf(props.boundingBoxColumn)
-              : undefined
-          }
-          displayLabel={props.showBboxLabel}
-          columns={props.columns}
+          media={media}
+          boundingBoxColumnIndex={bboxIndex}
+          displayLabel={showBboxLabel}
+          columns={columns}
         />
       ) : (
         <div>
-          {props.display === null && (
+          {!display && (
             <div className="text-gray-300 hover:text-gray-500">
               <FontAwesomeIcon icon={faFileAudio} size="5x" />
             </div>
           )}
-          {(props.display || []).map((display) => {
-            return (
-              <div key={display}>
-                {props.infoColumns.indexOf(display) === -1 ? (
-                  <div>{display}</div>
-                ) : (
-                  <div>
-                    <div className="text-xs border-b border-gray-300 text-gray-500">
-                      {display}
-                    </div>
-                    <div>
-                      <small>
-                        {
-                          // @ts-ignore
-                          props.media.information[
-                            props.infoColumns.indexOf(display) - 2
-                          ]
-                        }
-                      </small>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          {display?.map((d) => (
+            <div key={d}>
+              {infoColumns.indexOf(d) === -1 ? (
+                <div>{d}</div>
+              ) : (
+                <div>
+                  <div className="border-b border-gray-300 text-xs text-gray-500">{d}</div>
+                  <small>{media.information?.[infoColumns.indexOf(d) - 2]}</small>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
-      {info}
+      {columnValue !== undefined && (
+        <div className="truncate"><small>{columnValue}</small></div>
+      )}
       <MediaLabels
-        mediaLabels={props.media.labels ? props.media.labels : []}
-        handleLabel={handleLabel}
+        mediaLabels={media.labels ?? []}
+        onLabelToggle={onLabelToggle}
       />
     </div>
   );

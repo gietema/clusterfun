@@ -60,6 +60,16 @@ class LocalStorer(Storer):
                 "This dataframe could not be saved to the database. "
                 "Check if you have any columns with uncommon value types."
             ) from exc
+
+        # Create indexes for faster filtering and sorting
+        con.execute("CREATE INDEX IF NOT EXISTS idx_database_id ON database (id)")
+        if cfg.color is not None:
+            con.execute(f"CREATE INDEX IF NOT EXISTS idx_database_color ON database ([{cfg.color}])")
+        if cfg.x is not None:
+            con.execute(f"CREATE INDEX IF NOT EXISTS idx_database_x ON database ([{cfg.x}])")
+        if cfg.y is not None:
+            con.execute(f"CREATE INDEX IF NOT EXISTS idx_database_y ON database ([{cfg.y}])")
+        con.commit()
         return con
 
     def save_config(self, cfg: Config):

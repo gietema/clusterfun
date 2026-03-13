@@ -91,12 +91,3 @@ bar_chart.__doc__ = """
         - The label will be displayed in the top left of the bounding box
     :param title: Optional[str] = None
         Optional title to display on top of the plot"""
-
-
-def add_x_count_column(data: pd.DataFrame, x: str) -> pd.DataFrame:
-    """
-    Adds a count column for the unique values in column x of the DataFrame.
-    """
-    x_count_column_name = f"{x}_count"
-    data[x_count_column_name] = data[x].map(data[x].value_counts())
-    return data

@@ -104,8 +104,8 @@ def compute_pie_chart_coordinates(df: pd.DataFrame, color: str, counts: Dict[str
     pd.DataFrame
         The updated DataFrame with the pie chart coordinates.
     """
-    df["pie_chart_x"] = 0
-    df["pie_chart_y"] = 0
+    df["pie_chart_x"] = 0.0
+    df["pie_chart_y"] = 0.0
     start = 0.0
     for col, col_count in df[color].value_counts().to_dict().items():
         radius, theta = generate_polar_coordinates(col_count, start, counts[col])

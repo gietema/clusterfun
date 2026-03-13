@@ -1,34 +1,19 @@
-import { GridValues } from "../Grid";
-
 interface ShowValueDropdownProps {
   columns: string[];
-  gridValues: GridValues;
-  setGridValues: Function;
+  value: string | undefined;
+  onChange: (value: string) => void;
 }
 
-export default function ShowValueDropdown({
-  columns,
-  gridValues,
-  setGridValues,
-}: ShowValueDropdownProps) {
+export default function ShowValueDropdown({ columns, value, onChange }: ShowValueDropdownProps) {
   return (
     <select
-      className={"w-full grow text-xs"}
-      onChange={(e) =>
-        setGridValues({
-          ...gridValues,
-          showColumnValue: e.target.value,
-        })
-      }
-      value={gridValues.showColumnValue}
+      className="w-full grow text-xs"
+      onChange={(e) => onChange(e.target.value)}
+      value={value ?? ""}
     >
-      <option value="" defaultValue={""}>
-        Show value
-      </option>
-      {columns.slice(2).map((infoColumn: string) => (
-        <option key={infoColumn} value={infoColumn}>
-          {infoColumn}
-        </option>
+      <option value="">Show value</option>
+      {columns.slice(2).map((col) => (
+        <option key={col} value={col}>{col}</option>
       ))}
     </select>
   );

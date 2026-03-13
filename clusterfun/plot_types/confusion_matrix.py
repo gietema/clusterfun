@@ -1,8 +1,8 @@
 """
-bar_chart.py
+confusion_matrix.py
 =========
 
-This module provides the bar chart plot type for clusterfun.
+This module provides the confusion matrix plot type for clusterfun.
 """
 
 from typing import List, Optional, Union

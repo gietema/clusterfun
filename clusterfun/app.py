@@ -8,9 +8,21 @@ This module provides the FastAPI app for the clusterfun web app.
 import os
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
+
+
+class CacheControlMiddleware(BaseHTTPMiddleware):
+    """Add Cache-Control headers to static media and asset responses."""
+
+    async def dispatch(self, request: Request, call_next):
+        response: Response = await call_next(request)
+        path = request.url.path
+        if path.startswith("/media") or path.startswith("/_next"):
+            response.headers["Cache-Control"] = "public, max-age=86400, immutable"
+        return response
 
 
 class ClusterfunApp(FastAPI):
@@ -22,6 +34,7 @@ class ClusterfunApp(FastAPI):
 
 
 APP = ClusterfunApp(docs_url=None, redoc_url=None)
+APP.add_middleware(CacheControlMiddleware)
 APP.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

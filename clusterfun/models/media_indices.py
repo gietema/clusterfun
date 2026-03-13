@@ -16,12 +16,12 @@ MediaIndices
 
 from typing import List, Optional
 
-from pydantic import BaseModel  # pylint: disable=no-name-in-module
+from pydantic import BaseModel
 
-from clusterfun.models.filter import Filter  # pylint: disable=no-name-in-module
+from clusterfun.models.filter import Filter
 
 
-class MediaIndices(BaseModel):  # pylint: disable=too-few-public-methods
+class MediaIndices(BaseModel):
     """
     A class representing a set of media indices with optional sorting and pagination.
     Used for selecting a page of media in the grid view.

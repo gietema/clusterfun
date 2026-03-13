@@ -1,40 +1,27 @@
-import {
-  faAngleDoubleLeft,
-  faAngleDoubleRight,
-} from "@fortawesome/free-solid-svg-icons";
+import { faAngleDoubleLeft, faAngleDoubleRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-export function Pagination(props: {
-  handlePage: Function;
+interface PaginationProps {
   page: number;
   maxPage: number;
-}): JSX.Element {
+  onPageChange: (page: number) => void;
+}
+
+export default function Pagination({ page, maxPage, onPageChange }: PaginationProps) {
   return (
-    <div
-      className="text-xs py-2 lg:py-0.5 flex grow items-center justify-between border-r border-gray-300 pe-2"
-      role="group"
-      aria-label="Basic example"
-    >
+    <div className="flex grow items-center justify-between border-r border-gray-300 pe-2 text-xs lg:py-0.5">
       <button
-        type="button"
-        className={props.page !== 0 ? "hover:text-blue-500" : ""}
-        onClick={() => {
-          props.handlePage(props.page - 1);
-        }}
-        disabled={props.page === 0}
+        className={page > 0 ? "hover:text-blue-500" : ""}
+        onClick={() => onPageChange(page - 1)}
+        disabled={page === 0}
       >
         <FontAwesomeIcon icon={faAngleDoubleLeft} />
       </button>
-      <button type="button" className="px-1" disabled>
-        {props.page + 1} / {props.maxPage + 1}
-      </button>
+      <span className="px-1">{page + 1} / {maxPage + 1}</span>
       <button
-        type="button"
         className="hover:text-blue-500"
-        onClick={() => {
-          props.handlePage(props.page + 1);
-        }}
-        disabled={props.page === props.maxPage}
+        onClick={() => onPageChange(page + 1)}
+        disabled={page >= maxPage}
       >
         <FontAwesomeIcon icon={faAngleDoubleRight} />
       </button>

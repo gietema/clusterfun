@@ -2,7 +2,7 @@
 
 import sqlite3
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 import orjson
 import pandas as pd
@@ -44,53 +44,89 @@ def get_columns_for_db(
     return columns
 
 
-def get_filter_query(con: sqlite3.Connection, config: Config, filters: List[Filter]):
-    """Get the query to apply the filters"""
+def get_filter_query(
+    con: sqlite3.Connection, config: Config, filters: List[Filter]
+) -> Tuple[str, List]:
+    """Get the query to apply the filters.
+
+    Returns
+    -------
+    Tuple[str, List]
+        A tuple of (where_clause_with_placeholders, params_list).
+        The where clause uses ? placeholders for values.
+    """
     query = ""
-    for idx, filter_item in enumerate(filters):
+    params: List = []
+    first_valid = True
+    for filter_item in filters:
         # Check if filter is valid for given column
         if not filter_item.is_valid(config.columns, con):
             continue
-        # Add AND statement if not first or last filter
-        if 0 < idx < len(filters):
+        # Add AND statement if not the first valid filter
+        if not first_valid:
             query += " AND "
-        # Add filter to query string
-        value_str = ""
+        first_valid = False
+        # Add filter to query string with parameterized placeholders
+        if filter_item.comparison in ["IN", "NOT IN"]:
+            placeholders = ",".join("?" for _ in filter_item.values)
+            query += f"{filter_item.column} {filter_item.comparison} ({placeholders})"
+        else:
+            query += f"{filter_item.column} {filter_item.comparison} ?"
+        # Add the values to the params list
         for value in filter_item.values:
             if str(value).isnumeric() or is_float(value):
-                value_str += f"{value},"
+                params.append(float(value) if is_float(value) and not str(value).isnumeric() else value)
             else:
-                value_str += f"'{value}',"
-        if filter_item.comparison in ["IN", "NOT IN"]:
-            query += f"{filter_item.column} {filter_item.comparison} ({value_str[:-1]})"
-        else:
-            query += f"{filter_item.column} {filter_item.comparison} {value_str[:-1]}"
-    return query
+                params.append(value)
+    return query, params
 
 
 def get_media_query(
-    media_indices: MediaIndices, paginate: bool = True, config: Optional[Config] = None, con: Optional[Any] = None
-) -> str:
-    """Get the query for the media, used for the grid"""
+    media_indices: MediaIndices,
+    paginate: bool = True,
+    config: Optional[Config] = None,
+    con: Optional[Any] = None,
+) -> Tuple[str, List]:
+    """Get the query for the media, used for the grid.
+
+    Returns
+    -------
+    Tuple[str, List]
+        A tuple of (query_with_placeholders, params_list).
+    """
+    params: List = []
     if len(media_indices) == 1:
-        query = f"SELECT * FROM database WHERE id = {media_indices.media_ids[0]}"
+        query = "SELECT * FROM database WHERE id = ?"
+        params.append(media_indices.media_ids[0])
     else:
-        query = f"SELECT * FROM database WHERE id IN {str(tuple(media_indices.media_ids))}"
+        placeholders = ",".join("?" for _ in media_indices.media_ids)
+        query = f"SELECT * FROM database WHERE id IN ({placeholders})"
+        params.extend(media_indices.media_ids)
+
     if media_indices.filters and len(media_indices.filters) > 0:
         assert con is not None and config is not None, "If filters are provided, con and config must be provided"
-        filter_query = get_filter_query(con, config=config, filters=media_indices.filters)
+        filter_query, filter_params = get_filter_query(con, config=config, filters=media_indices.filters)
         if filter_query:
             query += f" AND {filter_query}"
+            params.extend(filter_params)
+
     if (
         media_indices.sort_column is not None
         and media_indices.sort_column != ""
         and media_indices.ascending is not None
     ):
-        query += f" ORDER BY {media_indices.sort_column} {'ASC' if media_indices.ascending else 'DESC'}"
+        # Validate sort_column against config columns whitelist to prevent SQL injection
+        if config is not None and media_indices.sort_column in config.columns:
+            query += f" ORDER BY {media_indices.sort_column} {'ASC' if media_indices.ascending else 'DESC'}"
+        elif config is None:
+            # When config is not available, still use the sort column (caller is responsible for validation)
+            query += f" ORDER BY {media_indices.sort_column} {'ASC' if media_indices.ascending else 'DESC'}"
+
     if len(media_indices.media_ids) > 50 and paginate:
         offset = media_indices.page * 50
-        query += f" LIMIT 50 OFFSET {offset}"
-    return query
+        query += " LIMIT 50 OFFSET ?"
+        params.append(offset)
+    return query, params
 
 
 def get_recent_dir(directory: Path) -> Path:
@@ -101,7 +137,7 @@ def get_recent_dir(directory: Path) -> Path:
     return max(directories, key=lambda d: d.stat().st_ctime)
 
 
-def run_query(db_path: Path, query: str, fetch_one: bool = False) -> List:
+def run_query(db_path: Path, query: str, params: Optional[List] = None, fetch_one: bool = False) -> List:
     """Run a query on the database
 
     Parameters
@@ -110,6 +146,8 @@ def run_query(db_path: Path, query: str, fetch_one: bool = False) -> List:
         Path to the database
     query : str
         Query to run
+    params : Optional[List], optional
+        Parameters for the query placeholders, by default None
     fetch_one : bool, optional
         Whether to fetch one result or all results, by default False
 
@@ -119,7 +157,10 @@ def run_query(db_path: Path, query: str, fetch_one: bool = False) -> List:
         List of results
     """
     con = sqlite3.connect(db_path, check_same_thread=False)
-    result = con.execute(query)
+    if params is not None:
+        result = con.execute(query, params)
+    else:
+        result = con.execute(query)
     result = result.fetchone() if fetch_one else result.fetchall()
     con.close()
     result_list = list(result)
