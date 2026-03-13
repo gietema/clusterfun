@@ -24,6 +24,8 @@ def read_medias(view_uuid: str, media_ids: MediaIndices) -> List[MediaItem]:
 
 
 @router.post("/api/views/{view_uuid}/media-metadata")
-def read_media_metadata(view_uuid: str, media_ids: MediaIndices) -> List[Dict[str, Any]]:
+def read_media_metadata(
+    view_uuid: str, media_ids: MediaIndices
+) -> List[Dict[str, Any]]:
     """Retrieve metadata for media items associated with a specific plot by their UUID and media IDs."""
     return get_loader(view_uuid).get_rows_metadata(media_ids)

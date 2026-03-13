@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Media, PlotConfig, Filter, ColumnInfo, LabelCount, PlotTrace, ColumnStats, MediaMetadata, SimilarityResult } from "@/app/types";
+import type { Media, PlotConfig, Filter, ColumnInfo, LabelCount, PlotTrace, ColumnStats, MediaMetadata, SimilarityResult, ProbeResponse } from "@/app/types";
 import { API_URL } from "./constants";
 import { createMedia } from "./media-utils";
 
@@ -158,6 +158,18 @@ export async function fetchSimilarVector(
   const { data } = await axios.post(`${API_URL}/views/${uuid}/similar-vector`, {
     embedding,
     n,
+  });
+  return data;
+}
+
+// ── Active Learning ──
+
+export async function fitProbe(
+  uuid: string,
+  mediaIds: number[] = [],
+): Promise<ProbeResponse> {
+  const { data } = await axios.post(`${API_URL}/views/${uuid}/active-learning/probe`, {
+    media_ids: mediaIds,
   });
   return data;
 }

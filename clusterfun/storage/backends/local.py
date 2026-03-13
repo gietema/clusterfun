@@ -16,7 +16,9 @@ class LocalBackend(StorageBackend):
     def __init__(self, cache_dir: Optional[Path] = None):
         if cache_dir is None:
             cache_dir = Path(
-                os.environ.get("CLUSTERFUN_CACHE_DIR", os.path.expanduser("~/.cache/clusterfun"))
+                os.environ.get(
+                    "CLUSTERFUN_CACHE_DIR", os.path.expanduser("~/.cache/clusterfun")
+                )
             )
         self.cache_dir = cache_dir
 
@@ -35,7 +37,11 @@ class LocalBackend(StorageBackend):
         path = self.cache_dir / uuid / filename
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "wb") as f:
-            f.write(orjson.dumps(data, option=orjson.OPT_NAIVE_UTC | orjson.OPT_SERIALIZE_NUMPY))
+            f.write(
+                orjson.dumps(
+                    data, option=orjson.OPT_NAIVE_UTC | orjson.OPT_SERIALIZE_NUMPY
+                )
+            )
 
     def load_json(self, uuid: str, filename: str) -> Any:
         with open(self.cache_dir / uuid / filename, "rb") as f:

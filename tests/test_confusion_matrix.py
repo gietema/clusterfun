@@ -21,7 +21,14 @@ def test_confusion_matrix(cache_dir):
     assert (cache_dir / "data.parquet").exists()
     with open(cache_dir / "config.json") as f:
         config = json.load(f)
-        assert config["columns"] == ["id", "media", "_prediction", "_label", "y_true", "y_pred"]
+        assert config["columns"] == [
+            "id",
+            "media",
+            "_prediction",
+            "_label",
+            "y_true",
+            "y_pred",
+        ]
         assert config["media"] == "media"
         assert config["y"] == "_prediction"
         assert config["x"] == "_label"

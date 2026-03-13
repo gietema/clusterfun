@@ -152,14 +152,18 @@ class Plot:
         # copy dataframe to not change original input
         df = df.copy()
         uuid = str(uuid4())
-        if not str(df[cfg.media].iloc[0]).startswith("http") and not str(df[cfg.media].iloc[0]).startswith("s3://"):
+        if not str(df[cfg.media].iloc[0]).startswith("http") and not str(
+            df[cfg.media].iloc[0]
+        ).startswith("s3://"):
             # assume all media paths are local and replace with /media
             common_media_path = os.path.commonpath(df[cfg.media].tolist())
             if os.path.isfile(common_media_path):
                 common_media_path = os.path.dirname(common_media_path)
             # store common media path in config
             cfg.common_media_path = common_media_path
-            df[cfg.media] = df[cfg.media].astype(str).str.replace(str(common_media_path), "/media")
+            df[cfg.media] = (
+                df[cfg.media].astype(str).str.replace(str(common_media_path), "/media")
+            )
             APP.mount("/media", StaticFiles(directory=common_media_path), name="media")
         LocalStorer().save(uuid, df, cfg)
         return cls(uuid, df.to_dict(), cfg)
@@ -215,7 +219,9 @@ class Plot:
             "config": dataclasses.asdict(self.cfg),
         }
 
-    def show(self, open_browser: bool = True, common_media_path: Optional[str] = None) -> Path:
+    def show(
+        self, open_browser: bool = True, common_media_path: Optional[str] = None
+    ) -> Path:
         """
         Display the plot in a web browser and return the cache directory path.
 

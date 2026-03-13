@@ -4,7 +4,6 @@ import dataclasses
 from typing import Any, Dict, List, Optional
 
 import duckdb
-import orjson
 import pandas as pd
 import pyarrow as pa
 
@@ -38,7 +37,9 @@ class LocalStorer(Storer):
 
         # Save embeddings as a separate Parquet file (before filtering columns)
         if cfg.embeddings is not None and cfg.embeddings in df.columns:
-            emb_table = pa.Table.from_pandas(df[["id", cfg.embeddings]], preserve_index=False)
+            emb_table = pa.Table.from_pandas(
+                df[["id", cfg.embeddings]], preserve_index=False
+            )
             emb_table = emb_table.replace_schema_metadata(None)
             self.backend.save_parquet_named(uuid, "embeddings.parquet", emb_table)
 

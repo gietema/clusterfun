@@ -31,7 +31,13 @@ def compute_clip_embeddings(
     image_urls: list[str], batch_size: int = 32
 ) -> list[list[float]]:
     """Compute CLIP embeddings for a list of image URLs."""
-    device = "mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu"
+    device = (
+        "mps"
+        if torch.backends.mps.is_available()
+        else "cuda"
+        if torch.cuda.is_available()
+        else "cpu"
+    )
     model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
     processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
     model.eval()
@@ -56,7 +62,9 @@ def compute_clip_embeddings(
         if not batch_images:
             continue
 
-        inputs = processor(images=batch_images, return_tensors="pt", padding=True).to(device)
+        inputs = processor(images=batch_images, return_tensors="pt", padding=True).to(
+            device
+        )
         with torch.no_grad():
             image_features = model.get_image_features(**inputs)
             if not isinstance(image_features, torch.Tensor):
@@ -67,7 +75,9 @@ def compute_clip_embeddings(
             embeddings.append(emb)
             valid_indices.append(idx)
 
-        print(f"  Processed {min(start + batch_size, len(image_urls))}/{len(image_urls)} images")
+        print(
+            f"  Processed {min(start + batch_size, len(image_urls))}/{len(image_urls)} images"
+        )
 
     if failed_indices:
         print(f"  Skipped {len(failed_indices)} images that failed to load")

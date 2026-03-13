@@ -13,7 +13,9 @@ from clusterfun.storage.backends.base import StorageBackend
 class GCSBackend(StorageBackend):
     """Stores data on Google Cloud Storage."""
 
-    def __init__(self, bucket: str, prefix: str = "", endpoint_url: Optional[str] = None):
+    def __init__(
+        self, bucket: str, prefix: str = "", endpoint_url: Optional[str] = None
+    ):
         from google.cloud import storage
 
         self.bucket_name = bucket
@@ -52,7 +54,9 @@ class GCSBackend(StorageBackend):
     def save_parquet(self, uuid: str, table: Any) -> None:
         gcsfs = pa.fs.GcsFileSystem()
         path = f"{self.bucket_name}/{self._key(uuid, 'data.parquet')}"
-        pq.write_table(table, path, filesystem=gcsfs, row_group_size=10_000, compression="snappy")
+        pq.write_table(
+            table, path, filesystem=gcsfs, row_group_size=10_000, compression="snappy"
+        )
 
     def save_json(self, uuid: str, filename: str, data: Any) -> None:
         blob = self.bucket_obj.blob(self._key(uuid, filename))
@@ -80,7 +84,9 @@ class GCSBackend(StorageBackend):
     def save_parquet_named(self, uuid: str, filename: str, table: Any) -> None:
         gcsfs = pa.fs.GcsFileSystem()
         path = f"{self.bucket_name}/{self._key(uuid, filename)}"
-        pq.write_table(table, path, filesystem=gcsfs, row_group_size=10_000, compression="snappy")
+        pq.write_table(
+            table, path, filesystem=gcsfs, row_group_size=10_000, compression="snappy"
+        )
 
     def get_parquet_uri_named(self, uuid: str, filename: str) -> str:
         return f"gs://{self.bucket_name}/{self._key(uuid, filename)}"

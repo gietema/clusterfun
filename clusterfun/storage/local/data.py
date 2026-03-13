@@ -111,7 +111,11 @@ def get_data_standard(
         data[0]["y"] = [x[2] for x in res]
     if cfg.color is not None and not cfg.color_is_categorical:
         # Color is always categorical here, index always the last column
-        data[0]["marker"] = {"color": [x[-1] for x in res], "colorscale": "Viridis", "showscale": True}
+        data[0]["marker"] = {
+            "color": [x[-1] for x in res],
+            "colorscale": "Viridis",
+            "showscale": True,
+        }
     return data
 
 

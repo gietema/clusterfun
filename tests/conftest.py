@@ -87,7 +87,9 @@ def backend(request, tmp_path, monkeypatch):
     """
     name = request.param
     if not _SERVICE_CHECKS[name]():
-        pytest.skip(f"{name} service not available (start with: docker compose -f docker-compose.test.yml up -d)")
+        pytest.skip(
+            f"{name} service not available (start with: docker compose -f docker-compose.test.yml up -d)"
+        )
 
     if name == "s3":
         monkeypatch.setenv("AWS_ACCESS_KEY_ID", "test")

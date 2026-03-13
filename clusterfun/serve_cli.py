@@ -17,7 +17,9 @@ def main():
     """
     Serve a plot from local storage using its unique identifier.
     """
-    parser = argparse.ArgumentParser(description="Serve a plot from local storage using its unique identifier.")
+    parser = argparse.ArgumentParser(
+        description="Serve a plot from local storage using its unique identifier."
+    )
     parser.add_argument(
         "location",
         # metavar="location",

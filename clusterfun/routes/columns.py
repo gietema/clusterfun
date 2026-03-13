@@ -37,7 +37,10 @@ def columns(view_uuid: str) -> List[ColumnInfo]:
     return column_info
 
 
-@router.post("/api/views/{view_uuid}/columns/{column}/values", response_model=List[Dict[str, Union[str, int]]])
+@router.post(
+    "/api/views/{view_uuid}/columns/{column}/values",
+    response_model=List[Dict[str, Union[str, int]]],
+)
 def column_values(
     view_uuid: str,
     column: str,
@@ -45,7 +48,9 @@ def column_values(
 ) -> List[Dict[str, Union[str, int]]]:
     """Get the columns of the view."""
     loader = get_loader(view_uuid)
-    df = loader.get_dataframe(media_indices=media_indices if len(media_indices.media_ids) > 0 else None)
+    df = loader.get_dataframe(
+        media_indices=media_indices if len(media_indices.media_ids) > 0 else None
+    )
     value_counts = df[column].sort_values().astype(str).value_counts()
     return [{"label": value, "count": count} for value, count in value_counts.items()]
 
@@ -100,7 +105,7 @@ def column_stats(view_uuid: str, req: ColumnStatsRequest) -> Dict[str, Any]:
         if total == 0 or min_val is None:
             return {"type": "numeric", "bins": [], "counts": [], "min": 0, "max": 0}
 
-        num_bins = min(50, max(10, int(total ** 0.5)))
+        num_bins = min(50, max(10, int(total**0.5)))
         bin_width = (max_val - min_val) / num_bins if max_val != min_val else 1
         if max_val == min_val:
             return {

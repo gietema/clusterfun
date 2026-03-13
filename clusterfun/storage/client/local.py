@@ -12,7 +12,9 @@ class LocalStorageClient(BaseStorageClient):
     def __init__(self, common_media_path: Optional[str]) -> None:
         super().__init__(common_media_path)
         if self.common_media_path is None:
-            raise ValueError("In case of Local storage the common media path should be defined")
+            raise ValueError(
+                "In case of Local storage the common media path should be defined"
+            )
 
     def get_media(self, uri: str) -> str:
         """Get media URL from URI.

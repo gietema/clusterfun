@@ -145,3 +145,17 @@ export interface LabelAction {
   label: string;
   mediaIds: number[];
 }
+
+// ── Active Learning ──
+export interface PredictionItem {
+  media_id: number;
+  predicted_class: string;
+  uncertainty: number;
+  probabilities: Record<string, number>;
+}
+
+export interface ProbeResponse {
+  predictions: PredictionItem[];
+  label_classes: string[];
+  n_labeled: number;
+}

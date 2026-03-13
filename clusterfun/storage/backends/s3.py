@@ -14,7 +14,9 @@ from clusterfun.storage.backends.base import StorageBackend
 class S3Backend(StorageBackend):
     """Stores data on Amazon S3."""
 
-    def __init__(self, bucket: str, prefix: str = "", endpoint_url: Optional[str] = None):
+    def __init__(
+        self, bucket: str, prefix: str = "", endpoint_url: Optional[str] = None
+    ):
         import boto3
         from botocore.client import Config as BotoConfig
 
@@ -31,8 +33,12 @@ class S3Backend(StorageBackend):
         }
         if endpoint_url:
             client_kwargs["endpoint_url"] = endpoint_url
-            client_kwargs["aws_access_key_id"] = os.environ.get("AWS_ACCESS_KEY_ID", "test")
-            client_kwargs["aws_secret_access_key"] = os.environ.get("AWS_SECRET_ACCESS_KEY", "test")
+            client_kwargs["aws_access_key_id"] = os.environ.get(
+                "AWS_ACCESS_KEY_ID", "test"
+            )
+            client_kwargs["aws_secret_access_key"] = os.environ.get(
+                "AWS_SECRET_ACCESS_KEY", "test"
+            )
         self.s3 = boto3.client("s3", **client_kwargs)
 
     @classmethod
@@ -59,11 +65,17 @@ class S3Backend(StorageBackend):
             con.execute(f"SET s3_endpoint='{parsed.hostname}:{parsed.port}'")
             con.execute("SET s3_use_ssl=false")
             con.execute("SET s3_url_style='path'")
-            con.execute(f"SET s3_access_key_id='{os.environ.get('AWS_ACCESS_KEY_ID', 'test')}'")
-            con.execute(f"SET s3_secret_access_key='{os.environ.get('AWS_SECRET_ACCESS_KEY', 'test')}'")
+            con.execute(
+                f"SET s3_access_key_id='{os.environ.get('AWS_ACCESS_KEY_ID', 'test')}'"
+            )
+            con.execute(
+                f"SET s3_secret_access_key='{os.environ.get('AWS_SECRET_ACCESS_KEY', 'test')}'"
+            )
             con.execute(f"SET s3_region='{os.environ.get('AWS_REGION', 'us-east-1')}'")
         else:
-            con.execute("CREATE SECRET IF NOT EXISTS (TYPE s3, PROVIDER credential_chain)")
+            con.execute(
+                "CREATE SECRET IF NOT EXISTS (TYPE s3, PROVIDER credential_chain)"
+            )
 
     def save_parquet(self, uuid: str, table: Any) -> None:
         if self.endpoint_url:
@@ -79,13 +91,17 @@ class S3Backend(StorageBackend):
         else:
             s3fs = pa.fs.S3FileSystem()
         path = f"{self.bucket}/{self._key(uuid, 'data.parquet')}"
-        pq.write_table(table, path, filesystem=s3fs, row_group_size=10_000, compression="snappy")
+        pq.write_table(
+            table, path, filesystem=s3fs, row_group_size=10_000, compression="snappy"
+        )
 
     def save_json(self, uuid: str, filename: str, data: Any) -> None:
         self.s3.put_object(
             Bucket=self.bucket,
             Key=self._key(uuid, filename),
-            Body=orjson.dumps(data, option=orjson.OPT_NAIVE_UTC | orjson.OPT_SERIALIZE_NUMPY),
+            Body=orjson.dumps(
+                data, option=orjson.OPT_NAIVE_UTC | orjson.OPT_SERIALIZE_NUMPY
+            ),
         )
 
     def load_json(self, uuid: str, filename: str) -> Any:
@@ -113,7 +129,10 @@ class S3Backend(StorageBackend):
     def list_uuids(self) -> List[str]:
         prefix = f"{self.prefix}/" if self.prefix else ""
         resp = self.s3.list_objects_v2(Bucket=self.bucket, Prefix=prefix, Delimiter="/")
-        return [p["Prefix"].rstrip("/").split("/")[-1] for p in resp.get("CommonPrefixes", [])]
+        return [
+            p["Prefix"].rstrip("/").split("/")[-1]
+            for p in resp.get("CommonPrefixes", [])
+        ]
 
     def save_parquet_named(self, uuid: str, filename: str, table: Any) -> None:
         if self.endpoint_url:
@@ -128,7 +147,9 @@ class S3Backend(StorageBackend):
         else:
             s3fs = pa.fs.S3FileSystem()
         path = f"{self.bucket}/{self._key(uuid, filename)}"
-        pq.write_table(table, path, filesystem=s3fs, row_group_size=10_000, compression="snappy")
+        pq.write_table(
+            table, path, filesystem=s3fs, row_group_size=10_000, compression="snappy"
+        )
 
     def get_parquet_uri_named(self, uuid: str, filename: str) -> str:
         return f"s3://{self.bucket}/{self._key(uuid, filename)}"

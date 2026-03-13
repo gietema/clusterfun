@@ -68,7 +68,9 @@ def validate(df: pd.DataFrame, cfg: Config):
         raise ColumnNotFoundException(f"{cfg.media} not in columns of dataframe")
     if cfg.embeddings is not None:
         if cfg.embeddings not in df.columns:
-            raise ColumnNotFoundException(f"{cfg.embeddings} not in columns of dataframe")
+            raise ColumnNotFoundException(
+                f"{cfg.embeddings} not in columns of dataframe"
+            )
         sample = df[cfg.embeddings].dropna().iloc[0]
         if not isinstance(sample, (list, tuple)) and not hasattr(sample, "__array__"):
             raise ValueError(

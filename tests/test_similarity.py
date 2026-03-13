@@ -84,24 +84,32 @@ class TestEmbeddingsConfig:
 class TestEmbeddingsValidation:
     def test_missing_column_raises(self):
         df = pd.DataFrame({"x": [1], "image": ["a.jpg"]})
-        cfg = Config(type="grid", media="image", columns=["id", "image"], embeddings="emb")
+        cfg = Config(
+            type="grid", media="image", columns=["id", "image"], embeddings="emb"
+        )
         with pytest.raises(ColumnNotFoundException):
             validate(df, cfg)
 
     def test_non_array_column_raises(self):
         df = pd.DataFrame({"image": ["a.jpg"], "emb": ["not_a_list"]})
-        cfg = Config(type="grid", media="image", columns=["id", "image"], embeddings="emb")
+        cfg = Config(
+            type="grid", media="image", columns=["id", "image"], embeddings="emb"
+        )
         with pytest.raises(ValueError, match="list or array"):
             validate(df, cfg)
 
     def test_valid_list_column_passes(self):
         df = pd.DataFrame({"image": ["a.jpg"], "emb": [[1.0, 2.0, 3.0]]})
-        cfg = Config(type="grid", media="image", columns=["id", "image"], embeddings="emb")
+        cfg = Config(
+            type="grid", media="image", columns=["id", "image"], embeddings="emb"
+        )
         validate(df, cfg)
 
     def test_valid_numpy_column_passes(self):
         df = pd.DataFrame({"image": ["a.jpg"], "emb": [np.array([1.0, 2.0])]})
-        cfg = Config(type="grid", media="image", columns=["id", "image"], embeddings="emb")
+        cfg = Config(
+            type="grid", media="image", columns=["id", "image"], embeddings="emb"
+        )
         validate(df, cfg)
 
 
@@ -195,27 +203,27 @@ class TestEnsureEmbeddingsTable:
         con = ensure_embeddings_table(uuid, backend, "emb")
 
         query_emb = con.execute(
-            'SELECT emb FROM embeddings WHERE id = ?', [0]
+            "SELECT emb FROM embeddings WHERE id = ?", [0]
         ).fetchone()[0]
 
         # Try HNSW path
         dim = len(query_emb)
         try:
             rows = con.execute(
-                f'SELECT id, array_cosine_similarity(emb, ?::FLOAT[{dim}]) AS sim '
-                f'FROM embeddings '
-                f'ORDER BY array_cosine_distance(emb, ?::FLOAT[{dim}]) '
-                f'LIMIT 6',
+                f"SELECT id, array_cosine_similarity(emb, ?::FLOAT[{dim}]) AS sim "
+                f"FROM embeddings "
+                f"ORDER BY array_cosine_distance(emb, ?::FLOAT[{dim}]) "
+                f"LIMIT 6",
                 [list(query_emb), list(query_emb)],
             ).fetchall()
             results = [(r[0], r[1]) for r in rows if r[0] != 0]
         except Exception:
             # Brute-force fallback
             rows = con.execute(
-                'WITH q AS (SELECT emb AS emb FROM embeddings WHERE id = ?) '
-                'SELECT e.id, list_cosine_similarity(e.emb, q.emb) AS sim '
-                'FROM embeddings e, q WHERE e.id != ? '
-                'ORDER BY sim DESC LIMIT 5',
+                "WITH q AS (SELECT emb AS emb FROM embeddings WHERE id = ?) "
+                "SELECT e.id, list_cosine_similarity(e.emb, q.emb) AS sim "
+                "FROM embeddings e, q WHERE e.id != ? "
+                "ORDER BY sim DESC LIMIT 5",
                 [0, 0],
             ).fetchall()
             results = [(r[0], r[1]) for r in rows]
@@ -278,7 +286,9 @@ class TestSimilarityEndpoint:
 
     def test_find_similar_no_embeddings_returns_empty(self, backend):
         """Plot without embeddings should return empty list."""
-        df = pd.DataFrame({"image": ["https://example.com/a.jpg"], "x": [1.0], "y": [2.0]})
+        df = pd.DataFrame(
+            {"image": ["https://example.com/a.jpg"], "x": [1.0], "y": [2.0]}
+        )
         uuid = "no-emb"
         cfg = Config(
             type="scatter",
@@ -373,7 +383,9 @@ class TestVectorSearchEndpoint:
         assert small_ids == large_ids[:5]
 
     def test_vector_search_no_embeddings_returns_empty(self, client, backend):
-        df = pd.DataFrame({"image": ["https://example.com/a.jpg"], "x": [1.0], "y": [2.0]})
+        df = pd.DataFrame(
+            {"image": ["https://example.com/a.jpg"], "x": [1.0], "y": [2.0]}
+        )
         uuid = "no-emb-vec"
         cfg = Config(
             type="scatter",
@@ -457,5 +469,10 @@ class TestPlotTypesEmbeddingsParam:
         df = self._base_df()
         df["pred"] = df["color"].sample(frac=1, random_state=0).values
         clt.confusion_matrix(
-            df, y_true="color", y_pred="pred", media="image", embeddings="emb", show=False
+            df,
+            y_true="color",
+            y_pred="pred",
+            media="image",
+            embeddings="emb",
+            show=False,
         )

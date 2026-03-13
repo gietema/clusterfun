@@ -20,6 +20,7 @@ dependencies = [
 
 [project.optional-dependencies]
 gcs = ["google-cloud-storage>=2.0.0"]
+ml = ["scikit-learn>=1.0"]
 
 [project.scripts]
 clusterfun = "clusterfun.serve_cli:main"

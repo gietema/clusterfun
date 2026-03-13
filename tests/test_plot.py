@@ -20,7 +20,9 @@ def test_violin(cache_dir):
     df["media"] = ["https://picsum.photos/300/300" for _ in range(max_len)]
     df["y"] = np.random.normal(size=max_len)
     df["color"] = np.random.choice(COLORS, size=max_len)
-    cache_dir = violin(df, y="y", media="media", title="A title of a plot", color="color", show=False)
+    cache_dir = violin(
+        df, y="y", media="media", title="A title of a plot", color="color", show=False
+    )
     assert isinstance(cache_dir, Path)
     assert (cache_dir / "config.json").exists()
     assert (cache_dir / "data.json").exists()
@@ -64,9 +66,20 @@ def test_histogram(cache_dir):
         colors.extend([i] * 5000)
     df["color"] = colors
     df["x"] = np.concatenate(
-        [np.random.normal(loc=-10, scale=5, size=5000), np.random.normal(loc=10, scale=5, size=5000)]
+        [
+            np.random.normal(loc=-10, scale=5, size=5000),
+            np.random.normal(loc=10, scale=5, size=5000),
+        ]
     )
-    cache_dir = histogram(df, x="x", media="media", title="A title of a plot", bins=40, color="color", show=False)
+    cache_dir = histogram(
+        df,
+        x="x",
+        media="media",
+        title="A title of a plot",
+        bins=40,
+        color="color",
+        show=False,
+    )
     assert isinstance(cache_dir, Path)
     assert (cache_dir / "config.json").exists()
     assert (cache_dir / "data.json").exists()
@@ -102,7 +115,14 @@ def test_it_creates_a_scatter(cache_dir):
         for _ in range(max_len)
     ]
     cache_dir = scatter(
-        df, x="x", y="y", media="media", color="color", title="A title of a plot", bounding_box="bbox", show=False
+        df,
+        x="x",
+        y="y",
+        media="media",
+        color="color",
+        title="A title of a plot",
+        bounding_box="bbox",
+        show=False,
     )
     assert isinstance(cache_dir, Path)
     assert (cache_dir / "config.json").exists()
@@ -110,7 +130,15 @@ def test_it_creates_a_scatter(cache_dir):
     assert (cache_dir / "data.parquet").exists()
 
     # without colour
-    cache_dir = scatter(df, x="x", y="y", media="media", title="A title of a plot", bounding_box="bbox", show=False)
+    cache_dir = scatter(
+        df,
+        x="x",
+        y="y",
+        media="media",
+        title="A title of a plot",
+        bounding_box="bbox",
+        show=False,
+    )
     assert isinstance(cache_dir, Path)
     assert (cache_dir / "config.json").exists()
     assert (cache_dir / "data.json").exists()

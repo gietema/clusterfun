@@ -25,7 +25,10 @@ def get_connection(uuid: str, backend: StorageBackend) -> duckdb.DuckDBPyConnect
     The view is a pointer to the Parquet file; DuckDB only fetches data when queries execute,
     using column pruning and row-group statistics to minimize I/O.
     """
-    if not hasattr(_local, "connections") or getattr(_local, "generation", -1) != _generation:
+    if (
+        not hasattr(_local, "connections")
+        or getattr(_local, "generation", -1) != _generation
+    ):
         # Close stale connections from a previous generation
         for conn in getattr(_local, "connections", {}).values():
             conn.close()
@@ -64,13 +67,13 @@ def ensure_embeddings_table(
             f"SELECT len(\"{emb_col}\") FROM read_parquet('{emb_uri}') LIMIT 1"
         ).fetchone()[0]
         con.execute(
-            f'CREATE TABLE embeddings AS '
+            f"CREATE TABLE embeddings AS "
             f'SELECT id, "{emb_col}"::FLOAT[{dim}] AS "{emb_col}" '
             f"FROM read_parquet('{emb_uri}')"
         )
         con.execute(
-            f'CREATE INDEX emb_hnsw_idx ON embeddings '
-            f'USING HNSW ("{emb_col}") WITH (metric = \'cosine\')'
+            f"CREATE INDEX emb_hnsw_idx ON embeddings "
+            f"USING HNSW (\"{emb_col}\") WITH (metric = 'cosine')"
         )
     except Exception:
         # VSS not available — fall back to a view for brute-force search

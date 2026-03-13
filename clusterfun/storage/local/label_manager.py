@@ -60,7 +60,9 @@ class LabelManager:
         return df
 
 
-def count_labels(data: Dict[int, List[str]], selection: List[int]) -> List[Dict[str, Any]]:
+def count_labels(
+    data: Dict[int, List[str]], selection: List[int]
+) -> List[Dict[str, Any]]:
     """Count labels
 
     Params
@@ -97,6 +99,10 @@ def count_labels(data: Dict[int, List[str]], selection: List[int]) -> List[Dict[
     all_unique_labels = set(total_counter.keys()).union(set(selection_counter.keys()))
     for label in all_unique_labels:
         result.append(
-            {"label": label, "inCurrentSelection": selection_counter[label], "inEntireDataset": total_counter[label]}
+            {
+                "label": label,
+                "inCurrentSelection": selection_counter[label],
+                "inEntireDataset": total_counter[label],
+            }
         )
     return result

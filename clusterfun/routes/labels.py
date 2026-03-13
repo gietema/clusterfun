@@ -47,7 +47,9 @@ def download_labels(
 ) -> StreamingResponse:
     """Download all labels for the given view as a csv file."""
     loader = get_loader(view_uuid)
-    df = loader.label_manager.get_dataframe(label=label.title if label.title != "" else None)
+    df = loader.label_manager.get_dataframe(
+        label=label.title if label.title != "" else None
+    )
 
     # limit to selection if media_indices is provided
     if len(media_indices.media_ids) > 0:

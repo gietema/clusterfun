@@ -41,7 +41,9 @@ class DataLoader:
         """Load the base config from JSON, with caching."""
         cache_key = f"{id(self.backend)}:{self.uuid}"
         if cache_key not in _config_cache:
-            _config_cache[cache_key] = Config(**self.backend.load_json(self.uuid, "config.json"))
+            _config_cache[cache_key] = Config(
+                **self.backend.load_json(self.uuid, "config.json")
+            )
         return _config_cache[cache_key]
 
     def load_config(self) -> Config:
@@ -49,7 +51,9 @@ class DataLoader:
         base = self._load_base_config()
         config = dataclasses.replace(base)
         labels = self.label_manager.read_labels()
-        config.labels = list({label for label_list in labels.values() for label in label_list})
+        config.labels = list(
+            {label for label_list in labels.values() for label in label_list}
+        )
         return config
 
     def _build_info_dict(self, row: tuple) -> Dict[str, Any]:
@@ -68,11 +72,19 @@ class DataLoader:
         )
         if as_base64:
             src, height, width = load_media(
-                result[1], as_base64=True, common_media_path=self._load_base_config().common_media_path
+                result[1],
+                as_base64=True,
+                common_media_path=self._load_base_config().common_media_path,
             )
         else:
             src, height, width = result[1], None, None
-        return MediaItem(index=media_id, src=src, height=height, width=width, information=self._build_info_dict(result))
+        return MediaItem(
+            index=media_id,
+            src=src,
+            height=height,
+            width=width,
+            information=self._build_info_dict(result),
+        )
 
     def get_rows(self, media_indices: MediaIndices) -> List[MediaItem]:
         """Get a paginated list of rows."""
@@ -85,12 +97,15 @@ class DataLoader:
         result = run_query(self.uuid, self.backend, query, params=params)
         labels = self.label_manager.read_labels()
         needs_url_transform = any(
-            str(item[1]).startswith("s3://") or str(item[1]).startswith("gs://") for item in result[:1]
+            str(item[1]).startswith("s3://") or str(item[1]).startswith("gs://")
+            for item in result[:1]
         )
         items = []
         for item in result:
             if needs_url_transform:
-                src, _, _ = load_media(item[1], common_media_path=config.common_media_path)
+                src, _, _ = load_media(
+                    item[1], common_media_path=config.common_media_path
+                )
             else:
                 src = item[1]
             labels_item = labels.get(str(item[0]))
@@ -113,21 +128,30 @@ class DataLoader:
         query, params = get_media_query(media_indices, paginate=False)
         result = run_query(self.uuid, self.backend, query, params=params)
         columns = self._load_base_config().columns
-        return [{"index": item[0], "information": dict(zip(columns[2:], item[2:]))} for item in result]
+        return [
+            {"index": item[0], "information": dict(zip(columns[2:], item[2:]))}
+            for item in result
+        ]
 
     def filter(self, filters: List[Filter]) -> List[Dict[str, Any]]:
         """Filter data based on given filters."""
         con = get_connection(self.uuid, self.backend)
         config = self.load_config()
         query, query_params = get_filter_query(con, config, filters)
-        data = get_data_dict(con, config, query_addition=query, query_params=query_params)
+        data = get_data_dict(
+            con, config, query_addition=query, query_params=query_params
+        )
         return data[0]
 
-    def get_dataframe(self, media_indices: Optional[MediaIndices] = None) -> pd.DataFrame:
+    def get_dataframe(
+        self, media_indices: Optional[MediaIndices] = None
+    ) -> pd.DataFrame:
         """Get data as a pandas DataFrame."""
         con = get_connection(self.uuid, self.backend)
         if media_indices is not None:
             config = self.load_config()
-            query, params = get_media_query(media_indices, config=config, con=con, paginate=False)
+            query, params = get_media_query(
+                media_indices, config=config, con=con, paginate=False
+            )
             return con.execute(query, params or []).fetchdf()
         return con.execute("SELECT * FROM database").fetchdf()

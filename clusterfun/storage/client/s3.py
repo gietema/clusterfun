@@ -16,7 +16,9 @@ def get_client() -> boto3.client:
     client = boto3.client(
         "s3",
         region_name=os.environ.get("AWS_REGION"),
-        config=BotoConfig(region_name=os.environ.get("AWS_REGION"), signature_version="s3v4"),
+        config=BotoConfig(
+            region_name=os.environ.get("AWS_REGION"), signature_version="s3v4"
+        ),
     )
     return client
 

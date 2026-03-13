@@ -3,8 +3,8 @@ import { useAtomValue } from "jotai";
 import { useEffect, useRef } from "react";
 import { faFileAudio } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { configAtom, similarityResultsAtom } from "@/app/store/atoms";
-import type { Media } from "@/app/types";
+import { configAtom, similarityResultsAtom, activeLearningAtom } from "@/app/store/atoms";
+import type { Media, PredictionItem } from "@/app/types";
 import PreviewMedia from "../shared/PreviewMedia";
 import MediaLabels from "./MediaLabels";
 
@@ -26,8 +26,12 @@ export default function MediaGridItem({
 }: MediaGridItemProps) {
   const config = useAtomValue(configAtom);
   const similarityResults = useAtomValue(similarityResultsAtom);
+  const alState = useAtomValue(activeLearningAtom);
   const elementRef = useRef<HTMLDivElement>(null);
   const similarityScore = similarityResults[media.index];
+  const prediction: PredictionItem | undefined = alState?.predictions.find(
+    (p) => p.media_id === media.index,
+  );
 
   useEffect(() => {
     const el = elementRef.current;
@@ -92,6 +96,20 @@ export default function MediaGridItem({
       {similarityScore !== undefined && (
         <div className="bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
           similarity: {similarityScore.toFixed(4)}
+        </div>
+      )}
+      {prediction && (
+        <div
+          className={`px-2 py-0.5 text-xs ${
+            prediction.uncertainty > 0.3
+              ? "bg-amber-50 text-amber-700"
+              : "bg-emerald-50 text-emerald-700"
+          }`}
+        >
+          {prediction.predicted_class}{" "}
+          <span className="opacity-70">
+            {((1 - prediction.uncertainty) * 100).toFixed(0)}%
+          </span>
         </div>
       )}
       {columnEntries.length > 0 && (

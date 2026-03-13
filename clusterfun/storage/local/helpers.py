@@ -15,14 +15,20 @@ def format_df_for_db(cfg: Config, df: pd.DataFrame) -> pd.DataFrame:
     """Format the dataframe for the database."""
     if cfg.bounding_box is not None:
         # make sure bounding box is a list
-        df[cfg.bounding_box] = df[cfg.bounding_box].apply(lambda x: [x] if not isinstance(x, list) else x)
+        df[cfg.bounding_box] = df[cfg.bounding_box].apply(
+            lambda x: [x] if not isinstance(x, list) else x
+        )
         # then convert to json dump for effective storage in db
         df[cfg.bounding_box] = df[cfg.bounding_box].apply(orjson.dumps)  # pylint: disable=no-member
     return df
 
 
 def get_columns_for_db(
-    df: pd.DataFrame, media: str, plot_type: str, x: Optional[str] = None, y: Optional[str] = None,
+    df: pd.DataFrame,
+    media: str,
+    plot_type: str,
+    x: Optional[str] = None,
+    y: Optional[str] = None,
     embeddings: Optional[str] = None,
 ) -> List[str]:
     """Get the columns for the database."""
@@ -77,7 +83,11 @@ def get_filter_query(
         # Add the values to the params list
         for value in filter_item.values:
             if str(value).isnumeric() or is_float(value):
-                params.append(float(value) if is_float(value) and not str(value).isnumeric() else value)
+                params.append(
+                    float(value)
+                    if is_float(value) and not str(value).isnumeric()
+                    else value
+                )
             else:
                 params.append(value)
     return query, params
@@ -109,8 +119,12 @@ def get_media_query(
         params.extend(media_indices.media_ids)
 
     if media_indices.filters and len(media_indices.filters) > 0:
-        assert con is not None and config is not None, "If filters are provided, con and config must be provided"
-        filter_query, filter_params = get_filter_query(con, config=config, filters=media_indices.filters)
+        assert con is not None and config is not None, (
+            "If filters are provided, con and config must be provided"
+        )
+        filter_query, filter_params = get_filter_query(
+            con, config=config, filters=media_indices.filters
+        )
         if filter_query:
             query += f" AND {filter_query}"
             params.extend(filter_params)

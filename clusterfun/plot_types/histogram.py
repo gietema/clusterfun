@@ -42,7 +42,9 @@ def histogram(  # pylint: disable=too-many-arguments,missing-function-docstring
 ) -> Path:
     # pylint: disable=too-many-locals
     if "_x" in df.columns or "_y" in df.columns:
-        raise KeyError('"_y" is a protected clusterfun columns and should not be included in the original dataframe.')
+        raise KeyError(
+            '"_y" is a protected clusterfun columns and should not be included in the original dataframe.'
+        )
     if color is not None and color_is_categorical:
         dfs = []
         for color_item in df[color].unique():
@@ -60,7 +62,14 @@ def histogram(  # pylint: disable=too-many-arguments,missing-function-docstring
         x=x,
         y="_y",
         media=media,
-        columns=get_columns_for_db(df=df, media=media, plot_type="histogram", x=x, y="_y", embeddings=embeddings),
+        columns=get_columns_for_db(
+            df=df,
+            media=media,
+            plot_type="histogram",
+            x=x,
+            y="_y",
+            embeddings=embeddings,
+        ),
         color=color,
         bounding_box=bounding_box,
         title=title,

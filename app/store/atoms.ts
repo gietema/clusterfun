@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import type { PlotConfig, Media, Filter, GridValues, LabelAction, PlotTrace } from "@/app/types";
+import type { PlotConfig, Media, Filter, GridValues, LabelAction, PlotTrace, PredictionItem } from "@/app/types";
 
 export const dataAtom = atom<PlotTrace[] | undefined>(undefined);
 export const configAtom = atom<PlotConfig | undefined>(undefined);
@@ -31,3 +31,10 @@ export const similarityResultsAtom = atom<Record<number, number>>({});
 export const similarityQueryAtom = atom<
   { type: "image"; mediaId: number } | { type: "vector"; embedding: number[] } | null
 >(null);
+
+// Active learning state
+export const activeLearningAtom = atom<{
+  predictions: PredictionItem[];
+  labelClasses: string[];
+  nLabeled: number;
+} | null>(null);

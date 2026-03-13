@@ -16,7 +16,11 @@ def test_save():
         df = pd.DataFrame()
         df["a"] = [1, 2, 3]
         df["img_path"] = ["a", "b", "c"]
-        storer.save("test", df, Config("histogram", media="img_path", columns=["a", "id"], x="a"))
+        storer.save(
+            "test",
+            df,
+            Config("histogram", media="img_path", columns=["a", "id"], x="a"),
+        )
         assert (tmpdir / "test" / "data.parquet").exists()
         assert (tmpdir / "test" / "config.json").exists()
         assert (tmpdir / "test" / "data.json").exists()
