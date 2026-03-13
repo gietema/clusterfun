@@ -37,6 +37,8 @@ def histogram(  # pylint: disable=too-many-arguments,missing-function-docstring
     display: Optional[Union[str, List[str]]] = None,
     hline: Optional[float] = None,
     vline: Optional[float] = None,
+    embeddings: Optional[str] = None,
+    embeddings_model: Optional[str] = None,
 ) -> Path:
     # pylint: disable=too-many-locals
     if "_x" in df.columns or "_y" in df.columns:
@@ -58,7 +60,7 @@ def histogram(  # pylint: disable=too-many-arguments,missing-function-docstring
         x=x,
         y="_y",
         media=media,
-        columns=get_columns_for_db(df=df, media=media, plot_type="histogram", x=x, y="_y"),
+        columns=get_columns_for_db(df=df, media=media, plot_type="histogram", x=x, y="_y", embeddings=embeddings),
         color=color,
         bounding_box=bounding_box,
         title=title,
@@ -66,6 +68,8 @@ def histogram(  # pylint: disable=too-many-arguments,missing-function-docstring
         display=display,
         vline=vline,
         hline=hline,
+        embeddings=embeddings,
+        embeddings_model=embeddings_model,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

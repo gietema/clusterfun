@@ -51,3 +51,11 @@ class LocalBackend(StorageBackend):
         if not self.cache_dir.exists():
             return []
         return [d.name for d in self.cache_dir.iterdir() if d.is_dir()]
+
+    def save_parquet_named(self, uuid: str, filename: str, table: Any) -> None:
+        path = self.cache_dir / uuid / filename
+        path.parent.mkdir(parents=True, exist_ok=True)
+        pq.write_table(table, path, row_group_size=10_000, compression="snappy")
+
+    def get_parquet_uri_named(self, uuid: str, filename: str) -> str:
+        return str(self.cache_dir / uuid / filename)

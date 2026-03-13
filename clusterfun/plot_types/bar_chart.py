@@ -26,6 +26,8 @@ def bar_chart(
     show: bool = True,
     color_is_categorical: bool = True,
     display: Optional[Union[str, List[str]]] = None,
+    embeddings: Optional[str] = None,
+    embeddings_model: Optional[str] = None,
 ):  # pylint: disable=too-many-arguments,missing-function-docstring,too-many-locals
     if color is None or not color_is_categorical:
         start_index = 0
@@ -53,13 +55,15 @@ def bar_chart(
         x="_x",
         y="_y",
         media=media,
-        columns=get_columns_for_db(df, media, "bar_chart", "_y", "_x"),
+        columns=get_columns_for_db(df, media, "bar_chart", "_y", "_x", embeddings=embeddings),
         color=color,
         bounding_box=bounding_box,
         title=title,
         x_names=x_names,
         color_is_categorical=color_is_categorical,
         display=display,
+        embeddings=embeddings,
+        embeddings_model=embeddings_model,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Media, PlotConfig, Filter, ColumnInfo, LabelCount, PlotTrace, ColumnStats, MediaMetadata } from "@/app/types";
+import type { Media, PlotConfig, Filter, ColumnInfo, LabelCount, PlotTrace, ColumnStats, MediaMetadata, SimilarityResult } from "@/app/types";
 import { API_URL } from "./constants";
 import { createMedia } from "./media-utils";
 
@@ -132,6 +132,32 @@ export async function saveLabelAsGrid(uuid: string, mediaIds: number[], label?: 
   const { data } = await axios.post(`${API_URL}/views/${uuid}/label-to-grid`, {
     label: { title: label ?? "" },
     media_indices: { media_ids: mediaIds },
+  });
+  return data;
+}
+
+// ── Similarity ──
+
+export async function fetchSimilar(
+  uuid: string,
+  mediaId: number,
+  n: number = 100,
+): Promise<SimilarityResult[]> {
+  const { data } = await axios.post(`${API_URL}/views/${uuid}/similar`, {
+    media_id: mediaId,
+    n,
+  });
+  return data;
+}
+
+export async function fetchSimilarVector(
+  uuid: string,
+  embedding: number[],
+  n: number = 100,
+): Promise<SimilarityResult[]> {
+  const { data } = await axios.post(`${API_URL}/views/${uuid}/similar-vector`, {
+    embedding,
+    n,
   });
   return data;
 }

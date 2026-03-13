@@ -7,6 +7,7 @@ import PlotlyChart from "./PlotlyChart";
 import SideBar from "../shared/SideBar";
 import ResizableLayout from "../shared/ResizableLayout";
 import FilterBar from "../filters/FilterBar";
+import TextSearchBar from "../shared/TextSearchBar";
 
 interface PlotPageProps {
   onMediaSelect: (indices: number[]) => void;
@@ -44,6 +45,7 @@ export default function PlotPage({ onMediaSelect }: PlotPageProps) {
     <div className="h-screen">
       <ResizableLayout sidebar={<SideBar />}>
         {config.title && <div className="px-3 py-2 text-sm font-medium text-gray-900">{config.title}</div>}
+        <TextSearchBar />
         <FilterBar />
         <div className="bg-white" style={{ height: "calc(100vh - 80px)" }}>
           <PlotlyChart

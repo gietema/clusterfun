@@ -26,3 +26,8 @@ export const mediaAtom = atom<Media | undefined>(undefined);
 export const mediaItemsAtom = atom<Media[]>([]);
 export const labelUndoStackAtom = atom<LabelAction[]>([]);
 export const sidebarWidthAtom = atom<number | null>(null);
+export const similarityResultsAtom = atom<Record<number, number>>({});
+// Stores the source of the current similarity query for "load more"
+export const similarityQueryAtom = atom<
+  { type: "image"; mediaId: number } | { type: "vector"; embedding: number[] } | null
+>(null);

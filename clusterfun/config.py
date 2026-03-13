@@ -79,3 +79,5 @@ class Config:  # pylint: disable=too-many-instance-attributes
     labels: Optional[List[str]] = None
     vline: Optional[float] = None
     hline: Optional[float] = None
+    embeddings: Optional[str] = None
+    embeddings_model: Optional[str] = None

@@ -114,3 +114,21 @@ class S3Backend(StorageBackend):
         prefix = f"{self.prefix}/" if self.prefix else ""
         resp = self.s3.list_objects_v2(Bucket=self.bucket, Prefix=prefix, Delimiter="/")
         return [p["Prefix"].rstrip("/").split("/")[-1] for p in resp.get("CommonPrefixes", [])]
+
+    def save_parquet_named(self, uuid: str, filename: str, table: Any) -> None:
+        if self.endpoint_url:
+            parsed = urlparse(self.endpoint_url)
+            s3fs = pa.fs.S3FileSystem(
+                endpoint_override=f"{parsed.hostname}:{parsed.port}",
+                scheme="http",
+                access_key=os.environ.get("AWS_ACCESS_KEY_ID", "test"),
+                secret_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "test"),
+                region=os.environ.get("AWS_REGION", "us-east-1"),
+            )
+        else:
+            s3fs = pa.fs.S3FileSystem()
+        path = f"{self.bucket}/{self._key(uuid, filename)}"
+        pq.write_table(table, path, filesystem=s3fs, row_group_size=10_000, compression="snappy")
+
+    def get_parquet_uri_named(self, uuid: str, filename: str) -> str:
+        return f"s3://{self.bucket}/{self._key(uuid, filename)}"

@@ -40,6 +40,51 @@ def get_connection(uuid: str, backend: StorageBackend) -> duckdb.DuckDBPyConnect
     return _local.connections[uuid]
 
 
+def ensure_embeddings_table(
+    uuid: str, backend: StorageBackend, emb_col: str
+) -> duckdb.DuckDBPyConnection:
+    """Set up embeddings for similarity search.
+
+    Tries to create an in-memory TABLE with an HNSW index (via the ``vss``
+    extension) for O(log n) queries.  Falls back to a plain VIEW over the
+    Parquet file (brute-force scan) when the extension is unavailable.
+    """
+    con = get_connection(uuid, backend)
+    try:
+        con.execute("SELECT 1 FROM embeddings LIMIT 0")
+        return con
+    except duckdb.CatalogException:
+        pass
+
+    emb_uri = backend.get_parquet_uri_named(uuid, "embeddings.parquet")
+
+    try:
+        con.execute("INSTALL vss; LOAD vss;")
+        dim = con.execute(
+            f"SELECT len(\"{emb_col}\") FROM read_parquet('{emb_uri}') LIMIT 1"
+        ).fetchone()[0]
+        con.execute(
+            f'CREATE TABLE embeddings AS '
+            f'SELECT id, "{emb_col}"::FLOAT[{dim}] AS "{emb_col}" '
+            f"FROM read_parquet('{emb_uri}')"
+        )
+        con.execute(
+            f'CREATE INDEX emb_hnsw_idx ON embeddings '
+            f'USING HNSW ("{emb_col}") WITH (metric = \'cosine\')'
+        )
+    except Exception:
+        # VSS not available — fall back to a view for brute-force search
+        try:
+            con.execute("DROP TABLE IF EXISTS embeddings")
+        except Exception:
+            pass
+        con.execute(
+            f"CREATE VIEW embeddings AS SELECT * FROM read_parquet('{emb_uri}')"
+        )
+
+    return con
+
+
 def run_query(
     uuid: str,
     backend: StorageBackend,

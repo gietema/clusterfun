@@ -22,7 +22,8 @@ def format_df_for_db(cfg: Config, df: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_columns_for_db(
-    df: pd.DataFrame, media: str, plot_type: str, x: Optional[str] = None, y: Optional[str] = None
+    df: pd.DataFrame, media: str, plot_type: str, x: Optional[str] = None, y: Optional[str] = None,
+    embeddings: Optional[str] = None,
 ) -> List[str]:
     """Get the columns for the database."""
     columns = ["id", media]
@@ -40,6 +41,8 @@ def get_columns_for_db(
     # temporary fix as `index` is protected column used later on.
     # TODO:: move to special index column name
     columns = [c for c in columns if c != "index"]
+    if embeddings and embeddings in columns:
+        columns.remove(embeddings)
     return columns
 
 
@@ -112,17 +115,25 @@ def get_media_query(
             query += f" AND {filter_query}"
             params.extend(filter_params)
 
-    if (
+    has_explicit_sort = (
         media_indices.sort_column is not None
         and media_indices.sort_column != ""
         and media_indices.ascending is not None
-    ):
+    )
+    if has_explicit_sort:
         # Validate sort_column against config columns whitelist to prevent SQL injection
         if config is not None and media_indices.sort_column in config.columns:
             query += f" ORDER BY {media_indices.sort_column} {'ASC' if media_indices.ascending else 'DESC'}"
         elif config is None:
             # When config is not available, still use the sort column (caller is responsible for validation)
             query += f" ORDER BY {media_indices.sort_column} {'ASC' if media_indices.ascending else 'DESC'}"
+    elif len(media_indices.media_ids) > 1:
+        # Preserve the input order of media_ids (important for similarity search results)
+        positions = " ".join(
+            f"WHEN ? THEN {i}" for i in range(len(media_indices.media_ids))
+        )
+        query += f" ORDER BY CASE id {positions} END"
+        params.extend(media_indices.media_ids)
 
     if len(media_indices.media_ids) > 50 and paginate:
         offset = media_indices.page * 50

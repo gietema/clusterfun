@@ -8,8 +8,9 @@ import { saveAs } from "file-saver";
 import {
   configAtom, gridValuesAtom, mediaAtom,
   currentMediaIndicesAtom, mediaItemsAtom, uuidAtom,
+  similarityResultsAtom, similarityQueryAtom, mediaIndicesStackAtom,
 } from "@/app/store/atoms";
-import { fetchMediaItems, downloadGridCsv, saveLabel, deleteLabel } from "@/app/lib/api";
+import { fetchMediaItems, downloadGridCsv, saveLabel, deleteLabel, fetchSimilar, fetchSimilarVector } from "@/app/lib/api";
 import type { Media } from "@/app/types";
 import BackButton from "../shared/BackButton";
 import SideBar from "../shared/SideBar";
@@ -22,6 +23,7 @@ import ShowValueDropdown from "./ShowValueDropdown";
 import BoundingBoxCheckbox from "./BoundingBoxCheckbox";
 import LabelPanel from "../labels/LabelPanel";
 import MediaVisualization from "./MediaVisualization";
+import TextSearchBar from "../shared/TextSearchBar";
 import { useLabelUndo } from "@/app/lib/use-label-undo";
 import { useMediaPreview } from "@/app/lib/use-media-preview";
 
@@ -36,8 +38,13 @@ export default function GridView({ onBack }: GridViewProps) {
   const setSideMedia = useSetAtom(mediaAtom);
   const [mediaItems, setMediaItems] = useAtom(mediaItemsAtom);
   const [gridValues, setGridValues] = useAtom(gridValuesAtom);
+  const similarityResults = useAtomValue(similarityResultsAtom);
+  const setSimilarityResults = useSetAtom(similarityResultsAtom);
+  const similarityQuery = useAtomValue(similarityQueryAtom);
+  const setMediaIndicesStack = useSetAtom(mediaIndicesStackAtom);
   const [showStats, setShowStats] = useState(false);
   const [showLabelPanel, setShowLabelPanel] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const { pushAction, undo } = useLabelUndo();
   const { openMedia } = useMediaPreview();
 
@@ -122,6 +129,39 @@ export default function GridView({ onBack }: GridViewProps) {
     );
   };
 
+  const hasSimilarityResults = similarityQuery !== null && Object.keys(similarityResults).length > 0;
+
+  const handleLoadMore = async () => {
+    if (!similarityQuery) return;
+    setLoadingMore(true);
+    try {
+      const currentCount = mediaIndices.length;
+      const newN = currentCount + 200;
+      let results;
+      if (similarityQuery.type === "image") {
+        results = await fetchSimilar(uuid, similarityQuery.mediaId, newN);
+      } else {
+        results = await fetchSimilarVector(uuid, similarityQuery.embedding, newN);
+      }
+      // Keep existing order, only append truly new items
+      const existingSet = new Set(mediaIndices);
+      const newIds = results
+        .filter((r) => !existingSet.has(r.media_id))
+        .map((r) => r.media_id);
+      const scores: Record<number, number> = { ...similarityResults };
+      for (const r of results) {
+        scores[r.media_id] = r.similarity;
+      }
+      setSimilarityResults(scores);
+      setMediaIndicesStack((prev) => [
+        ...prev.slice(0, -1),
+        [...mediaIndices, ...newIds],
+      ]);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   if (!config) return null;
 
   const sidebarContent = (
@@ -139,6 +179,7 @@ export default function GridView({ onBack }: GridViewProps) {
   return (
     <ResizableLayout sidebar={sidebarContent}>
       {config.title && <div className="mb-2 text-sm font-medium text-gray-900">{config.title}</div>}
+      <TextSearchBar searchesFullDataset={config.type !== "grid"} />
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 px-3 py-2">
         {config.type !== "grid" && (
@@ -181,6 +222,15 @@ export default function GridView({ onBack }: GridViewProps) {
             maxPage={Math.floor(mediaIndices.length / 50)}
             onPageChange={handlePageChange}
           />
+          {hasSimilarityResults && (
+            <button
+              onClick={handleLoadMore}
+              disabled={loadingMore}
+              className="cursor-pointer text-xs text-gray-500 underline transition-colors hover:text-gray-900 disabled:opacity-50"
+            >
+              {loadingMore ? "Loading..." : "+ Load more"}
+            </button>
+          )}
           <button
             onClick={() => setShowStats((s) => !s)}
             className="rounded-md px-2 py-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900"

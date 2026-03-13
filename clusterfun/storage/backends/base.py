@@ -42,3 +42,11 @@ class StorageBackend(ABC):
     @abstractmethod
     def list_uuids(self) -> List[str]:
         """List available plot UUIDs."""
+
+    def save_parquet_named(self, uuid: str, filename: str, table: Any) -> None:
+        """Write a PyArrow Table as Parquet with a custom filename."""
+        raise NotImplementedError
+
+    def get_parquet_uri_named(self, uuid: str, filename: str) -> str:
+        """Return URI for a named Parquet file."""
+        raise NotImplementedError

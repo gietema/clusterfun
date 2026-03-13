@@ -28,6 +28,8 @@ def violin(
     display: Optional[Union[str, List[str]]] = None,
     hline: Optional[float] = None,
     vline: Optional[float] = None,
+    embeddings: Optional[str] = None,
+    embeddings_model: Optional[str] = None,
 ):  # pylint: disable=too-many-arguments,missing-function-docstring
     df["x"] = get_violin_x(df, y, color)
     cfg = Config(
@@ -35,13 +37,15 @@ def violin(
         x="x",
         y=y,
         media=media,
-        columns=get_columns_for_db(df, media, "violin", y, "x"),
+        columns=get_columns_for_db(df, media, "violin", y, "x", embeddings=embeddings),
         color=color,
         bounding_box=bounding_box,
         title=title,
         display=display,
         hline=hline,
         vline=vline,
+        embeddings=embeddings,
+        embeddings_model=embeddings_model,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

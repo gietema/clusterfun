@@ -3,7 +3,7 @@ import { useAtomValue } from "jotai";
 import { useEffect, useRef } from "react";
 import { faFileAudio } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { configAtom } from "@/app/store/atoms";
+import { configAtom, similarityResultsAtom } from "@/app/store/atoms";
 import type { Media } from "@/app/types";
 import PreviewMedia from "../shared/PreviewMedia";
 import MediaLabels from "./MediaLabels";
@@ -25,7 +25,9 @@ export default function MediaGridItem({
   display, onClick, onHover, onLabelToggle,
 }: MediaGridItemProps) {
   const config = useAtomValue(configAtom);
+  const similarityResults = useAtomValue(similarityResultsAtom);
   const elementRef = useRef<HTMLDivElement>(null);
+  const similarityScore = similarityResults[media.index];
 
   useEffect(() => {
     const el = elementRef.current;
@@ -87,6 +89,11 @@ export default function MediaGridItem({
           </div>
         )}
       </div>
+      {similarityScore !== undefined && (
+        <div className="bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
+          similarity: {similarityScore.toFixed(4)}
+        </div>
+      )}
       {columnEntries.length > 0 && (
         <div className="bg-gray-50 px-2 py-1">
           {columnEntries.map(({ col, value }) => (

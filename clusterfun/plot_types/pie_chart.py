@@ -149,6 +149,8 @@ def pie_chart(  # pylint: disable=too-many-arguments,missing-function-docstring
     title: Optional[str] = None,
     show: bool = True,
     display: Optional[Union[str, List[str]]] = None,
+    embeddings: Optional[str] = None,
+    embeddings_model: Optional[str] = None,
 ) -> Path:
     counts = df[color].value_counts(True).to_dict()
     df = compute_pie_chart_coordinates(df, color, counts)
@@ -159,11 +161,13 @@ def pie_chart(  # pylint: disable=too-many-arguments,missing-function-docstring
         x="pie_chart_x",
         y="pie_chart_y",
         media=media,
-        columns=get_columns_for_db(df=df, media=media, plot_type="pie_chart", x="pie_chart_x", y="pie_chart_y"),
+        columns=get_columns_for_db(df=df, media=media, plot_type="pie_chart", x="pie_chart_x", y="pie_chart_y", embeddings=embeddings),
         color=color,
         bounding_box=bounding_box,
         title=title,
         display=display,
+        embeddings=embeddings,
+        embeddings_model=embeddings_model,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

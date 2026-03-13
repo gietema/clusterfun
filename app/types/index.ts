@@ -30,6 +30,8 @@ export interface PlotConfig {
   display?: string[];
   hline?: number;
   vline?: number;
+  embeddings?: string;
+  embeddings_model?: string;
 }
 
 // ── Bounding Box ──
@@ -130,6 +132,12 @@ export interface NumericStats {
 export type ColumnStats =
   | { type: "categorical"; data: CategoricalStat[] }
   | ({ type: "numeric" } & NumericStats);
+
+// ── Similarity ──
+export interface SimilarityResult {
+  media_id: number;
+  similarity: number;
+}
 
 // ── Label Undo ──
 export interface LabelAction {

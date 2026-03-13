@@ -76,3 +76,11 @@ class GCSBackend(StorageBackend):
         # Must iterate blobs to populate prefixes
         list(blobs)
         return [p.rstrip("/").split("/")[-1] for p in blobs.prefixes]
+
+    def save_parquet_named(self, uuid: str, filename: str, table: Any) -> None:
+        gcsfs = pa.fs.GcsFileSystem()
+        path = f"{self.bucket_name}/{self._key(uuid, filename)}"
+        pq.write_table(table, path, filesystem=gcsfs, row_group_size=10_000, compression="snappy")
+
+    def get_parquet_uri_named(self, uuid: str, filename: str) -> str:
+        return f"gs://{self.bucket_name}/{self._key(uuid, filename)}"

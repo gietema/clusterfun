@@ -11,6 +11,8 @@ import {
   mediaIndexAtom,
   showPageAtom,
   mediaAtom,
+  similarityResultsAtom,
+  similarityQueryAtom,
 } from "@/app/store/atoms";
 import { fetchUuid, fetchPlotData, fetchFilteredPlotData, fetchMedia } from "@/app/lib/api";
 import { useUrlState } from "@/app/lib/use-url-state";
@@ -24,7 +26,7 @@ interface PreviewerProps {
 
 export default function Previewer({ uuidProp }: PreviewerProps) {
   const [uuid, setUuid] = useAtom(uuidAtom);
-  const setData = useSetAtom(dataAtom);
+  const [data, setData] = useAtom(dataAtom);
   const setConfig = useSetAtom(configAtom);
   const [mediaIndex, setMediaIndex] = useAtom(mediaIndexAtom);
   const [showPage, setShowPage] = useAtom(showPageAtom);
@@ -32,6 +34,8 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
   const [gridValues, setGridValues] = useAtom(gridValuesAtom);
   const filters = useAtomValue(filtersAtom);
   const setSideMedia = useSetAtom(mediaAtom);
+  const setSimilarityResults = useSetAtom(similarityResultsAtom);
+  const setSimilarityQuery = useSetAtom(similarityQueryAtom);
 
   useUrlState();
 
@@ -44,17 +48,11 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
   }, [uuidProp, setUuid]);
 
   useEffect(() => {
-    fetchPlotData(uuid).then(({ config, data }) => {
-      setData(data);
+    fetchPlotData(uuid).then(({ config, data: plotData }) => {
+      setData(plotData);
       setConfig(config);
-      if (config.type === "grid") {
-        if (showPage === "plot") setShowPage("grid");
-        fetchFilteredPlotData(uuid, filters).then((filtered) => {
-          if (filtered) {
-            const indices = filtered.flatMap((d) => d.id ?? []);
-            setMediaIndices((prev) => [...prev, indices]);
-          }
-        });
+      if (config.type === "grid" && showPage === "plot") {
+        setShowPage("grid");
       }
       // Deep-link: if URL specified a media index, fetch it
       if (showPage === "media" && mediaIndex != null) {
@@ -62,6 +60,27 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
       }
     });
   }, [uuid]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Populate media indices when grid view is shown but stack is empty.
+  // Handles: grid-type configs on initial load, deep-linking to ?view=grid
+  // for any config type, and filtered initial loads (e.g. from URL filters).
+  useEffect(() => {
+    if (showPage !== "grid" || mediaIndices.length > 0 || !data) return;
+
+    if (filters.length > 0) {
+      fetchFilteredPlotData(uuid, filters).then((filtered) => {
+        if (filtered) {
+          const indices = filtered.flatMap((d) => d.id ?? []);
+          setMediaIndices((prev) => (prev.length > 0 ? prev : [indices]));
+        }
+      });
+    } else {
+      const indices = data.flatMap((d) => d.id ?? []);
+      if (indices.length > 0) {
+        setMediaIndices([indices]);
+      }
+    }
+  }, [showPage, mediaIndices.length, data, filters, uuid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleMediaIndices = (newIndices: number[]) => {
     setMediaIndices((prev) => [...prev, newIndices]);
@@ -75,6 +94,8 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
           onBack={() => {
             setMediaIndices([]);
             setGridValues((prev) => ({ ...prev, page: 0 }));
+            setSimilarityResults({});
+            setSimilarityQuery(null);
             setShowPage("plot");
           }}
         />
