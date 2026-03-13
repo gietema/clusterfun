@@ -9,6 +9,7 @@ import type { BoundingBox } from "@/app/types";
 import HeaderControls from "./HeaderControls";
 import PlotlyImagePlot from "../plot/PlotlyImagePlot";
 import SideBar from "../shared/SideBar";
+import ResizableLayout from "../shared/ResizableLayout";
 
 interface MediaPageProps {
   mediaIndex?: number;
@@ -80,31 +81,28 @@ export default function MediaPage({ mediaIndex, onBack }: MediaPageProps) {
   }, [boundingBoxes, media]);
 
   return (
-    <div className="flex">
-      <div className="w-3/4">
-        <HeaderControls
-          mediaIndex={mediaIndex}
-          mediaItems={mediaItems}
-          onPrevious={() => navigateTo(getPreviousMedia)}
-          onNext={() => navigateTo(getNextMedia)}
-          onRotateClockwise={() => handleRotate(90)}
-          onRotateCounterclockwise={() => handleRotate(-90)}
-          onBack={onBack ?? (() => {})}
-        />
-        <div className="p-2">
-          {media && (
-            <div style={{ height: "calc(100vh - 80px)" }}>
-              <PlotlyImagePlot
-                media={{ ...media, src: rotatedSrc || media.src }}
-                scaleFactor={1}
-                shapes={shapes}
-                boundingBoxes={boundingBoxes}
-              />
-            </div>
-          )}
-        </div>
+    <ResizableLayout sidebar={config && media ? <SideBar /> : <div />}>
+      <HeaderControls
+        mediaIndex={mediaIndex}
+        mediaItems={mediaItems}
+        onPrevious={() => navigateTo(getPreviousMedia)}
+        onNext={() => navigateTo(getNextMedia)}
+        onRotateClockwise={() => handleRotate(90)}
+        onRotateCounterclockwise={() => handleRotate(-90)}
+        onBack={onBack ?? (() => {})}
+      />
+      <div className="p-2">
+        {media && (
+          <div style={{ height: "calc(100vh - 80px)" }}>
+            <PlotlyImagePlot
+              media={{ ...media, src: rotatedSrc || media.src }}
+              scaleFactor={1}
+              shapes={shapes}
+              boundingBoxes={boundingBoxes}
+            />
+          </div>
+        )}
       </div>
-      <div className="w-1/4">{config && media && <SideBar />}</div>
-    </div>
+    </ResizableLayout>
   );
 }

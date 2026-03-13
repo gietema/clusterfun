@@ -8,10 +8,10 @@ interface BackButtonProps {
 export default function BackButton({ onClick }: BackButtonProps) {
   return (
     <button
-      className="flex cursor-pointer items-center text-xs hover:text-blue-500"
+      className="flex cursor-pointer items-center gap-1.5 text-xs text-gray-600 transition-colors hover:text-gray-900"
       onClick={onClick}
     >
-      <FontAwesomeIcon icon={faArrowLeft} className="mr-1" />
+      <FontAwesomeIcon icon={faArrowLeft} />
       back
     </button>
   );

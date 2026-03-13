@@ -18,7 +18,7 @@ export default function SideBar() {
   );
 
   return (
-    <div className="ms-1 w-full border-l border-gray-200 px-1 ps-2 lg:ps-0">
+    <div className="w-full border-l border-gray-200 pl-3">
       <div className="flex w-full flex-col" style={{ maxHeight: "calc(100vh - 35px)" }}>
         <div style={{ maxHeight: "300px" }}>
           <PreviewMedia
@@ -27,7 +27,7 @@ export default function SideBar() {
             displayLabel
           />
         </div>
-        <div className="overflow-y-auto ps-2" style={{ flexGrow: 1 }}>
+        <div className="overflow-y-auto" style={{ flexGrow: 1 }}>
           {entries.map(([key, value]) => (
             <InformationItem key={key} label={key} value={value} />
           ))}

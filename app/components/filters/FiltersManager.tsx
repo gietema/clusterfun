@@ -40,7 +40,7 @@ export default function FiltersManager() {
   }));
 
   return (
-    <div className="container mx-auto p-4 ps-0 pe-0 pt-0">
+    <div className="py-2">
       <div className={`flex flex-col ${showFilters ? "" : "hidden"}`}>
         {filters.map((filter, i) => (
           <FilterRow
@@ -52,10 +52,10 @@ export default function FiltersManager() {
           />
         ))}
       </div>
-      <div className="text-right">
+      <div className="flex items-center justify-end gap-1.5">
         {filters.length > 0 && showFilters && (
           <button
-            className="rounded bg-blue-900 px-3 py-2 text-xs text-white transition duration-300 hover:bg-blue-500"
+            className="rounded-md bg-gray-800 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-gray-700"
             onClick={addFilter}
           >
             +
@@ -66,12 +66,12 @@ export default function FiltersManager() {
             setShowFilters(!showFilters);
             if (filters.length === 0) addFilter();
           }}
-          className={`ms-1 rounded px-3 py-2 text-xs text-white transition duration-300 ${
-            showFilters ? "bg-blue-500 hover:bg-blue-900" : "bg-blue-900 hover:bg-blue-500"
+          className={`rounded-md px-3 py-1.5 text-xs font-medium text-white transition-colors ${
+            showFilters ? "bg-gray-600 hover:bg-gray-800" : "bg-gray-800 hover:bg-gray-700"
           }`}
         >
           <FontAwesomeIcon icon={faFilter} />
-          <span className="ms-1">Filters{filters.length > 0 ? ` (${filters.length})` : ""}</span>
+          <span className="ml-1.5">Filters{filters.length > 0 ? ` (${filters.length})` : ""}</span>
         </button>
       </div>
     </div>

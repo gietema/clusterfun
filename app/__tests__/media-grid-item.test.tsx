@@ -44,16 +44,22 @@ describe("MediaGridItem", () => {
     expect(screen.getByText("/media/img_0.jpg")).toBeInTheDocument();
   });
 
-  it("shows column value when showColumn is set", () => {
-    renderItem({ showColumn: "category" });
+  it("shows column value when showColumns is set", () => {
+    renderItem({ showColumns: ["category"] });
     expect(screen.getByText("cat")).toBeInTheDocument();
   });
 
-  it("does not show column value when showColumn is not set", () => {
+  it("shows multiple column values", () => {
+    renderItem({ showColumns: ["category", "score"] });
+    expect(screen.getByText(/0\.95/)).toBeInTheDocument();
+    // "category: " label + "cat" value both present
+    expect(screen.getByText(/category/)).toBeInTheDocument();
+  });
+
+  it("does not show column values when showColumns is empty", () => {
     renderItem();
-    // "cat" might appear in media labels but not as a column value display
-    const truncateDivs = document.querySelectorAll(".truncate");
-    expect(truncateDivs).toHaveLength(0);
+    const bgDivs = document.querySelectorAll(".bg-gray-50");
+    expect(bgDivs).toHaveLength(0);
   });
 
   it("calls onClick when clicked", () => {
@@ -138,7 +144,7 @@ describe("MediaGridItem", () => {
     const media = makeMedia({
       information: { category: "dog", score: 0.42, description: "good boy" },
     });
-    renderItem({ media, showColumn: "score" });
+    renderItem({ media, showColumns: ["score"] });
     expect(screen.getByText("0.42")).toBeInTheDocument();
   });
 });

@@ -85,16 +85,16 @@ export default function LabelPanel({ onHide }: LabelPanelProps) {
       const location = result.split("/").pop();
       toast.custom(
         (t) => (
-          <div className={`rounded-md bg-gray-300 px-6 py-4 text-black shadow-md ${t.visible ? "animate-enter" : "animate-leave"}`}>
+          <div className={`rounded-lg bg-white px-6 py-4 text-gray-900 shadow-lg ${t.visible ? "animate-enter" : "animate-leave"}`}>
             Plot saved. To view the plot, run<br />
             <div className="my-2">
-              <code className="bg-gray-800 p-2 text-white">
-                <span className="text-pink-500">clusterfun</span> {location}
+              <code className="rounded-md bg-gray-800 px-3 py-1.5 text-sm text-white">
+                <span className="text-pink-400">clusterfun</span> {location}
               </code>
             </div>
             <div className="flex justify-end">
               <button
-                className="mt-2 rounded-md bg-blue-500 px-2 py-1 text-white transition-all hover:bg-blue-600"
+                className="mt-2 rounded-md bg-gray-800 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-gray-700"
                 onClick={() => toast.dismiss(t.id)}
               >
                 Close
@@ -117,53 +117,53 @@ export default function LabelPanel({ onHide }: LabelPanelProps) {
   const totalDataset = labelCounts.reduce((sum, lc) => sum + lc.inEntireDataset, 0);
 
   return (
-    <div className="mt-2 w-full rounded-b-md border border-gray-300 bg-gray-100 px-2">
+    <div className="mt-2 w-full rounded-lg border border-gray-200 bg-white p-3">
       {mediaWithLabels.length > 0 && (
-        <table className="mt-2 w-full border-collapse text-xs">
+        <table className="w-full border-collapse text-xs">
           <thead>
             <tr>
-              <th className="border px-4 py-2" />
-              <th className="border px-4 py-2">Label</th>
-              <th className="border px-4 py-2">Count in selection</th>
-              <th className="border px-4 py-2">Count in all data</th>
+              <th className="border border-gray-200 px-3 py-2" />
+              <th className="border border-gray-200 px-3 py-2 text-left font-medium text-gray-700">Label</th>
+              <th className="border border-gray-200 px-3 py-2 text-left font-medium text-gray-700">In selection</th>
+              <th className="border border-gray-200 px-3 py-2 text-left font-medium text-gray-700">In all data</th>
             </tr>
           </thead>
           <tbody>
             {labelCounts.map((lc) => (
               <tr key={lc.label}>
-                <td className="w-24 border py-2 text-center">
+                <td className="w-24 border border-gray-200 py-2 text-center">
                   <button
-                    className="rounded px-2 py-1 text-blue-500 hover:text-blue-600"
+                    className="rounded-md px-2 py-1 text-xs text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
                     onClick={() => handleSelectAll(lc.label)}
                   >
                     {allHaveLabel(lc.label) ? "Deselect all" : "Select all"}
                   </button>
                 </td>
-                <td className="border px-4 py-2">{lc.label}</td>
-                <td className="border px-4 py-2 text-center">
+                <td className="border border-gray-200 px-3 py-2">{lc.label}</td>
+                <td className="border border-gray-200 px-3 py-2">
                   <div className="flex w-full items-center justify-between">
                     <span>{lc.inCurrentSelection}</span>
                     {lc.inCurrentSelection > 0 && (
                       <div className="flex gap-1">
-                        <button className="p-2 text-blue-500 hover:text-blue-700" onClick={() => handleDownload(true, lc.label)}>
+                        <button className="rounded-md px-2 py-1 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={() => handleDownload(true, lc.label)}>
                           <FontAwesomeIcon icon={faDownload} /> Download
                         </button>
-                        <button className="p-2 text-blue-500 hover:text-blue-700" onClick={() => handleSaveAsGrid(true, lc.label)}>
+                        <button className="rounded-md px-2 py-1 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={() => handleSaveAsGrid(true, lc.label)}>
                           <FontAwesomeIcon icon={faTableCells} /> Save as grid
                         </button>
                       </div>
                     )}
                   </div>
                 </td>
-                <td className="border px-4 py-2 text-center">
+                <td className="border border-gray-200 px-3 py-2">
                   <div className="flex w-full items-center justify-between">
                     <span>{lc.inEntireDataset}</span>
                     {lc.inEntireDataset > 0 && (
                       <div className="flex gap-1">
-                        <button className="p-2 text-blue-500 hover:text-blue-700" onClick={() => handleDownload(false, lc.label)}>
+                        <button className="rounded-md px-2 py-1 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={() => handleDownload(false, lc.label)}>
                           <FontAwesomeIcon icon={faDownload} /> Download
                         </button>
-                        <button className="p-2 text-blue-500 hover:text-blue-700" onClick={() => handleSaveAsGrid(false, lc.label)}>
+                        <button className="rounded-md px-2 py-1 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={() => handleSaveAsGrid(false, lc.label)}>
                           <FontAwesomeIcon icon={faTableCells} /> Save as grid
                         </button>
                       </div>
@@ -174,29 +174,29 @@ export default function LabelPanel({ onHide }: LabelPanelProps) {
             ))}
             {labelCounts.length > 1 && (
               <tr>
-                <td />
-                <td className="border px-4 py-2"><b>Total</b></td>
-                <td className="border px-4 py-2 text-center">
+                <td className="border border-gray-200" />
+                <td className="border border-gray-200 px-3 py-2 font-medium">Total</td>
+                <td className="border border-gray-200 px-3 py-2">
                   <div className="flex items-center justify-between">
                     <span>{totalSelection}</span>
                     <div className="flex gap-1">
-                      <button className="p-2 text-blue-500 hover:text-blue-700" onClick={() => handleDownload(true)}>
+                      <button className="rounded-md px-2 py-1 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={() => handleDownload(true)}>
                         <FontAwesomeIcon icon={faDownload} /> Download
                       </button>
-                      <button className="p-2 text-blue-500 hover:text-blue-700" onClick={() => handleSaveAsGrid(true)}>
+                      <button className="rounded-md px-2 py-1 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={() => handleSaveAsGrid(true)}>
                         <FontAwesomeIcon icon={faTableCells} /> Save as grid
                       </button>
                     </div>
                   </div>
                 </td>
-                <td className="border px-4 py-2 text-center">
+                <td className="border border-gray-200 px-3 py-2">
                   <div className="flex items-center justify-between">
                     <span>{totalDataset}</span>
                     <div className="flex gap-1">
-                      <button className="p-2 text-blue-500 hover:text-blue-700" onClick={() => handleDownload(false)}>
+                      <button className="rounded-md px-2 py-1 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={() => handleDownload(false)}>
                         <FontAwesomeIcon icon={faDownload} /> Download
                       </button>
-                      <button className="p-2 text-blue-500 hover:text-blue-700" onClick={() => handleSaveAsGrid(false)}>
+                      <button className="rounded-md px-2 py-1 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={() => handleSaveAsGrid(false)}>
                         <FontAwesomeIcon icon={faTableCells} /> Save as grid
                       </button>
                     </div>
@@ -208,24 +208,24 @@ export default function LabelPanel({ onHide }: LabelPanelProps) {
         </table>
       )}
       {/* Add new label + undo */}
-      <div className="mt-2 border-t border-gray-300 py-2">
-        <div className="flex items-center gap-1">
+      <div className="mt-3 border-t border-gray-200 pt-3">
+        <div className="flex items-center gap-1.5">
           <input
             placeholder="Label name"
             type="text"
-            className="flex-grow rounded-l-md border px-2 py-1 text-xs"
+            className="flex-grow rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
             value={newLabel}
             onChange={(e) => setNewLabel(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") handleAddLabel(); }}
           />
           <button
-            className="border bg-blue-500 px-2 py-1 text-xs text-white transition-all hover:bg-blue-600"
+            className="rounded-md bg-gray-800 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-gray-700"
             onClick={handleAddLabel}
           >
             Add label
           </button>
           <button
-            className="rounded-r-md border px-2 py-1 text-xs transition-all disabled:opacity-30 bg-gray-200 hover:bg-gray-300 disabled:hover:bg-gray-200"
+            className="rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-600 transition-colors hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent"
             onClick={undo}
             disabled={!canUndo}
             title="Undo last label action (Ctrl+Z)"
@@ -236,10 +236,10 @@ export default function LabelPanel({ onHide }: LabelPanelProps) {
       </div>
       {/* Collapse button */}
       <div
-        className="-me-2 -ms-2 flex h-4 cursor-pointer items-center justify-center rounded-b-md bg-gray-300 text-center text-xs text-gray-500 caret-container"
+        className="-mx-3 -mb-3 mt-3 flex h-6 cursor-pointer items-center justify-center rounded-b-lg bg-gray-100 text-xs text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
         onClick={onHide}
       >
-        <FontAwesomeIcon icon={faCaretUp} className="caret-icon" />
+        <FontAwesomeIcon icon={faCaretUp} />
       </div>
     </div>
   );

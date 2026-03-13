@@ -55,7 +55,7 @@ export interface GridValues {
   asc: boolean;
   page: number;
   numberOfColumns: number;
-  showColumnValue: string | undefined;
+  showColumnValues: string[];
   showBboxLabel: boolean;
 }
 

@@ -20,12 +20,12 @@ interface FilterRowProps {
 
 export default function FilterRow({ filter, columns, onChange, onRemove }: FilterRowProps) {
   return (
-    <div className="mb-2 rounded border px-2 text-xs">
-      <div className="w-full text-right">
-        <button onClick={onRemove} className="text-red-500">&times;</button>
+    <div className="mb-2 rounded-lg border border-gray-200 p-3">
+      <div className="mb-2 text-right">
+        <button onClick={onRemove} className="text-xs text-gray-400 transition-colors hover:text-red-500">&times;</button>
       </div>
-      <div className="flex w-full">
-        <div className="me-1 flex-grow">
+      <div className="flex w-full gap-2">
+        <div className="flex-grow">
           <ColumnDropdown
             options={columns}
             selected={filter.column}
@@ -39,7 +39,7 @@ export default function FilterRow({ filter, columns, onChange, onRemove }: Filte
             onChange={(op) => onChange({ ...filter, comparison: op })}
           />
         </div>
-        <div className="ms-1 flex-grow">
+        <div className="flex-grow">
           <FilterValueInput
             filter={filter}
             onValueChange={(values) => onChange({ ...filter, values })}

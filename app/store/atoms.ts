@@ -17,7 +17,7 @@ export const gridValuesAtom = atom<GridValues>({
   asc: true,
   page: 0,
   numberOfColumns: 5,
-  showColumnValue: undefined,
+  showColumnValues: [],
   showBboxLabel: false,
 });
 export const mediaIndexAtom = atom<number | undefined>(undefined);
@@ -25,3 +25,4 @@ export const showPageAtom = atom<string>("plot");
 export const mediaAtom = atom<Media | undefined>(undefined);
 export const mediaItemsAtom = atom<Media[]>([]);
 export const labelUndoStackAtom = atom<LabelAction[]>([]);
+export const sidebarWidthAtom = atom<number | null>(null);

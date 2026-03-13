@@ -36,28 +36,28 @@ export default function ColumnDropdown({ options, selected, onChange }: ColumnDr
     <div className="relative w-full">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full rounded border border-gray-300 bg-white px-4 py-2 text-left text-gray-700 focus:border-blue-500 focus:outline-none"
+        className="w-full rounded-md border border-gray-200 bg-white px-3 py-1.5 text-left text-xs text-gray-700 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
       >
         {selected ? (
           <div className="flex items-center">
-            {icon && <FontAwesomeIcon icon={icon} className="mr-2" />}
+            {icon && <FontAwesomeIcon icon={icon} className="mr-2 text-gray-400" />}
             {selectedOption?.label ?? selected}
           </div>
         ) : (
-          "-"
+          <span className="text-gray-400">-</span>
         )}
       </button>
       {isOpen && (
-        <ul className="absolute z-10 mt-1 w-full rounded-md border border-gray-300 bg-white shadow-lg">
+        <ul className="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
           {options.map((opt) => {
             const optIcon = opt.dtype ? DTYPE_ICONS[opt.dtype] : undefined;
             return (
               <li
                 key={opt.value}
                 onClick={() => { onChange(opt.value); setIsOpen(false); }}
-                className="flex cursor-pointer items-center px-4 py-2 hover:bg-gray-100"
+                className="flex cursor-pointer items-center px-3 py-2 text-xs hover:bg-gray-50"
               >
-                {optIcon && <FontAwesomeIcon icon={optIcon} className="mr-2" />}
+                {optIcon && <FontAwesomeIcon icon={optIcon} className="mr-2 text-gray-400" />}
                 {opt.label}
               </li>
             );

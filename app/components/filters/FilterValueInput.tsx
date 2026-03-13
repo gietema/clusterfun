@@ -89,37 +89,37 @@ export default function FilterValueInput({ filter, onValueChange }: FilterValueI
     .filter((o) => !filter.values.includes(o.label));
 
   return (
-    <div className="relative mb-2 inline-block w-full" ref={dropdownRef}>
+    <div className="relative inline-block w-full" ref={dropdownRef}>
       <input
         type="text"
-        className="w-full rounded border border-gray-300 bg-white px-4 py-2 text-gray-700 focus:border-blue-500 focus:outline-none"
+        className="w-full rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-700 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         onFocus={() => setIsOpen(true)}
       />
       {isOpen && filteredOptions.length > 0 && (
-        <ul className="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-md border border-gray-300 bg-white shadow-lg">
+        <ul className="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
           {filteredOptions.map((opt) => (
             <li
               key={opt.label}
               onClick={() => handleSelect(opt.label)}
-              className="cursor-pointer px-4 py-2 hover:bg-gray-100"
+              className="cursor-pointer px-3 py-2 text-xs hover:bg-gray-50"
             >
               {opt.label}
-              <span className="ml-2 rounded bg-gray-100 p-1 text-gray-500">{opt.count}</span>
+              <span className="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-500">{opt.count}</span>
             </li>
           ))}
         </ul>
       )}
       {filter.values.length > 0 && (
-        <div className="mt-2 flex flex-wrap">
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
           {filter.values.map((value) => (
             <span
               key={value}
-              className="mb-2 mr-2 flex items-center rounded-full bg-blue-900 px-2 py-1 text-white"
+              className="flex items-center rounded-md bg-gray-800 px-2 py-0.5 text-xs text-white"
             >
               {value}
-              <button onClick={() => handleRemove(value)} className="ml-2 text-sm">&times;</button>
+              <button onClick={() => handleRemove(value)} className="ml-1.5 text-gray-400 hover:text-white">&times;</button>
             </span>
           ))}
         </div>

@@ -9,17 +9,17 @@ interface PaginationProps {
 
 export default function Pagination({ page, maxPage, onPageChange }: PaginationProps) {
   return (
-    <div className="flex grow items-center justify-between border-r border-gray-300 pe-2 text-xs lg:py-0.5">
+    <div className="flex items-center gap-2 text-xs">
       <button
-        className={page > 0 ? "hover:text-blue-500" : ""}
+        className="text-gray-400 transition-colors hover:text-gray-900 disabled:text-gray-200"
         onClick={() => onPageChange(page - 1)}
         disabled={page === 0}
       >
         <FontAwesomeIcon icon={faAngleDoubleLeft} />
       </button>
-      <span className="px-1">{page + 1} / {maxPage + 1}</span>
+      <span className="tabular-nums text-gray-600">{page + 1} / {maxPage + 1}</span>
       <button
-        className="hover:text-blue-500"
+        className="text-gray-400 transition-colors hover:text-gray-900 disabled:text-gray-200"
         onClick={() => onPageChange(page + 1)}
         disabled={page >= maxPage}
       >

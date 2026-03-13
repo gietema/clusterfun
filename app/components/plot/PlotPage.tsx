@@ -5,6 +5,7 @@ import { configAtom, dataAtom, mediaAtom } from "@/app/store/atoms";
 import { useMediaPreview } from "@/app/lib/use-media-preview";
 import PlotlyChart from "./PlotlyChart";
 import SideBar from "../shared/SideBar";
+import ResizableLayout from "../shared/ResizableLayout";
 import FilterBar from "../filters/FilterBar";
 
 interface PlotPageProps {
@@ -40,9 +41,9 @@ export default function PlotPage({ onMediaSelect }: PlotPageProps) {
   if (!config) return <div />;
 
   return (
-    <div className="flex h-screen">
-      <div className="w-3/4">
-        {config.title && <div>{config.title}</div>}
+    <div className="h-screen">
+      <ResizableLayout sidebar={<SideBar />}>
+        {config.title && <div className="px-3 py-2 text-sm font-medium text-gray-900">{config.title}</div>}
         <FilterBar />
         <div className="bg-white" style={{ height: "calc(100vh - 80px)" }}>
           <PlotlyChart
@@ -52,10 +53,7 @@ export default function PlotPage({ onMediaSelect }: PlotPageProps) {
             onSelect={handleMediaSelect}
           />
         </div>
-      </div>
-      <div className="w-1/4">
-        <SideBar />
-      </div>
+      </ResizableLayout>
     </div>
   );
 }

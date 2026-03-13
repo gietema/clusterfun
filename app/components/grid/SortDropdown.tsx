@@ -10,9 +10,9 @@ interface SortDropdownProps {
 
 export default function SortDropdown({ columns, gridValues, onSort }: SortDropdownProps) {
   return (
-    <>
+    <div className="flex items-center gap-1.5">
       <select
-        className="grow text-xs"
+        className="rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
         onChange={(e) => onSort(e.target.value, gridValues.asc)}
         value={gridValues.sortBy}
       >
@@ -21,9 +21,12 @@ export default function SortDropdown({ columns, gridValues, onSort }: SortDropdo
           <option key={col} value={col}>{col}</option>
         ))}
       </select>
-      <button onClick={() => onSort(gridValues.sortBy, !gridValues.asc)}>
+      <button
+        className="text-gray-400 transition-colors hover:text-gray-900"
+        onClick={() => onSort(gridValues.sortBy, !gridValues.asc)}
+      >
         <FontAwesomeIcon icon={gridValues.asc ? faSortAlphaAsc : faSortAlphaDesc} />
       </button>
-    </>
+    </div>
   );
 }

@@ -49,13 +49,13 @@ export default function MediaVisualization({ mediaIndices }: MediaVisualizationP
   if (!config || !selectedColumn || !stats) return null;
 
   return (
-    <div>
+    <div className="px-3 py-2">
       <div className="flex">
-        <div className="mt-2 rounded-s-md border border-gray-300 bg-gray-100 p-1 px-2 text-xs">
+        <div className="flex items-center rounded-l-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-500">
           Show stats for
         </div>
         <select
-          className="mt-2 grow rounded-e-md border border-l-0 border-gray-300 p-1 text-xs"
+          className="grow rounded-r-md border border-l-0 border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
           onChange={(e) => setSelectedColumn(e.target.value)}
           value={selectedColumn}
         >

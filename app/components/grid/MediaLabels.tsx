@@ -16,29 +16,27 @@ export default function MediaLabels({ mediaLabels, onLabelToggle }: MediaLabelsP
   if (!labels?.length) return null;
 
   return (
-    <div>
-      <div className="w-full border-b pt-1 text-right text-xs">
-        <FontAwesomeIcon icon={faKeyboard} className="text-gray-300" />
+    <div className="mt-1 border-t border-gray-200">
+      <div className="px-2 py-0.5 text-right text-xs text-gray-300">
+        <FontAwesomeIcon icon={faKeyboard} />
       </div>
       {labels.map((label, index) => (
-        <div key={label} className="flex w-full border-b text-center">
+        <div key={label} className="flex w-full items-center px-2 py-1">
           <label
-            className="flex flex-grow cursor-pointer justify-start ps-2"
+            className="flex flex-grow cursor-pointer items-center gap-1.5"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               onLabelToggle(label);
             }}
           >
-            <small>
-              <FontAwesomeIcon
-                icon={mediaLabels.includes(label) ? faSquareCheck : faSquare}
-                className={mediaLabels.includes(label) ? "px-2 text-blue-500" : "px-2"}
-              />
-            </small>
-            <small className="ps-2">{label}</small>
+            <FontAwesomeIcon
+              icon={mediaLabels.includes(label) ? faSquareCheck : faSquare}
+              className={mediaLabels.includes(label) ? "text-blue-500" : "text-gray-300"}
+            />
+            <small className="text-xs text-gray-700">{label}</small>
           </label>
-          <div className="flex items-center text-xs text-gray-300">{index + 1}</div>
+          <span className="text-xs text-gray-300">{index + 1}</span>
         </div>
       ))}
     </div>

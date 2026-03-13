@@ -22,28 +22,28 @@ export default function HeaderControls({
   const hasNext = mediaIndex != null && getNextMedia(mediaItems, mediaIndex) !== null;
 
   return (
-    <div className="flex items-center justify-between py-2">
+    <div className="flex items-center justify-between border-b border-gray-200 px-3 py-2">
       <BackButton onClick={onBack} />
-      <div className="flex gap-8 text-xs">
-        <div className="flex gap-2">
-          <button className="hover:text-blue-500" onClick={onRotateCounterclockwise}>
+      <div className="flex items-center gap-6 text-xs">
+        <div className="flex items-center gap-1.5">
+          <button className="rounded-md px-2 py-1.5 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={onRotateCounterclockwise}>
             <FontAwesomeIcon icon={faUndo} />
           </button>
-          <button className="hover:text-blue-500" onClick={onRotateClockwise}>
+          <button className="rounded-md px-2 py-1.5 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={onRotateClockwise}>
             <FontAwesomeIcon icon={faRedo} />
           </button>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-1.5">
           {hasPrev && (
-            <button className="flex items-center hover:text-blue-500" onClick={onPrevious}>
-              <span className="mr-1">Previous</span>
+            <button className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={onPrevious}>
               <FontAwesomeIcon icon={faArrowLeft} />
+              <span>Previous</span>
             </button>
           )}
           {hasNext && (
-            <button className="flex items-center hover:text-blue-500" onClick={onNext}>
+            <button className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={onNext}>
+              <span>Next</span>
               <FontAwesomeIcon icon={faArrowRight} />
-              <span className="ml-1">Next</span>
             </button>
           )}
         </div>

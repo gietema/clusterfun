@@ -7,13 +7,9 @@ interface InformationItemProps {
 
 export default function InformationItem({ label, value }: InformationItemProps) {
   return (
-    <div>
-      <div className="border-b border-gray-300 text-gray-800">
-        <small>{label}</small>
-      </div>
-      <div>
-        <small className="text-gray-800">{value}</small>
-      </div>
+    <div className="pt-2">
+      <div className="text-xs font-medium text-gray-500">{label}</div>
+      <div className="text-sm text-gray-900">{value}</div>
     </div>
   );
 }

@@ -98,7 +98,7 @@ describe("gridValuesAtom", () => {
     expect(values.asc).toBe(true);
     expect(values.page).toBe(0);
     expect(values.numberOfColumns).toBe(5);
-    expect(values.showColumnValue).toBeUndefined();
+    expect(values.showColumnValues).toEqual([]);
     expect(values.showBboxLabel).toBe(false);
   });
 
