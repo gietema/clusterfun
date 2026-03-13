@@ -1,7 +1,7 @@
 """MediaItem model."""
 
 import dataclasses
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
 
@@ -17,9 +17,8 @@ class MediaItem:
     src : str
         The source of the media item.
         This can be a path to a local file or a url.
-    information : Optional[List[Any]], optional
-        The information of the media item, by default None
-        Used for showing information in the sidebar.
+    information : Optional[Dict[str, Any]], optional
+        Column name to value mapping for sidebar display.
     width : Optional[int], optional
         The width of the media item, by default None
         Used for plotting a single image in a plotly figure.
@@ -32,7 +31,7 @@ class MediaItem:
 
     index: int
     src: str
-    information: Optional[List[Any]] = None
+    information: Optional[Dict[str, Any]] = None
     width: Optional[int] = None
     height: Optional[int] = None
     labels: Optional[List[str]] = None

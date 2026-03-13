@@ -87,6 +87,11 @@ class LocalLoader(Loader):
         config.labels = list({label for label_list in labels.values() for label in label_list})
         return config
 
+    def _build_info_dict(self, row: tuple) -> Dict[str, Any]:
+        """Build a column-name-to-value dict from a DB row (skipping id and src)."""
+        columns = self._load_base_config().columns
+        return dict(zip(columns[2:], row[2:]))
+
     def get_row(self, media_id: int, as_base64: bool = False) -> MediaItem:
         """Get a single row of data for a given uuid and media id."""
         result = run_query(
@@ -101,7 +106,7 @@ class LocalLoader(Loader):
             )
         else:
             src, height, width = result[1], None, None
-        return MediaItem(index=media_id, src=src, height=height, width=width, information=list(result[2:]))
+        return MediaItem(index=media_id, src=src, height=height, width=width, information=self._build_info_dict(result))
 
     def get_rows(self, media_indices: MediaIndices) -> List[MediaItem]:
         """
@@ -138,7 +143,7 @@ class LocalLoader(Loader):
             items.append(
                 MediaItem(
                     index=item[0], src=src, height=None, width=None,
-                    information=list(item[2:]), labels=labels_item,
+                    information=self._build_info_dict(item), labels=labels_item,
                 )
             )
         return items
@@ -159,10 +164,8 @@ class LocalLoader(Loader):
         """
         query, params = get_media_query(media_indices, paginate=False)
         result = run_query(self.db_path, query, params=params)
-        items = []
-        for item in result:
-            items.append({"index": item[0], "information": item[2:]})
-        return items
+        columns = self._load_base_config().columns
+        return [{"index": item[0], "information": dict(zip(columns[2:], item[2:]))} for item in result]
 
     def filter(self, filters: List[Filter]) -> List[Dict[str, Any]]:
         """Filters the data based on the given filters."""

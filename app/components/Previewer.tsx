@@ -5,7 +5,7 @@ import {
   dataAtom,
   configAtom,
   uuidAtom,
-  mediaIndicesAtom,
+  mediaIndicesStackAtom,
   filtersAtom,
   gridValuesAtom,
   mediaIndexAtom,
@@ -28,7 +28,7 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
   const setConfig = useSetAtom(configAtom);
   const [mediaIndex, setMediaIndex] = useAtom(mediaIndexAtom);
   const [showPage, setShowPage] = useAtom(showPageAtom);
-  const [mediaIndices, setMediaIndices] = useAtom(mediaIndicesAtom);
+  const [mediaIndices, setMediaIndices] = useAtom(mediaIndicesStackAtom);
   const [gridValues, setGridValues] = useAtom(gridValuesAtom);
   const filters = useAtomValue(filtersAtom);
   const setSideMedia = useSetAtom(mediaAtom);

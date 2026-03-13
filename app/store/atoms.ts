@@ -4,7 +4,13 @@ import type { PlotConfig, Media, Filter, GridValues, LabelAction, PlotTrace } fr
 export const dataAtom = atom<PlotTrace[] | undefined>(undefined);
 export const configAtom = atom<PlotConfig | undefined>(undefined);
 export const uuidAtom = atom<string>("recent");
-export const mediaIndicesAtom = atom<Array<number[]>>([]);
+export const mediaIndicesStackAtom = atom<Array<number[]>>([]);
+export const currentMediaIndicesAtom = atom<number[]>(
+  (get) => {
+    const stack = get(mediaIndicesStackAtom);
+    return stack.length > 0 ? stack[stack.length - 1] : [];
+  },
+);
 export const filtersAtom = atom<Filter[]>([]);
 export const gridValuesAtom = atom<GridValues>({
   sortBy: "",

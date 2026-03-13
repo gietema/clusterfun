@@ -52,6 +52,11 @@ class DataLoader:
         config.labels = list({label for label_list in labels.values() for label in label_list})
         return config
 
+    def _build_info_dict(self, row: tuple) -> Dict[str, Any]:
+        """Build a column-name-to-value dict from a DB row (skipping id and src)."""
+        columns = self._load_base_config().columns
+        return dict(zip(columns[2:], row[2:]))
+
     def get_row(self, media_id: int, as_base64: bool = False) -> MediaItem:
         """Get a single row of data."""
         result = run_query(
@@ -67,7 +72,7 @@ class DataLoader:
             )
         else:
             src, height, width = result[1], None, None
-        return MediaItem(index=media_id, src=src, height=height, width=width, information=list(result[2:]))
+        return MediaItem(index=media_id, src=src, height=height, width=width, information=self._build_info_dict(result))
 
     def get_rows(self, media_indices: MediaIndices) -> List[MediaItem]:
         """Get a paginated list of rows."""
@@ -95,7 +100,7 @@ class DataLoader:
                     src=src,
                     height=None,
                     width=None,
-                    information=list(item[2:]),
+                    information=self._build_info_dict(item),
                     labels=labels_item,
                 )
             )
@@ -107,7 +112,8 @@ class DataLoader:
             return []
         query, params = get_media_query(media_indices, paginate=False)
         result = run_query(self.uuid, self.backend, query, params=params)
-        return [{"index": item[0], "information": item[2:]} for item in result]
+        columns = self._load_base_config().columns
+        return [{"index": item[0], "information": dict(zip(columns[2:], item[2:]))} for item in result]
 
     def filter(self, filters: List[Filter]) -> List[Dict[str, Any]]:
         """Filter data based on given filters."""

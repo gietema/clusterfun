@@ -3,19 +3,18 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useEffect } from "react";
 import {
   dataAtom, filtersAtom, gridValuesAtom,
-  mediaIndicesAtom, mediaItemsAtom, showPageAtom, uuidAtom,
+  mediaIndicesStackAtom, showPageAtom, uuidAtom,
 } from "@/app/store/atoms";
-import { fetchFilteredPlotData, fetchMediaItems } from "@/app/lib/api";
+import { fetchFilteredPlotData } from "@/app/lib/api";
 import FiltersManager from "./FiltersManager";
 
 export default function FilterBar() {
   const [filters] = useAtom(filtersAtom);
   const uuid = useAtomValue(uuidAtom);
   const setPlotData = useSetAtom(dataAtom);
-  const setMediaItems = useSetAtom(mediaItemsAtom);
   const showPage = useAtomValue(showPageAtom);
-  const [gridValues, setGridValues] = useAtom(gridValuesAtom);
-  const [mediaIndices, setMediaIndices] = useAtom(mediaIndicesAtom);
+  const setGridValues = useSetAtom(gridValuesAtom);
+  const [mediaIndices, setMediaIndices] = useAtom(mediaIndicesStackAtom);
 
   useEffect(() => {
     fetchFilteredPlotData(uuid, filters)
@@ -30,23 +29,6 @@ export default function FilterBar() {
         setGridValues((prev) => ({ ...prev, page: 0 }));
       })
       .catch(console.error);
-
-    if (
-      showPage === "grid" &&
-      mediaIndices.length > 0 &&
-      mediaIndices[mediaIndices.length - 1]?.length > 0
-    ) {
-      fetchMediaItems(
-        uuid,
-        mediaIndices[mediaIndices.length - 1],
-        gridValues.page,
-        gridValues.sortBy || undefined,
-        gridValues.asc,
-        filters,
-      )
-        .then((data) => { if (data) setMediaItems(data); })
-        .catch(console.error);
-    }
   }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return <FiltersManager />;

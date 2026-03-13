@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useAtomValue } from "jotai";
-import { filtersAtom, mediaIndicesAtom, uuidAtom } from "@/app/store/atoms";
+import { currentMediaIndicesAtom, uuidAtom } from "@/app/store/atoms";
 import { fetchColumnValues } from "@/app/lib/api";
 import type { Filter } from "@/app/types";
 
@@ -15,8 +15,7 @@ export default function FilterValueInput({ filter, onValueChange }: FilterValueI
   const [inputValue, setInputValue] = useState("");
   const [options, setOptions] = useState<{ label: string; count: number }[]>([]);
   const uuid = useAtomValue(uuidAtom);
-  const mediaIndices = useAtomValue(mediaIndicesAtom);
-  const filters = useAtomValue(filtersAtom);
+  const mediaIndices = useAtomValue(currentMediaIndicesAtom);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const prevComparison = useRef<string | null>(null);
   const prevColumn = useRef<string | null>(null);
@@ -46,11 +45,10 @@ export default function FilterValueInput({ filter, onValueChange }: FilterValueI
   // Fetch column values
   useEffect(() => {
     if (!filter.column) return;
-    const mediaIds = mediaIndices.length > 0 ? mediaIndices[mediaIndices.length - 1] : [];
-    fetchColumnValues(uuid, filter.column, mediaIds)
+    fetchColumnValues(uuid, filter.column, mediaIndices)
       .then(setOptions)
       .catch(() => setOptions([]));
-  }, [filter.column, uuid, filters, mediaIndices]);
+  }, [filter.column, uuid, mediaIndices]);
 
   // Handle custom value on close
   useEffect(() => {

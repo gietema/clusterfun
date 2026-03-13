@@ -6,8 +6,8 @@ import { faBarChart, faCaretDown, faTableCells } from "@fortawesome/free-solid-s
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { saveAs } from "file-saver";
 import {
-  configAtom, filtersAtom, gridValuesAtom, mediaAtom,
-  mediaIndicesAtom, mediaItemsAtom, uuidAtom,
+  configAtom, gridValuesAtom, mediaAtom,
+  currentMediaIndicesAtom, mediaItemsAtom, uuidAtom,
 } from "@/app/store/atoms";
 import { fetchMediaItems, downloadGridCsv, saveLabel, deleteLabel } from "@/app/lib/api";
 import type { Media } from "@/app/types";
@@ -29,13 +29,9 @@ interface GridViewProps {
 }
 
 export default function GridView({ onBack }: GridViewProps) {
-  const mediaIndicesAll = useAtomValue(mediaIndicesAtom);
-  const mediaIndices = mediaIndicesAll.length > 0
-    ? mediaIndicesAll[mediaIndicesAll.length - 1]
-    : [];
+  const mediaIndices = useAtomValue(currentMediaIndicesAtom);
   const uuid = useAtomValue(uuidAtom);
   const config = useAtomValue(configAtom);
-  const filters = useAtomValue(filtersAtom);
   const setSideMedia = useSetAtom(mediaAtom);
   const [mediaItems, setMediaItems] = useAtom(mediaItemsAtom);
   const [gridValues, setGridValues] = useAtom(gridValuesAtom);
@@ -95,7 +91,7 @@ export default function GridView({ onBack }: GridViewProps) {
 
   const handlePageChange = (newPage: number) => {
     setGridValues((prev) => ({ ...prev, page: newPage }));
-    fetchMediaItems(uuid, mediaIndices, newPage, gridValues.sortBy || undefined, gridValues.asc, filters)
+    fetchMediaItems(uuid, mediaIndices, newPage, gridValues.sortBy || undefined, gridValues.asc)
       .then(setMediaItems);
   };
 

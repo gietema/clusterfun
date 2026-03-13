@@ -1,7 +1,8 @@
 """S3 storage backend."""
 
 import os
-from typing import Any, List
+from typing import Any, List, Optional
+from urllib.parse import urlparse
 
 import orjson
 import pyarrow as pa
@@ -13,17 +14,26 @@ from clusterfun.storage.backends.base import StorageBackend
 class S3Backend(StorageBackend):
     """Stores data on Amazon S3."""
 
-    def __init__(self, bucket: str, prefix: str = ""):
+    def __init__(self, bucket: str, prefix: str = "", endpoint_url: Optional[str] = None):
         import boto3
         from botocore.client import Config as BotoConfig
 
         self.bucket = bucket
         self.prefix = prefix.strip("/")
-        self.s3 = boto3.client(
-            "s3",
-            region_name=os.environ.get("AWS_REGION"),
-            config=BotoConfig(region_name=os.environ.get("AWS_REGION"), signature_version="s3v4"),
-        )
+        self.endpoint_url = endpoint_url
+
+        client_kwargs = {
+            "region_name": os.environ.get("AWS_REGION", "us-east-1"),
+            "config": BotoConfig(
+                region_name=os.environ.get("AWS_REGION", "us-east-1"),
+                signature_version="s3v4",
+            ),
+        }
+        if endpoint_url:
+            client_kwargs["endpoint_url"] = endpoint_url
+            client_kwargs["aws_access_key_id"] = os.environ.get("AWS_ACCESS_KEY_ID", "test")
+            client_kwargs["aws_secret_access_key"] = os.environ.get("AWS_SECRET_ACCESS_KEY", "test")
+        self.s3 = boto3.client("s3", **client_kwargs)
 
     @classmethod
     def from_url(cls, url: str) -> "S3Backend":
@@ -44,10 +54,30 @@ class S3Backend(StorageBackend):
 
     def configure_duckdb(self, con: Any) -> None:
         con.execute("INSTALL httpfs; LOAD httpfs;")
-        con.execute("CREATE SECRET IF NOT EXISTS (TYPE s3, PROVIDER credential_chain)")
+        if self.endpoint_url:
+            parsed = urlparse(self.endpoint_url)
+            con.execute(f"SET s3_endpoint='{parsed.hostname}:{parsed.port}'")
+            con.execute("SET s3_use_ssl=false")
+            con.execute("SET s3_url_style='path'")
+            con.execute(f"SET s3_access_key_id='{os.environ.get('AWS_ACCESS_KEY_ID', 'test')}'")
+            con.execute(f"SET s3_secret_access_key='{os.environ.get('AWS_SECRET_ACCESS_KEY', 'test')}'")
+            con.execute(f"SET s3_region='{os.environ.get('AWS_REGION', 'us-east-1')}'")
+        else:
+            con.execute("CREATE SECRET IF NOT EXISTS (TYPE s3, PROVIDER credential_chain)")
 
     def save_parquet(self, uuid: str, table: Any) -> None:
-        s3fs = pa.fs.S3FileSystem()
+        if self.endpoint_url:
+            # PyArrow S3FileSystem with custom endpoint
+            parsed = urlparse(self.endpoint_url)
+            s3fs = pa.fs.S3FileSystem(
+                endpoint_override=f"{parsed.hostname}:{parsed.port}",
+                scheme="http",
+                access_key=os.environ.get("AWS_ACCESS_KEY_ID", "test"),
+                secret_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "test"),
+                region=os.environ.get("AWS_REGION", "us-east-1"),
+            )
+        else:
+            s3fs = pa.fs.S3FileSystem()
         path = f"{self.bucket}/{self._key(uuid, 'data.parquet')}"
         pq.write_table(table, path, filesystem=s3fs, row_group_size=10_000, compression="snappy")
 

@@ -1,6 +1,7 @@
 """Google Cloud Storage backend."""
 
-from typing import Any, List
+import os
+from typing import Any, List, Optional
 
 import orjson
 import pyarrow as pa
@@ -12,13 +13,20 @@ from clusterfun.storage.backends.base import StorageBackend
 class GCSBackend(StorageBackend):
     """Stores data on Google Cloud Storage."""
 
-    def __init__(self, bucket: str, prefix: str = ""):
+    def __init__(self, bucket: str, prefix: str = "", endpoint_url: Optional[str] = None):
         from google.cloud import storage
 
-        self.client = storage.Client()
         self.bucket_name = bucket
-        self.bucket_obj = self.client.bucket(bucket)
         self.prefix = prefix.strip("/")
+        self.endpoint_url = endpoint_url
+
+        client_kwargs = {}
+        if endpoint_url:
+            # fake-gcs-server: set STORAGE_EMULATOR_HOST so the client skips auth
+            os.environ["STORAGE_EMULATOR_HOST"] = endpoint_url
+            client_kwargs["project"] = "test-project"
+        self.client = storage.Client(**client_kwargs)
+        self.bucket_obj = self.client.bucket(bucket)
 
     @classmethod
     def from_url(cls, url: str) -> "GCSBackend":

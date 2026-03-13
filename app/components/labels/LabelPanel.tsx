@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { saveAs } from "file-saver";
 import toast from "react-hot-toast";
 import {
-  configAtom, mediaIndicesAtom, mediaItemsAtom, uuidAtom,
+  configAtom, currentMediaIndicesAtom, mediaItemsAtom, uuidAtom,
 } from "@/app/store/atoms";
 import {
   fetchLabelCounts, saveLabel, deleteLabel,
@@ -24,10 +24,7 @@ export default function LabelPanel({ onHide }: LabelPanelProps) {
   const [newLabel, setNewLabel] = useState("");
   const [config, setConfig] = useAtom(configAtom);
   const [mediaItems, setMediaItems] = useAtom(mediaItemsAtom);
-  const mediaIndicesAll = useAtomValue(mediaIndicesAtom);
-  const mediaIndices = mediaIndicesAll.length > 0
-    ? mediaIndicesAll[mediaIndicesAll.length - 1]
-    : [];
+  const mediaIndices = useAtomValue(currentMediaIndicesAtom);
   const [labelCounts, setLabelCounts] = useState<LabelCount[]>([]);
   const { pushAction, undo, canUndo } = useLabelUndo();
 
