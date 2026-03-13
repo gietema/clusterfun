@@ -61,8 +61,7 @@ export default function MediaPage({ mediaIndex, onBack }: MediaPageProps) {
 
   useEffect(() => {
     if (!media || !config?.bounding_box) return;
-    const idx = config.columns.indexOf(config.bounding_box);
-    const bboxValue = media.information?.[idx - 2];
+    const bboxValue = media.information?.[config.bounding_box];
     if (typeof bboxValue === "string") setBoundingBoxes(parseBoundingBoxes(bboxValue));
   }, [media, config]);
 

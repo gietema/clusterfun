@@ -10,14 +10,12 @@ export default function SideBar() {
 
   if (!media || !config) return <div />;
 
-  const bboxColumnIndex = config.bounding_box
-    ? config.columns.indexOf(config.bounding_box)
-    : undefined;
+  const info = media.information;
+  if (!info) return <div />;
 
-  const infoColumns = config.columns.slice(2);
-  const filteredInfo = media.information?.filter((_, index) => {
-    return index !== (bboxColumnIndex != null ? bboxColumnIndex - 2 : -1);
-  });
+  const entries = Object.entries(info).filter(
+    ([key]) => key !== config.bounding_box,
+  );
 
   return (
     <div className="ms-1 w-full border-l border-gray-200 px-1 ps-2 lg:ps-0">
@@ -25,17 +23,13 @@ export default function SideBar() {
         <div style={{ maxHeight: "300px" }}>
           <PreviewMedia
             media={media}
-            boundingBoxColumnIndex={bboxColumnIndex}
+            boundingBoxColumn={config.bounding_box}
             displayLabel
           />
         </div>
         <div className="overflow-y-auto ps-2" style={{ flexGrow: 1 }}>
-          {filteredInfo?.map((item, index) => (
-            <InformationItem
-              key={index}
-              label={infoColumns[index]}
-              value={item}
-            />
+          {entries.map(([key, value]) => (
+            <InformationItem key={key} label={key} value={value} />
           ))}
         </div>
       </div>

@@ -37,7 +37,17 @@ class LocalStorer(Storer):
         df = df.sort_values("id").reset_index(drop=True)
 
         # Save Parquet to backend
+        # Downcast large_string → string so DuckDB returns plain strings, not lists
         table = pa.Table.from_pandas(df[cfg.columns])
+        new_fields = []
+        for field in table.schema:
+            if field.type == pa.large_string():
+                new_fields.append(field.with_type(pa.string()))
+            elif field.type == pa.large_binary():
+                new_fields.append(field.with_type(pa.binary()))
+            else:
+                new_fields.append(field)
+        table = table.cast(pa.schema(new_fields))
         self.backend.save_parquet(uuid, table)
 
         # Generate plot data via DuckDB on the in-memory DataFrame

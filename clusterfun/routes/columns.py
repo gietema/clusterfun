@@ -70,7 +70,8 @@ def column_stats(view_uuid: str, req: ColumnStatsRequest) -> Dict[str, Any]:
     # Check if column is categorical by sampling values
     sample_query = f"SELECT DISTINCT [{column}] FROM database WHERE {base_where} LIMIT 50"
     sample = con.execute(sample_query, params).fetchall()
-    values = [r[0] for r in sample]
+    # DuckDB >=1.5 may return list-wrapped values for string columns from Parquet
+    values = [r[0][0] if isinstance(r[0], list) else r[0] for r in sample]
     is_categorical = all(isinstance(v, str) or v is None for v in values)
 
     if is_categorical:
@@ -83,15 +84,45 @@ def column_stats(view_uuid: str, req: ColumnStatsRequest) -> Dict[str, Any]:
         rows = con.execute(query, params).fetchall()
         return {
             "type": "categorical",
-            "data": [{"label": str(r[0]), "count": r[1]} for r in rows],
+            "data": [{"label": str(r[0][0] if isinstance(r[0], list) else r[0]), "count": r[1]} for r in rows],
         }
     else:
-        # Return raw numeric values for client-side histogram
-        query = f"SELECT [{column}] FROM database WHERE {base_where}"
-        rows = con.execute(query, params).fetchall()
+        # Compute histogram bins server-side
+        stats_query = (
+            f"SELECT MIN([{column}]), MAX([{column}]), COUNT([{column}]) "
+            f"FROM database WHERE {base_where} AND [{column}] IS NOT NULL"
+        )
+        stats_row = con.execute(stats_query, params).fetchone()
+        min_val, max_val, total = stats_row[0], stats_row[1], stats_row[2]
+        if total == 0 or min_val is None:
+            return {"type": "numeric", "bins": [], "counts": [], "min": 0, "max": 0}
+
+        num_bins = min(50, max(10, int(total ** 0.5)))
+        bin_width = (max_val - min_val) / num_bins if max_val != min_val else 1
+        if max_val == min_val:
+            return {
+                "type": "numeric",
+                "bins": [float(min_val)],
+                "counts": [total],
+                "min": float(min_val),
+                "max": float(max_val),
+            }
+
+        bin_query = (
+            f"SELECT FLOOR(([{column}] - ?) / ?) AS bin, COUNT(*) AS count "
+            f"FROM database WHERE {base_where} AND [{column}] IS NOT NULL "
+            f"GROUP BY bin ORDER BY bin"
+        )
+        bin_params = [min_val, bin_width] + list(params)
+        rows = con.execute(bin_query, bin_params).fetchall()
+        bins = [float(min_val + r[0] * bin_width) for r in rows]
+        counts = [r[1] for r in rows]
         return {
             "type": "numeric",
-            "data": [r[0] for r in rows if r[0] is not None],
+            "bins": bins,
+            "counts": counts,
+            "min": float(min_val),
+            "max": float(max_val),
         }
 
 

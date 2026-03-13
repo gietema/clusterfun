@@ -25,24 +25,25 @@ export default function MediaVisualization({ mediaIndices }: MediaVisualizationP
     fetchColumnStats(uuid, mediaIndices, selectedColumn).then(setStats);
   }, [uuid, mediaIndices, selectedColumn]);
 
-  const handleHistogramClick = (points: { pointIndices: number[] }[], col: string) => {
-    const indices = points[0].pointIndices;
-    if (!stats || stats.type !== "numeric") return;
-    const selected = indices.map((i) => stats.data[i]).filter((v): v is number => v != null);
-    const min = Math.min(...selected);
-    const max = Math.max(...selected);
-    const newFilters = filters.filter((f) => f.column !== col);
-    setFilters([
-      ...newFilters,
-      { column: col, comparison: ">=", values: [String(min)] },
-      { column: col, comparison: "<=", values: [String(max)] },
-    ]);
-  };
-
   const handleBarClick = (points: { label: string }[], col: string) => {
     const label = points[0].label;
     const newFilters = filters.filter((f) => f.column !== col);
     setFilters([...newFilters, { column: col, comparison: "=", values: [label] }]);
+  };
+
+  const handleHistogramClick = (points: { x: number }[], col: string) => {
+    if (!stats || stats.type !== "numeric") return;
+    const clickedX = points[0].x;
+    // Find the bin that contains this x value
+    const binWidth = stats.bins.length > 1 ? stats.bins[1] - stats.bins[0] : 1;
+    const binStart = clickedX;
+    const binEnd = clickedX + binWidth;
+    const newFilters = filters.filter((f) => f.column !== col);
+    setFilters([
+      ...newFilters,
+      { column: col, comparison: ">=", values: [String(binStart)] },
+      { column: col, comparison: "<=", values: [String(binEnd)] },
+    ]);
   };
 
   if (!config || !selectedColumn || !stats) return null;
@@ -81,12 +82,20 @@ export default function MediaVisualization({ mediaIndices }: MediaVisualizationP
           />
         ) : stats.type === "numeric" ? (
           <Plot
-            data={[{ type: "histogram", x: stats.data }]}
+            data={[{
+              type: "bar",
+              x: stats.bins,
+              y: stats.counts,
+              width: stats.bins.length > 1 ? stats.bins[1] - stats.bins[0] : 1,
+            }]}
             layout={{
-              font: { size: 8 }, margin: { l: 20, r: 0, b: 50, t: 0 }, height: 200,
+              font: { size: 8 },
+              margin: { l: 20, r: 0, b: 50, t: 0 },
+              height: 200,
+              bargap: 0.05,
             }}
             config={{ displayModeBar: false }}
-            onClick={(e: unknown) => handleHistogramClick((e as { points: { pointIndices: number[] }[] }).points, selectedColumn)}
+            onClick={(e: unknown) => handleHistogramClick((e as { points: { x: number }[] }).points, selectedColumn)}
           />
         ) : null}
       </div>

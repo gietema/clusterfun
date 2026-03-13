@@ -5,7 +5,7 @@ export type InformationValue = string | number | boolean | null;
 export interface Media {
   index: number;
   src: string;
-  information?: InformationValue[];
+  information?: Record<string, InformationValue>;
   width?: number;
   height?: number;
   type?: MediaType;
@@ -95,7 +95,7 @@ export interface LabelCount {
 // ── Media Metadata ──
 export interface MediaMetadata {
   index: number;
-  information: InformationValue[];
+  information: Record<string, InformationValue>;
 }
 
 // ── Plot Trace ──
@@ -120,9 +120,16 @@ export interface CategoricalStat {
   count: number;
 }
 
+export interface NumericStats {
+  bins: number[];
+  counts: number[];
+  min: number;
+  max: number;
+}
+
 export type ColumnStats =
   | { type: "categorical"; data: CategoricalStat[] }
-  | { type: "numeric"; data: number[] };
+  | ({ type: "numeric" } & NumericStats);
 
 // ── Label Undo ──
 export interface LabelAction {

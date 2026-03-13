@@ -6,7 +6,7 @@ import { getContainedSize, parseBoundingBoxes } from "@/app/lib/media-utils";
 
 interface PreviewMediaProps {
   media: Media | undefined;
-  boundingBoxColumnIndex: number | undefined;
+  boundingBoxColumn: string | undefined;
   displayLabel: boolean;
   columns?: number;
 }
@@ -21,7 +21,7 @@ function debounce(fn: () => void, ms: number) {
 
 export default function PreviewMedia({
   media,
-  boundingBoxColumnIndex,
+  boundingBoxColumn,
   displayLabel,
   columns,
 }: PreviewMediaProps) {
@@ -55,12 +55,12 @@ export default function PreviewMedia({
 
   useEffect(() => {
     if (!media) return;
-    if (media.information != null && boundingBoxColumnIndex != null) {
-      const bboxValue = media.information[boundingBoxColumnIndex - 2];
+    if (media.information != null && boundingBoxColumn) {
+      const bboxValue = media.information[boundingBoxColumn];
       if (typeof bboxValue === "string") setBoundingBoxes(parseBoundingBoxes(bboxValue));
     }
     audioRef.current?.load();
-  }, [media, boundingBoxColumnIndex]);
+  }, [media, boundingBoxColumn]);
 
   useEffect(() => { measureImage(); }, [media, columns, displayLabel]);
 

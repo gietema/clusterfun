@@ -15,7 +15,6 @@ interface MediaGridItemProps {
   boundingBoxColumn?: string;
   showBboxLabel: boolean;
   display?: string[];
-  infoColumns: string[];
   onClick: () => void;
   onHover: () => void;
   onLabelToggle: (label: string) => void;
@@ -23,7 +22,7 @@ interface MediaGridItemProps {
 
 export default function MediaGridItem({
   media, columns, showColumn, boundingBoxColumn, showBboxLabel,
-  display, infoColumns, onClick, onHover, onLabelToggle,
+  display, onClick, onHover, onLabelToggle,
 }: MediaGridItemProps) {
   const config = useAtomValue(configAtom);
   const elementRef = useRef<HTMLDivElement>(null);
@@ -43,13 +42,9 @@ export default function MediaGridItem({
 
   if (!config?.labels) return null;
 
-  const bboxIndex = boundingBoxColumn
-    ? infoColumns.indexOf(boundingBoxColumn)
-    : undefined;
-
   const columnValue =
     showColumn && media.information
-      ? media.information[infoColumns.slice(2).indexOf(showColumn)]
+      ? media.information[showColumn]
       : undefined;
 
   return (
@@ -65,7 +60,7 @@ export default function MediaGridItem({
       {media.type !== "audio" ? (
         <PreviewMedia
           media={media}
-          boundingBoxColumnIndex={bboxIndex}
+          boundingBoxColumn={boundingBoxColumn}
           displayLabel={showBboxLabel}
           columns={columns}
         />
@@ -78,12 +73,12 @@ export default function MediaGridItem({
           )}
           {display?.map((d) => (
             <div key={d}>
-              {infoColumns.indexOf(d) === -1 ? (
+              {!media.information?.[d] ? (
                 <div>{d}</div>
               ) : (
                 <div>
                   <div className="border-b border-gray-300 text-xs text-gray-500">{d}</div>
-                  <small>{media.information?.[infoColumns.indexOf(d) - 2]}</small>
+                  <small>{media.information[d]}</small>
                 </div>
               )}
             </div>

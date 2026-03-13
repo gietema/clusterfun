@@ -229,7 +229,6 @@ export default function GridView({ onBack }: GridViewProps) {
                 boundingBoxColumn={config.bounding_box}
                 showBboxLabel={gridValues.showBboxLabel}
                 display={config.display}
-                infoColumns={config.columns}
                 onClick={() => handleClick(media.index)}
                 onHover={() => handleHover(media.index)}
                 onLabelToggle={(label) => handleLabelToggle(media, label)}
