@@ -102,15 +102,8 @@ def _get_column_values(column: str, con: Any) -> set:
         if column not in valid_columns:
             _column_values_cache[cache_key][column] = set()
         else:
-            result = con.execute(f"SELECT DISTINCT [{column}] FROM database").fetchall()
-            values = set()
-            for x in result:
-                v = x[0]
-                # DuckDB >=1.5 may return list-wrapped values from Parquet string columns
-                if isinstance(v, list):
-                    v = v[0] if v else None
-                if v is not None:
-                    values.add(v)
+            result = con.execute(f'SELECT DISTINCT "{column}" FROM database').fetchall()
+            values = {x[0] for x in result if x[0] is not None}
             _column_values_cache[cache_key][column] = values
     return _column_values_cache[cache_key][column]
 
