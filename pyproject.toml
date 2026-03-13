@@ -8,6 +8,7 @@ requires-python = ">=3.9,<4.0"
 dependencies = [
     "pandas>=2.0.0",
     "pyarrow>=13",
+    "duckdb>=1.0.0",
     "fastapi",
     "uvicorn",
     "orjson",
@@ -16,6 +17,9 @@ dependencies = [
     "pillow",
     "urllib3<2",
 ]
+
+[project.optional-dependencies]
+gcs = ["google-cloud-storage>=2.0.0"]
 
 [project.scripts]
 clusterfun = "clusterfun.serve_cli:main"

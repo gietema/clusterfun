@@ -11,10 +11,18 @@ T = TypeVar("T", bound=BaseStorageClient)
 
 CLIENT_REGISTRY = {
     "s3": S3StorageClient,
+    "gs": lambda common_media_path: _get_gcs_client(common_media_path),
     "http": HttpStorageClient,
     "https": HttpStorageClient,
     "local": LocalStorageClient,
 }
+
+
+def _get_gcs_client(common_media_path: Optional[str]) -> BaseStorageClient:
+    """Lazy import GCS client to avoid requiring google-cloud-storage."""
+    from clusterfun.storage.client.gcs import GCSStorageClient
+
+    return GCSStorageClient(common_media_path)
 
 
 def get_storage_client(uri: str, common_media_path: Optional[str]) -> BaseStorageClient:

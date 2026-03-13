@@ -1,35 +1,29 @@
 """Label storer for CRUD label management"""
 
-import json
 from collections import Counter
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
+
+from clusterfun.storage.backends.base import StorageBackend
 
 
 class LabelManager:
     """CRUD for labels"""
 
-    def __init__(self, cache_dir: Path):
-        self.cache_dir = cache_dir
-
-    def _get_labels_key(self) -> str:
-        """Constructs the key for the labels JSON file."""
-        return f"{self.cache_dir}/labels.json"
+    def __init__(self, uuid: str, backend: StorageBackend):
+        self.uuid = uuid
+        self.backend = backend
 
     def read_labels(self) -> Dict[str, List[str]]:
-        """Reads the labels from the S3 bucket."""
-        labels_file = self.cache_dir / "labels.json"
-        if not labels_file.exists():
+        """Reads the labels from the storage backend."""
+        if not self.backend.json_exists(self.uuid, "labels.json"):
             return {}
-        with open(labels_file, "r", encoding="utf-8") as file_content:
-            return json.loads(file_content.read())
+        return self.backend.load_json(self.uuid, "labels.json")
 
     def _write_labels(self, labels: Dict[str, List[str]]):
-        """Writes the labels to the S3 bucket."""
-        with open(self.cache_dir / "labels.json", "w", encoding="utf-8") as file_content_writer:
-            file_content_writer.write(json.dumps(labels))
+        """Writes the labels to the storage backend."""
+        self.backend.save_json(self.uuid, "labels.json", labels)
 
     def save_label(self, label: str, media_indices: List[int]):
         """Saves the label to the database."""

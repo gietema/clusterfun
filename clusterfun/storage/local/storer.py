@@ -1,14 +1,12 @@
-"""Storer class for saving the data locally"""
+"""Storer class for saving data via storage backends"""
 
 import dataclasses
-import json
-import os
-import sqlite3
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import duckdb
 import orjson
 import pandas as pd
+import pyarrow as pa
 
 from clusterfun.config import Config
 from clusterfun.storage.local.data import get_data_dict
@@ -18,73 +16,50 @@ from clusterfun.storage.storer import Storer
 
 class LocalStorer(Storer):
     """
-    Stores the data in a local directory. The directory is created in the cache directory.
+    Stores data using the configured storage backend.
+    Writes Parquet for efficient querying via DuckDB, plus JSON artifacts.
     """
 
-    def __init__(
-        self,
-        cache_dir: Optional[Path] = None,
-    ):
-        """Initializes the storer, sets the cache_dir"""
-        if cache_dir is None:
-            cache_dir = Path(os.environ.get("CLUSTERFUN_CACHE_DIR", os.path.expanduser("~/.cache/clusterfun")))
-        self.cache_dir = cache_dir
-        self.uuid: Optional[str] = None
+    def __init__(self, backend: Optional[Any] = None):
+        """Initializes the storer with a storage backend."""
+        if backend is None:
+            from clusterfun.storage.backends import get_backend
 
-    @property
-    def save_dir(self):
-        """Returns the path to the directory where the data is saved"""
-        return Path(f"{self.cache_dir}/{self.uuid}")
+            backend = get_backend()
+        self.backend = backend
 
     def save(self, uuid: str, df: pd.DataFrame, cfg: Config):
-        """Saves the data to the local directory"""
-        self.uuid = uuid
-        self.save_dir.mkdir(parents=True, exist_ok=True)
-        con = self.save_db(cfg, df)
+        """Saves the data using the storage backend."""
+        df = format_df_for_db(cfg, df)
+        df = df.reset_index(drop=False).rename(columns={"index": "id"})
 
+        # Sort by id for optimal row group pruning in Parquet
+        df = df.sort_values("id").reset_index(drop=True)
+
+        # Save Parquet to backend
+        table = pa.Table.from_pandas(df[cfg.columns])
+        self.backend.save_parquet(uuid, table)
+
+        # Generate plot data via DuckDB on the in-memory DataFrame
+        con = duckdb.connect()
+        temp_df = df[cfg.columns]
+        con.register("database", temp_df)
         data_dict, colors = get_data_dict(con, cfg)
         cfg.colors = colors
-        self.save_config(cfg)
-        self.save_data(data_dict)
+        con.close()
 
-    def save_db(self, cfg: Config, df: pd.DataFrame):
-        """Saves the dataframe to a sqlite database"""
-        con = sqlite3.connect(self.save_dir / "database.db")
-        df = format_df_for_db(cfg, df)
-        try:
-            df.reset_index(drop=False).rename(columns={"index": "id"})[cfg.columns].to_sql(
-                name="database", con=con, index=False
-            )
-        except sqlite3.InterfaceError as exc:
-            raise sqlite3.InterfaceError(
-                "This dataframe could not be saved to the database. "
-                "Check if you have any columns with uncommon value types."
-            ) from exc
-
-        # Create indexes for faster filtering and sorting
-        con.execute("CREATE INDEX IF NOT EXISTS idx_database_id ON database (id)")
-        if cfg.color is not None:
-            con.execute(f"CREATE INDEX IF NOT EXISTS idx_database_color ON database ([{cfg.color}])")
-        if cfg.x is not None:
-            con.execute(f"CREATE INDEX IF NOT EXISTS idx_database_x ON database ([{cfg.x}])")
-        if cfg.y is not None:
-            con.execute(f"CREATE INDEX IF NOT EXISTS idx_database_y ON database ([{cfg.y}])")
-        con.commit()
-        return con
-
-    def save_config(self, cfg: Config):
-        """Saves the config to a json file"""
+        # Normalize display field
         if cfg.display is not None and isinstance(cfg.display, str):
             cfg.display = [cfg.display]
-        with open(str(self.save_dir / "config.json"), "w", encoding="utf-8") as f:
-            json.dump(dataclasses.asdict(cfg), f, indent=2)
+
+        # Save JSON artifacts to backend
+        self.backend.save_json(uuid, "config.json", dataclasses.asdict(cfg))
+        self.backend.save_json(uuid, "data.json", data_dict)
+
+    def save_config(self, cfg: Config):
+        """Not used directly - config is saved as part of save()."""
+        pass
 
     def save_data(self, data: List[Dict[str, Any]]):
-        """Saves the data for plotly to a json file"""
-        with open(self.save_dir / "data.json", "wb") as f:
-            f.write(
-                orjson.dumps(  # pylint: disable=no-member
-                    data,
-                    option=orjson.OPT_NAIVE_UTC | orjson.OPT_SERIALIZE_NUMPY,  # pylint: disable=no-member
-                )
-            )
+        """Not used directly - data is saved as part of save()."""
+        pass

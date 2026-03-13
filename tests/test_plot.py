@@ -24,7 +24,7 @@ def test_violin(cache_dir):
     assert isinstance(cache_dir, Path)
     assert (cache_dir / "config.json").exists()
     assert (cache_dir / "data.json").exists()
-    assert (cache_dir / "database.db").exists()
+    assert (cache_dir / "data.parquet").exists()
     with open(cache_dir / "config.json") as f:
         config = json.load(f)
         assert config["columns"] == ["id", "media", "y", "x", "color"]
@@ -70,7 +70,7 @@ def test_histogram(cache_dir):
     assert isinstance(cache_dir, Path)
     assert (cache_dir / "config.json").exists()
     assert (cache_dir / "data.json").exists()
-    assert (cache_dir / "database.db").exists()
+    assert (cache_dir / "data.parquet").exists()
 
 
 def test_it_creates_a_scatter(cache_dir):
@@ -107,14 +107,14 @@ def test_it_creates_a_scatter(cache_dir):
     assert isinstance(cache_dir, Path)
     assert (cache_dir / "config.json").exists()
     assert (cache_dir / "data.json").exists()
-    assert (cache_dir / "database.db").exists()
+    assert (cache_dir / "data.parquet").exists()
 
     # without colour
     cache_dir = scatter(df, x="x", y="y", media="media", title="A title of a plot", bounding_box="bbox", show=False)
     assert isinstance(cache_dir, Path)
     assert (cache_dir / "config.json").exists()
     assert (cache_dir / "data.json").exists()
-    assert (cache_dir / "database.db").exists()
+    assert (cache_dir / "data.parquet").exists()
 
 
 def test_it_cannot_create_a_plot_with_non_existing_column_names(cache_dir):

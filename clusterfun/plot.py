@@ -29,7 +29,9 @@ from fastapi.staticfiles import StaticFiles
 
 from clusterfun.app import APP
 from clusterfun.config import Config
-from clusterfun.storage.local.loader import LocalLoader
+from clusterfun.storage.backends import get_backend
+from clusterfun.storage.backends.local import LocalBackend
+from clusterfun.storage.factory import get_loader
 from clusterfun.storage.local.storer import LocalStorer
 
 
@@ -100,9 +102,9 @@ class Plot:
     Methods
     -------
     save(df: pd.DataFrame, cfg: Config) -> 'Plot':
-        Save a plot to local storage and return an instance of the Plot class.
+        Save a plot to storage and return an instance of the Plot class.
     load(uuid: str) -> 'Plot':
-        Load a plot from local storage using its unique identifier.
+        Load a plot from storage using its unique identifier.
     load_config(uuid: str) -> Config:
         Load the configuration object for a plot using its unique identifier.
     as_json() -> Dict[str, Any]:
@@ -133,7 +135,7 @@ class Plot:
     @classmethod
     def save(cls, df: pd.DataFrame, cfg: Config) -> "Plot":
         """
-        Save a plot to local storage and return an instance of the Plot class.
+        Save a plot to storage and return an instance of the Plot class.
 
         Parameters
         ----------
@@ -165,19 +167,21 @@ class Plot:
     @classmethod
     def load(cls, uuid: str, cache_dir: Optional[Path] = None) -> "Plot":
         """
-        Load a plot from local storage using its unique identifier.
+        Load a plot from storage using its unique identifier.
 
         Parameters
         ----------
         uuid : str
             The unique identifier for the plot.
+        cache_dir : Optional[Path]
+            Ignored for non-local backends.
 
         Returns
         -------
         Plot
             An instance of the Plot class with the loaded data and configuration.
         """
-        return cls(*LocalLoader(uuid, cache_dir).load())
+        return cls(*get_loader(uuid).load())
 
     @staticmethod
     def load_config(uuid: str) -> Config:
@@ -194,7 +198,7 @@ class Plot:
         Config
             The configuration object for the plot.
         """
-        return LocalLoader(uuid).load_config()
+        return get_loader(uuid).load_config()
 
     def as_json(self) -> Dict[str, Any]:
         """
@@ -236,7 +240,10 @@ class Plot:
             print(f"Serving plot on http://{host}:{local_port}")
             run_server_fn = partial(run_server, local_port=local_port, local_host=host)
             run_server_fn()
-        return LocalStorer().cache_dir / self.uuid
+        backend = get_backend()
+        if isinstance(backend, LocalBackend):
+            return backend.cache_dir / self.uuid
+        return Path(self.uuid)
 
     @property
     def url(self) -> str:

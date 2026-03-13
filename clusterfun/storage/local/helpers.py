@@ -1,6 +1,5 @@
 """Helper functions for local loading and storing"""
 
-import sqlite3
 from pathlib import Path
 from typing import Any, List, Optional, Tuple
 
@@ -45,7 +44,7 @@ def get_columns_for_db(
 
 
 def get_filter_query(
-    con: sqlite3.Connection, config: Config, filters: List[Filter]
+    con: Any, config: Config, filters: List[Filter]
 ) -> Tuple[str, List]:
     """Get the query to apply the filters.
 
@@ -95,7 +94,10 @@ def get_media_query(
         A tuple of (query_with_placeholders, params_list).
     """
     params: List = []
-    if len(media_indices) == 1:
+    if len(media_indices) == 0:
+        # Empty list: return a query that matches nothing
+        query = "SELECT * FROM database WHERE 1=0"
+    elif len(media_indices) == 1:
         query = "SELECT * FROM database WHERE id = ?"
         params.append(media_indices.media_ids[0])
     else:
@@ -135,35 +137,3 @@ def get_recent_dir(directory: Path) -> Path:
     directories = [d for d in directory.iterdir() if d.is_dir()]
     # Sort the directories by creation time (oldest to newest) and get the most recent one
     return max(directories, key=lambda d: d.stat().st_ctime)
-
-
-def run_query(db_path: Path, query: str, params: Optional[List] = None, fetch_one: bool = False) -> List:
-    """Run a query on the database
-
-    Parameters
-    ----------
-    db_path : Path
-        Path to the database
-    query : str
-        Query to run
-    params : Optional[List], optional
-        Parameters for the query placeholders, by default None
-    fetch_one : bool, optional
-        Whether to fetch one result or all results, by default False
-
-    Returns
-    -------
-    List
-        List of results
-    """
-    con = sqlite3.connect(db_path, check_same_thread=False)
-    if params is not None:
-        result = con.execute(query, params)
-    else:
-        result = con.execute(query)
-    result = result.fetchone() if fetch_one else result.fetchall()
-    con.close()
-    result_list = list(result)
-    if len(result_list) == 0:
-        raise ValueError(f"Query {query=} returned no results")
-    return result_list

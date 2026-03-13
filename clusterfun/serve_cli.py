@@ -8,7 +8,9 @@ from fastapi.staticfiles import StaticFiles
 
 from clusterfun.app import APP
 from clusterfun.plot import Plot
-from clusterfun.storage.local.loader import LocalLoader
+from clusterfun.storage.backends import get_backend
+from clusterfun.storage.backends.local import LocalBackend
+from clusterfun.storage.factory import get_loader
 
 
 def main():
@@ -27,18 +29,24 @@ def main():
     args = parser.parse_args()
     path_or_uuid = args.location
 
+    backend = get_backend()
+
     if path_or_uuid == "recent":
-        # set path_or_uuid to uuid
-        path_or_uuid = LocalLoader("recent").cache_dir.stem
+        loader = get_loader("recent")
+        path_or_uuid = loader.uuid
+
     if os.path.exists(path_or_uuid):
         # if it is a path, set cache_dir to path
         cache_dir = Path(path_or_uuid)
+    elif isinstance(backend, LocalBackend):
+        cache_dir = backend.cache_dir / path_or_uuid
     else:
-        # if it is a uuid, set cache_dir to uuid cache dir
-        cache_dir = LocalLoader(path_or_uuid).cache_dir
-    if not cache_dir.exists():
+        cache_dir = Path(path_or_uuid)
+
+    if isinstance(backend, LocalBackend) and not cache_dir.exists():
         raise FileNotFoundError(f"Could not find plot with uuid {path_or_uuid}.")
-    plot = Plot.load(cache_dir.stem, cache_dir.parent)
+
+    plot = Plot.load(cache_dir.stem)
     cfg = plot.cfg
 
     # run query to get max 1000 random media columns, to see how to load data.

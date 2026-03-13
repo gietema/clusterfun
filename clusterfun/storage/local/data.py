@@ -5,7 +5,6 @@ data.py
 This module contains functions for formatting the data to be used in the plotly plots.
 """
 
-import sqlite3
 from typing import Any, Dict, List, Optional, Tuple
 
 from clusterfun.config import Config
@@ -13,7 +12,7 @@ from clusterfun.constants import COLORS
 
 
 def get_data_dict(
-    con: sqlite3.Connection,
+    con: Any,
     cfg: Config,
     query_addition: Optional[str] = None,
     query_params: Optional[List] = None,
@@ -26,8 +25,8 @@ def get_data_dict(
 
     Parameters
     ----------
-    con : sqlite3.Connection
-        Database connection
+    con : Any
+        Database connection (DuckDB connection)
     cfg : Config
         Configuration object
     query_addition : Optional[str], optional
@@ -56,7 +55,7 @@ def get_data_dict(
 
 def get_data_standard(
     cfg: Config,
-    con: sqlite3.Connection,
+    con: Any,
     query_addition: Optional[str] = None,
     query_params: Optional[List] = None,
 ) -> List[Dict[str, Any]]:
@@ -66,8 +65,8 @@ def get_data_standard(
     ----------
     cfg : Config
         Configuration object
-    con : sqlite3.Connection
-        Database connection
+    con : Any
+        Database connection (DuckDB connection)
     query_addition : Optional[str], optional
         Additional query string to add to the query, by default None
         Used for filtering data. Should use ? placeholders for values.
@@ -117,7 +116,7 @@ def get_data_standard(
 
 
 def get_grid_data(
-    con: sqlite3.Connection,
+    con: Any,
     query_addition: Optional[str] = None,
     query_params: Optional[List] = None,
 ) -> List[Dict[str, List[int]]]:
@@ -126,8 +125,8 @@ def get_grid_data(
 
     Parameters
     ----------
-    con : sqlite3.Connection
-        Database connection
+    con : Any
+        Database connection (DuckDB connection)
     query_addition : Optional[str], optional
         Additional query string to add to the query, by default None
         Used when filtering data. Should use ? placeholders for values.
@@ -155,7 +154,7 @@ def get_grid_data(
 
 def get_data_per_color(
     cfg: Config,
-    con: sqlite3.Connection,
+    con: Any,
     query_addition: Optional[str] = None,
     query_params: Optional[List] = None,
 ) -> Tuple[List[Dict[str, Any]], List[str]]:
@@ -168,8 +167,8 @@ def get_data_per_color(
     ----------
     cfg : Config
         Configuration object
-    con : sqlite3.Connection
-        Database connection
+    con : Any
+        Database connection (DuckDB connection)
     query_addition : Optional[str], optional
         Additional query string to add to the query, by default None
         Used when filtering data. Should use ? placeholders for values.

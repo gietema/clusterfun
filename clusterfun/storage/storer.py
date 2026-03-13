@@ -19,22 +19,17 @@ class Storer(abc.ABC):
 
     @abc.abstractmethod
     def save(self, uuid: str, df: pd.DataFrame, cfg: Config):
-        """Save a plot the plot. Should take care of:
-        - saving the data in a minimal format for the plot. This should be
-            a list of dictionaries, where each dictionary is a row in the
-            DataFrame with just the values required for the plot.
+        """Save a plot. Should take care of:
+        - saving the data in a minimal format for the plot
         - saving the configuration object
-        - Saving something that allows the data to be queried. This could
-            be a database, or a file with the data in it.
+        - saving data in a queryable format (Parquet)
         """
 
-    @abc.abstractmethod
     def save_config(self, cfg: Config):
         """Save the configuration object for a plot."""
 
-    @abc.abstractmethod
     def save_data(self, data: List[Dict[str, Any]]):
-        """Save the data for a plot. This is the minimal data required for the plot."""
+        """Save the data for a plot."""
 
 
 def image_to_base64(image: Image.Image) -> str:

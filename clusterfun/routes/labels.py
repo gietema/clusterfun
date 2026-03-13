@@ -9,8 +9,8 @@ from fastapi.responses import StreamingResponse
 from clusterfun.models.media_indices import MediaIndices
 from clusterfun.models.media_item import Label
 from clusterfun.plot_types.grid import grid
+from clusterfun.storage.factory import get_loader
 from clusterfun.storage.local.label_manager import count_labels
-from clusterfun.storage.local.loader import LocalLoader
 
 router = APIRouter()
 
@@ -22,7 +22,7 @@ def save_labels(
     media_indices: MediaIndices,
 ) -> str:
     """Save a label for a media item."""
-    loader = LocalLoader(view_uuid)
+    loader = get_loader(view_uuid)
     loader.label_manager.save_label(label.title, media_indices.media_ids)
     return "OK"
 
@@ -34,7 +34,7 @@ def delete_labels(
     media_indices: MediaIndices,
 ) -> str:
     """Delete a label for a media item."""
-    loader = LocalLoader(view_uuid)
+    loader = get_loader(view_uuid)
     loader.label_manager.delete_label(label.title, media_indices.media_ids)
     return "OK"
 
@@ -46,7 +46,7 @@ def download_labels(
     media_indices: MediaIndices,
 ) -> StreamingResponse:
     """Download all labels for the given view as a csv file."""
-    loader = LocalLoader(view_uuid)
+    loader = get_loader(view_uuid)
     df = loader.label_manager.get_dataframe(label=label.title if label.title != "" else None)
 
     # limit to selection if media_indices is provided
@@ -66,7 +66,7 @@ def download_labels(
 @router.post("/api/views/{view_uuid}/labels-count")
 def count(view_uuid: str, media_indices: MediaIndices) -> List[Dict[str, Any]]:
     """Count the number of labels for the given view."""
-    loader = LocalLoader(view_uuid)
+    loader = get_loader(view_uuid)
     labels = loader.label_manager.read_labels()
     return count_labels(labels, media_indices.media_ids)
 
@@ -78,7 +78,7 @@ def to_grid(
     media_indices: MediaIndices,
 ) -> str:
     """Saved all labeled items for a given label as a grid."""
-    loader = LocalLoader(view_uuid)
+    loader = get_loader(view_uuid)
     df = loader.label_manager.get_dataframe(label.title if label.title != "" else None)
 
     # limit to selection if media_indices is provided

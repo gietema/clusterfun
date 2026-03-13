@@ -6,7 +6,7 @@ from typing import Any, Dict
 from fastapi import APIRouter
 
 from clusterfun.plot import Plot
-from clusterfun.storage.local.loader import LocalLoader
+from clusterfun.storage.factory import get_loader
 
 router = APIRouter()
 
@@ -20,10 +20,10 @@ def read_view(view_uuid: str) -> Dict[str, Any]:
 @router.get("/api/uuid")
 def get_recent_uuid() -> str:
     """Retrieve the most recent plot UUID as stored in the cache directory."""
-    return LocalLoader("recent").cache_dir.stem
+    return get_loader("recent").uuid
 
 
 @router.get("/api/views/{view_uuid}/config")
 def read_config(view_uuid: str) -> Dict[str, Any]:
     """Retrieve the configuration for a specific plot by its UUID."""
-    return dataclasses.asdict(LocalLoader(view_uuid).load_config())
+    return dataclasses.asdict(get_loader(view_uuid).load_config())
