@@ -76,11 +76,8 @@ jobs:
       - name: Install dependencies
         run: uv sync --group dev --extra gcs
 
-      - name: Check code formatting with Black
-        run: uv run black . --check
-
-      - name: Check import sorting with isort
-        run: uv run isort --profile black . --check
-
       - name: Lint with Ruff
-        run: uv run ruff check . --line-length 120
+        run: uv run ruff check .
+
+      - name: Check formatting with Ruff
+        run: uv run ruff format --check .
