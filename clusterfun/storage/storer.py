@@ -67,8 +67,13 @@ def load_media(
     url = storage_client.get_media(url)
 
     if as_base64:
-        image_bytes_or_str = storage_client.get_media_to_local(url)
-        image = Image.open(image_bytes_or_str)
-        return f"data:image/png;base64, {image_to_base64(image)}", image.height, image.width
+        try:
+            image_bytes_or_str = storage_client.get_media_to_local(url)
+            image = Image.open(image_bytes_or_str)
+            return f"data:image/png;base64, {image_to_base64(image)}", image.height, image.width
+        except Exception:
+            # Fall back to URL if image can't be loaded (e.g. unreachable URL,
+            # non-image response, unsupported format)
+            return url, None, None
 
     return url, None, None
