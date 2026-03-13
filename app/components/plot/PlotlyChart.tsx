@@ -183,9 +183,7 @@ export default function PlotlyChart({
         onSelected={(e: any) => {
           if (e?.points?.length > 0) {
             const indices = e.points
-              .map((p: { curveNumber: number; pointIndex: number }) =>
-                data[p.curveNumber]?.id?.[p.pointIndex],
-              )
+              .map((p: any) => p.data?.id?.[p.pointIndex])
               .filter((id: number | undefined): id is number => id != null);
             onSelect(indices);
           }
