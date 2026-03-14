@@ -1,15 +1,50 @@
 "use client";
 import { useCallback } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import type { PredictionItem, ProbeSortBy } from "@/app/types";
 import {
   activeLearningAtom,
+  alMethodAtom,
+  alClassFilterAtom,
+  alSortByAtom,
+  mlpLayersAtom,
   configAtom,
   currentMediaIndicesAtom,
+  embeddingsCacheAtom,
   mediaIndicesStackAtom,
   gridValuesAtom,
   uuidAtom,
 } from "@/app/store/atoms";
-import { fitProbe } from "./api";
+import { fetchEmbeddings, fetchAllLabels } from "./api";
+import { getMethod } from "./active-learning";
+import type { EmbeddingData } from "./active-learning";
+
+/** Sort (and optionally filter) predictions for grid display. */
+function sortPredictions(
+  predictions: PredictionItem[],
+  classFilter: string | null,
+  sortBy: ProbeSortBy,
+): PredictionItem[] {
+  let items = classFilter
+    ? predictions.filter((p) => p.predicted_class === classFilter)
+    : [...predictions];
+
+  if (classFilter) {
+    items.sort((a, b) =>
+      sortBy === "uncertainty"
+        ? b.uncertainty - a.uncertainty
+        : (b.probabilities[classFilter] ?? 0) - (a.probabilities[classFilter] ?? 0),
+    );
+  } else {
+    items.sort((a, b) =>
+      sortBy === "uncertainty"
+        ? b.uncertainty - a.uncertainty
+        : b.score - a.score,
+    );
+  }
+
+  return items;
+}
 
 export function useActiveLearning() {
   const uuid = useAtomValue(uuidAtom);
@@ -18,42 +53,149 @@ export function useActiveLearning() {
   const setMediaIndicesStack = useSetAtom(mediaIndicesStackAtom);
   const setGridValues = useSetAtom(gridValuesAtom);
   const [alState, setAlState] = useAtom(activeLearningAtom);
+  const [methodId, setMethodId] = useAtom(alMethodAtom);
+  const [mlpLayers, setMlpLayers] = useAtom(mlpLayersAtom);
+  const [embCache, setEmbCache] = useAtom(embeddingsCacheAtom);
+  const [classFilter, setClassFilterAtom] = useAtom(alClassFilterAtom);
+  const [sortBy, setSortByAtom] = useAtom(alSortByAtom);
 
   const isAvailable = !!config?.embeddings;
   const isActive = alState !== null;
 
-  const refit = useCallback(async () => {
-    if (!uuid || !config?.embeddings) return;
-    try {
-      const result = await fitProbe(uuid, mediaIndices);
-      setAlState({
-        predictions: result.predictions,
-        labelClasses: result.label_classes,
-        nLabeled: result.n_labeled,
-      });
+  const applyOrder = useCallback(
+    (predictions: PredictionItem[], filter: string | null, sort: ProbeSortBy) => {
+      const sorted = sortPredictions(predictions, filter, sort);
+      const orderedIds = sorted.map((p) => p.media_id);
+      const idSet = new Set(orderedIds);
+      const remaining = mediaIndices.filter((id) => !idSet.has(id));
+      setMediaIndicesStack((prev) => [...prev.slice(0, -1), [...orderedIds, ...remaining]]);
+      setGridValues((prev) => ({ ...prev, page: 0 }));
+    },
+    [mediaIndices, setMediaIndicesStack, setGridValues],
+  );
 
-      // Reorder grid by uncertainty: most uncertain first
-      const orderedIds = result.predictions.map((p) => p.media_id);
-      // Include any IDs from current selection not in predictions (already labeled)
-      const predictionIdSet = new Set(orderedIds);
-      const remaining = mediaIndices.filter((id) => !predictionIdSet.has(id));
-      // Labeled items go to the end (they don't need attention)
-      const newOrder = [...orderedIds, ...remaining];
+  const refit = useCallback(
+    async () => {
+      if (!uuid || !config?.embeddings) return;
 
-      setMediaIndicesStack((prev) => [...prev.slice(0, -1), newOrder]);
-      setGridValues((prev) => ({ ...prev, page: 0, sortBy: "", asc: true }));
-    } catch {
-      // Silently handle errors (e.g. not enough labels yet)
-    }
-  }, [uuid, config?.embeddings, mediaIndices, setAlState, setMediaIndicesStack, setGridValues]);
+      try {
+        let embData: EmbeddingData;
+        if (embCache) {
+          embData = embCache;
+        } else {
+          const resp = await fetchEmbeddings(uuid);
+          const flat = new Float32Array(resp.media_ids.length * resp.dimension);
+          for (let i = 0; i < resp.embeddings.length; i++) {
+            flat.set(resp.embeddings[i], i * resp.dimension);
+          }
+          const idToIndex = new Map<number, number>();
+          for (let i = 0; i < resp.media_ids.length; i++) {
+            idToIndex.set(resp.media_ids[i], i);
+          }
+          embData = {
+            mediaIds: resp.media_ids,
+            embeddings: flat,
+            dimension: resp.dimension,
+            idToIndex,
+          };
+          setEmbCache(embData);
+        }
 
-  const start = useCallback(async () => {
-    await refit();
-  }, [refit]);
+        const labelsRaw = await fetchAllLabels(uuid);
+        const labelsMap = new Map<number, string>();
+        for (const [idStr, labelList] of Object.entries(labelsRaw)) {
+          if (labelList.length > 0) {
+            labelsMap.set(parseInt(idStr), labelList[0]);
+          }
+        }
+
+        if (labelsMap.size === 0) return;
+
+        const method = getMethod(methodId);
+        const nClasses = new Set(labelsMap.values()).size;
+        const effectiveMethod =
+          nClasses < method.minClasses ? getMethod("centroid") : method;
+
+        const result = effectiveMethod.fit({
+          embeddings: embData,
+          labels: labelsMap,
+          scopeIds: mediaIndices,
+          sortBy,
+          options: { mlpLayers },
+        });
+
+        // Reset class filter if the selected class no longer exists
+        const validFilter =
+          classFilter && result.label_classes.includes(classFilter)
+            ? classFilter
+            : null;
+        if (validFilter !== classFilter) setClassFilterAtom(validFilter);
+
+        setAlState({
+          predictions: result.predictions,
+          labelClasses: result.label_classes,
+          nLabeled: result.n_labeled,
+        });
+
+        applyOrder(result.predictions, validFilter, sortBy);
+      } catch {
+        // Silently handle errors (e.g. not enough labels yet)
+      }
+    },
+    [
+      uuid,
+      config?.embeddings,
+      mediaIndices,
+      methodId,
+      mlpLayers,
+      embCache,
+      sortBy,
+      classFilter,
+      setAlState,
+      setEmbCache,
+      setClassFilterAtom,
+      applyOrder,
+    ],
+  );
+
+  const setClassFilter = useCallback(
+    (filter: string | null) => {
+      setClassFilterAtom(filter);
+      if (alState) {
+        applyOrder(alState.predictions, filter, sortBy);
+      }
+    },
+    [setClassFilterAtom, alState, sortBy, applyOrder],
+  );
+
+  const setSortBy = useCallback(
+    (sort: ProbeSortBy) => {
+      setSortByAtom(sort);
+      if (alState) {
+        applyOrder(alState.predictions, classFilter, sort);
+      }
+    },
+    [setSortByAtom, alState, classFilter, applyOrder],
+  );
 
   const stop = useCallback(() => {
     setAlState(null);
-  }, [setAlState]);
+    setClassFilterAtom(null);
+  }, [setAlState, setClassFilterAtom]);
 
-  return { isAvailable, isActive, alState, start, stop, refit };
+  return {
+    isAvailable,
+    isActive,
+    alState,
+    stop,
+    refit,
+    methodId,
+    setMethodId,
+    mlpLayers,
+    setMlpLayers,
+    classFilter,
+    setClassFilter,
+    sortBy,
+    setSortBy,
+  };
 }

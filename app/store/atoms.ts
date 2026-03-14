@@ -27,14 +27,23 @@ export const mediaItemsAtom = atom<Media[]>([]);
 export const labelUndoStackAtom = atom<LabelAction[]>([]);
 export const sidebarWidthAtom = atom<number | null>(null);
 export const similarityResultsAtom = atom<Record<number, number>>({});
-// Stores the source of the current similarity query for "load more"
-export const similarityQueryAtom = atom<
-  { type: "image"; mediaId: number } | { type: "vector"; embedding: number[] } | null
->(null);
 
 // Active learning state
 export const activeLearningAtom = atom<{
   predictions: PredictionItem[];
   labelClasses: string[];
   nLabeled: number;
+} | null>(null);
+
+export const alMethodAtom = atom<string>("centroid");
+export const alClassFilterAtom = atom<string | null>(null);
+export const alSortByAtom = atom<"confidence" | "uncertainty">("confidence");
+
+export const mlpLayersAtom = atom<number>(1);
+
+export const embeddingsCacheAtom = atom<{
+  mediaIds: number[];
+  embeddings: Float32Array;
+  dimension: number;
+  idToIndex: Map<number, number>;
 } | null>(null);

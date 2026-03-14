@@ -4,7 +4,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 import {
   configAtom, mediaAtom, uuidAtom,
   mediaIndicesStackAtom, gridValuesAtom, showPageAtom,
-  similarityResultsAtom, similarityQueryAtom,
+  similarityResultsAtom,
 } from "@/app/store/atoms";
 import { fetchSimilar } from "@/app/lib/api";
 import PreviewMedia from "./PreviewMedia";
@@ -18,7 +18,6 @@ export default function SideBar() {
   const setGridValues = useSetAtom(gridValuesAtom);
   const setShowPage = useSetAtom(showPageAtom);
   const setSimilarityResults = useSetAtom(similarityResultsAtom);
-  const setSimilarityQuery = useSetAtom(similarityQueryAtom);
   const [loading, setLoading] = useState(false);
 
   if (!media || !config) return <div />;
@@ -41,7 +40,6 @@ export default function SideBar() {
         scores[r.media_id] = r.similarity;
       }
       setSimilarityResults(scores);
-      setSimilarityQuery({ type: "image", mediaId: media.index });
       setMediaIndicesStack((prev) => [...prev, ids]);
       setGridValues((prev) => ({ ...prev, page: 0 }));
       setShowPage("grid");

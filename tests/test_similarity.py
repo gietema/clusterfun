@@ -245,32 +245,24 @@ class TestSimilarityEndpoint:
 
         return TestClient(APP)
 
-    def test_find_similar_returns_results(self, client, saved_plot):
+    def test_find_similar_returns_all_results(self, client, saved_plot):
         uuid, _, _ = saved_plot
         resp = client.post(
             f"/api/views/{uuid}/similar",
-            json={"media_id": 0, "n": 5},
+            json={"media_id": 0},
         )
         assert resp.status_code == 200
         results = resp.json()
-        assert len(results) == 5
+        # Should return all 99 items (100 minus the query item)
+        assert len(results) == 99
         assert results[0]["media_id"] == 1
         assert results[0]["similarity"] > 0.99
-
-    def test_find_similar_respects_n(self, client, saved_plot):
-        uuid, _, _ = saved_plot
-        resp = client.post(
-            f"/api/views/{uuid}/similar",
-            json={"media_id": 0, "n": 3},
-        )
-        assert resp.status_code == 200
-        assert len(resp.json()) == 3
 
     def test_find_similar_excludes_query_item(self, client, saved_plot):
         uuid, _, _ = saved_plot
         resp = client.post(
             f"/api/views/{uuid}/similar",
-            json={"media_id": 0, "n": 10},
+            json={"media_id": 0},
         )
         ids = [r["media_id"] for r in resp.json()]
         assert 0 not in ids
@@ -279,7 +271,7 @@ class TestSimilarityEndpoint:
         uuid, _, _ = saved_plot
         resp = client.post(
             f"/api/views/{uuid}/similar",
-            json={"media_id": 0, "n": 10},
+            json={"media_id": 0},
         )
         similarities = [r["similarity"] for r in resp.json()]
         assert similarities == sorted(similarities, reverse=True)
@@ -304,7 +296,7 @@ class TestSimilarityEndpoint:
         client = TestClient(APP)
         resp = client.post(
             f"/api/views/{uuid}/similar",
-            json={"media_id": 0, "n": 5},
+            json={"media_id": 0},
         )
         assert resp.status_code == 200
         assert resp.json() == []
@@ -322,65 +314,31 @@ class TestVectorSearchEndpoint:
 
         return TestClient(APP)
 
-    def test_vector_search_returns_results(self, client, saved_plot):
+    def test_vector_search_returns_all_results(self, client, saved_plot):
         uuid, _, df = saved_plot
         query_emb = df.at[0, "emb"]
         resp = client.post(
             f"/api/views/{uuid}/similar-vector",
-            json={"embedding": query_emb, "n": 5},
+            json={"embedding": query_emb},
         )
         assert resp.status_code == 200
         results = resp.json()
-        assert len(results) == 5
-        assert results[0]["media_id"] == 0
+        # Should return all 100 items (no exclusion for vector search)
+        assert len(results) == 100
+        # Items 0 and 1 are nearly identical, both should be at the top
+        top_ids = {results[0]["media_id"], results[1]["media_id"]}
+        assert top_ids == {0, 1}
         assert results[0]["similarity"] > 0.99
 
-    def test_vector_search_respects_n(self, client, saved_plot):
+    def test_vector_search_results_sorted_descending(self, client, saved_plot):
         uuid, _, df = saved_plot
         query_emb = df.at[0, "emb"]
         resp = client.post(
             f"/api/views/{uuid}/similar-vector",
-            json={"embedding": query_emb, "n": 3},
+            json={"embedding": query_emb},
         )
-        assert resp.status_code == 200
-        assert len(resp.json()) == 3
-
-    def test_load_more_returns_superset(self, client, saved_plot):
-        """Requesting a larger n returns more results that include the previous ones."""
-        uuid, _, df = saved_plot
-        query_emb = df.at[0, "emb"]
-
-        resp_small = client.post(
-            f"/api/views/{uuid}/similar-vector",
-            json={"embedding": query_emb, "n": 5},
-        )
-        resp_large = client.post(
-            f"/api/views/{uuid}/similar-vector",
-            json={"embedding": query_emb, "n": 20},
-        )
-        small_ids = [r["media_id"] for r in resp_small.json()]
-        large_ids = [r["media_id"] for r in resp_large.json()]
-        assert len(large_ids) == 20
-        assert len(small_ids) == 5
-        # The first 5 results should be identical
-        assert small_ids == large_ids[:5]
-
-    def test_similar_load_more_returns_superset(self, client, saved_plot):
-        """Same test for the /similar endpoint (image-based)."""
-        uuid, _, _ = saved_plot
-        resp_small = client.post(
-            f"/api/views/{uuid}/similar",
-            json={"media_id": 0, "n": 5},
-        )
-        resp_large = client.post(
-            f"/api/views/{uuid}/similar",
-            json={"media_id": 0, "n": 20},
-        )
-        small_ids = [r["media_id"] for r in resp_small.json()]
-        large_ids = [r["media_id"] for r in resp_large.json()]
-        assert len(large_ids) == 20
-        assert len(small_ids) == 5
-        assert small_ids == large_ids[:5]
+        similarities = [r["similarity"] for r in resp.json()]
+        assert similarities == sorted(similarities, reverse=True)
 
     def test_vector_search_no_embeddings_returns_empty(self, client, backend):
         df = pd.DataFrame(
@@ -397,7 +355,7 @@ class TestVectorSearchEndpoint:
         LocalStorer(backend=backend).save(uuid, df, cfg)
         resp = client.post(
             f"/api/views/{uuid}/similar-vector",
-            json={"embedding": [0.1, 0.2, 0.3], "n": 5},
+            json={"embedding": [0.1, 0.2, 0.3]},
         )
         assert resp.status_code == 200
         assert resp.json() == []

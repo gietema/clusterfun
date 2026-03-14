@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Media, PlotConfig, Filter, ColumnInfo, LabelCount, PlotTrace, ColumnStats, MediaMetadata, SimilarityResult, ProbeResponse } from "@/app/types";
+import type { Media, PlotConfig, Filter, ColumnInfo, LabelCount, PlotTrace, ColumnStats, MediaMetadata, SimilarityResult, ProbeResponse, ProbeSortBy } from "@/app/types";
 import { API_URL } from "./constants";
 import { createMedia } from "./media-utils";
 
@@ -141,11 +141,9 @@ export async function saveLabelAsGrid(uuid: string, mediaIds: number[], label?: 
 export async function fetchSimilar(
   uuid: string,
   mediaId: number,
-  n: number = 100,
 ): Promise<SimilarityResult[]> {
   const { data } = await axios.post(`${API_URL}/views/${uuid}/similar`, {
     media_id: mediaId,
-    n,
   });
   return data;
 }
@@ -153,11 +151,9 @@ export async function fetchSimilar(
 export async function fetchSimilarVector(
   uuid: string,
   embedding: number[],
-  n: number = 100,
 ): Promise<SimilarityResult[]> {
   const { data } = await axios.post(`${API_URL}/views/${uuid}/similar-vector`, {
     embedding,
-    n,
   });
   return data;
 }
@@ -167,11 +163,38 @@ export async function fetchSimilarVector(
 export async function fitProbe(
   uuid: string,
   mediaIds: number[] = [],
+  sortBy: ProbeSortBy = "confidence",
 ): Promise<ProbeResponse> {
   const { data } = await axios.post(`${API_URL}/views/${uuid}/active-learning/probe`, {
     media_ids: mediaIds,
+    sort_by: sortBy,
   });
   return data;
+}
+
+// ── Embeddings ──
+
+export interface EmbeddingsResponse {
+  media_ids: number[];
+  embeddings: number[][];
+  dimension: number;
+}
+
+export async function fetchEmbeddings(
+  uuid: string,
+  mediaIds: number[] = [],
+): Promise<EmbeddingsResponse> {
+  const { data } = await axios.post(`${API_URL}/views/${uuid}/embeddings`, {
+    media_ids: mediaIds,
+  });
+  return data;
+}
+
+export async function fetchAllLabels(
+  uuid: string,
+): Promise<Record<string, string[]>> {
+  const { data } = await axios.get(`${API_URL}/views/${uuid}/all-labels`);
+  return data.labels;
 }
 
 // ── Downloads ──

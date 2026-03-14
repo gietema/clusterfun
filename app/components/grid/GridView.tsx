@@ -8,15 +8,14 @@ import { saveAs } from "file-saver";
 import {
   configAtom, gridValuesAtom, mediaAtom,
   currentMediaIndicesAtom, mediaItemsAtom, uuidAtom,
-  similarityResultsAtom, similarityQueryAtom, mediaIndicesStackAtom,
 } from "@/app/store/atoms";
-import { fetchMediaItems, downloadGridCsv, saveLabel, deleteLabel, fetchSimilar, fetchSimilarVector } from "@/app/lib/api";
+import { fetchMediaItems, downloadGridCsv, saveLabel, deleteLabel } from "@/app/lib/api";
 import type { Media } from "@/app/types";
 import BackButton from "../shared/BackButton";
 import SideBar from "../shared/SideBar";
 import ResizableLayout from "../shared/ResizableLayout";
 import FilterBar from "../filters/FilterBar";
-import MediaGridItem from "./MediaGridItem";
+import MediaGridItem, { EXCLUDE_LABEL } from "./MediaGridItem";
 import Pagination from "./Pagination";
 import SortDropdown from "./SortDropdown";
 import ShowValueDropdown from "./ShowValueDropdown";
@@ -26,6 +25,7 @@ import MediaVisualization from "./MediaVisualization";
 import TextSearchBar from "../shared/TextSearchBar";
 import { useLabelUndo } from "@/app/lib/use-label-undo";
 import { useMediaPreview } from "@/app/lib/use-media-preview";
+import { useActiveLearning } from "@/app/lib/use-active-learning";
 
 interface GridViewProps {
   onBack: () => void;
@@ -38,15 +38,11 @@ export default function GridView({ onBack }: GridViewProps) {
   const setSideMedia = useSetAtom(mediaAtom);
   const [mediaItems, setMediaItems] = useAtom(mediaItemsAtom);
   const [gridValues, setGridValues] = useAtom(gridValuesAtom);
-  const similarityResults = useAtomValue(similarityResultsAtom);
-  const setSimilarityResults = useSetAtom(similarityResultsAtom);
-  const similarityQuery = useAtomValue(similarityQueryAtom);
-  const setMediaIndicesStack = useSetAtom(mediaIndicesStackAtom);
   const [showStats, setShowStats] = useState(false);
   const [showLabelPanel, setShowLabelPanel] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
   const { pushAction, undo } = useLabelUndo();
   const { openMedia } = useMediaPreview();
+  const { isActive } = useActiveLearning();
 
   const loadMedia = (sortCol?: string, asc?: boolean) => {
     if (!uuid) return;
@@ -129,37 +125,26 @@ export default function GridView({ onBack }: GridViewProps) {
     );
   };
 
-  const hasSimilarityResults = similarityQuery !== null && Object.keys(similarityResults).length > 0;
-
-  const handleLoadMore = async () => {
-    if (!similarityQuery) return;
-    setLoadingMore(true);
-    try {
-      const currentCount = mediaIndices.length;
-      const newN = currentCount + 200;
-      let results;
-      if (similarityQuery.type === "image") {
-        results = await fetchSimilar(uuid, similarityQuery.mediaId, newN);
-      } else {
-        results = await fetchSimilarVector(uuid, similarityQuery.embedding, newN);
-      }
-      // Keep existing order, only append truly new items
-      const existingSet = new Set(mediaIndices);
-      const newIds = results
-        .filter((r) => !existingSet.has(r.media_id))
-        .map((r) => r.media_id);
-      const scores: Record<number, number> = { ...similarityResults };
-      for (const r of results) {
-        scores[r.media_id] = r.similarity;
-      }
-      setSimilarityResults(scores);
-      setMediaIndicesStack((prev) => [
-        ...prev.slice(0, -1),
-        [...mediaIndices, ...newIds],
-      ]);
-    } finally {
-      setLoadingMore(false);
+  const handleExclude = (media: Media) => {
+    const isAlreadyExcluded = media.labels?.includes(EXCLUDE_LABEL);
+    if (isAlreadyExcluded) {
+      deleteLabel(uuid, [media.index], EXCLUDE_LABEL).catch(console.error);
+      pushAction({ type: "remove", label: EXCLUDE_LABEL, mediaIds: [media.index] });
+    } else {
+      saveLabel(uuid, [media.index], EXCLUDE_LABEL).catch(console.error);
+      pushAction({ type: "add", label: EXCLUDE_LABEL, mediaIds: [media.index] });
     }
+    setMediaItems((items) =>
+      items.map((m) => {
+        if (m.index !== media.index) return m;
+        const labels = m.labels ? [...m.labels] : [];
+        if (isAlreadyExcluded) {
+          return { ...m, labels: labels.filter((l) => l !== EXCLUDE_LABEL) };
+        }
+        if (!labels.includes(EXCLUDE_LABEL)) labels.push(EXCLUDE_LABEL);
+        return { ...m, labels };
+      }),
+    );
   };
 
   if (!config) return null;
@@ -222,15 +207,6 @@ export default function GridView({ onBack }: GridViewProps) {
             maxPage={Math.floor(mediaIndices.length / 50)}
             onPageChange={handlePageChange}
           />
-          {hasSimilarityResults && (
-            <button
-              onClick={handleLoadMore}
-              disabled={loadingMore}
-              className="cursor-pointer text-xs text-gray-500 underline transition-colors hover:text-gray-900 disabled:opacity-50"
-            >
-              {loadingMore ? "Loading..." : "+ Load more"}
-            </button>
-          )}
           <button
             onClick={() => setShowStats((s) => !s)}
             className="rounded-md px-2 py-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900"
@@ -287,6 +263,7 @@ export default function GridView({ onBack }: GridViewProps) {
               onClick={() => handleClick(media.index)}
               onHover={() => handleHover(media.index)}
               onLabelToggle={(label) => handleLabelToggle(media, label)}
+              onExclude={isActive ? () => handleExclude(media) : undefined}
             />
           </div>
         ))}

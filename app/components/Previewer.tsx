@@ -12,7 +12,6 @@ import {
   showPageAtom,
   mediaAtom,
   similarityResultsAtom,
-  similarityQueryAtom,
 } from "@/app/store/atoms";
 import { fetchUuid, fetchPlotData, fetchFilteredPlotData, fetchMedia } from "@/app/lib/api";
 import { useUrlState } from "@/app/lib/use-url-state";
@@ -35,7 +34,6 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
   const filters = useAtomValue(filtersAtom);
   const setSideMedia = useSetAtom(mediaAtom);
   const setSimilarityResults = useSetAtom(similarityResultsAtom);
-  const setSimilarityQuery = useSetAtom(similarityQueryAtom);
 
   useUrlState();
 
@@ -95,7 +93,6 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
             setMediaIndices([]);
             setGridValues((prev) => ({ ...prev, page: 0 }));
             setSimilarityResults({});
-            setSimilarityQuery(null);
             setShowPage("plot");
           }}
         />

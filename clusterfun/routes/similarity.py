@@ -14,12 +14,10 @@ router = APIRouter()
 
 class SimilarityRequest(BaseModel):
     media_id: int
-    n: int = 20
 
 
 class VectorSearchRequest(BaseModel):
     embedding: List[float]
-    n: int = 20
 
 
 class SimilarityResult(BaseModel):
@@ -31,28 +29,26 @@ def _search_by_vector(
     con,
     emb_col: str,
     query_emb: list,
-    n: int,
     exclude_id: int | None = None,
 ) -> List[SimilarityResult]:
-    """Search embeddings by a query vector. Tries HNSW, falls back to brute-force."""
+    """Search embeddings by a query vector. Returns all results sorted by similarity."""
     dim = len(query_emb)
 
     # Try HNSW-accelerated search (requires vss extension + FLOAT[N] arrays)
     try:
+        exclude_clause = f"WHERE id != {exclude_id}" if exclude_id is not None else ""
         rows = con.execute(
             f"SELECT id, "
             f'array_cosine_similarity("{emb_col}", ?::FLOAT[{dim}]) AS similarity '
             f"FROM embeddings "
-            f'ORDER BY array_cosine_distance("{emb_col}", ?::FLOAT[{dim}]) '
-            f"LIMIT {n + (1 if exclude_id is not None else 0)}",
+            f"{exclude_clause} "
+            f'ORDER BY array_cosine_distance("{emb_col}", ?::FLOAT[{dim}])',
             [list(query_emb), list(query_emb)],
         ).fetchall()
-        results = [
+        return [
             SimilarityResult(media_id=r[0], similarity=r[1])
             for r in rows
-            if r[0] != exclude_id
         ]
-        return results[:n]
     except Exception:
         pass
 
@@ -63,8 +59,7 @@ def _search_by_vector(
             f'SELECT e.id, list_cosine_similarity(e."{emb_col}", q.emb) AS similarity '
             f"FROM embeddings e, query_emb q "
             f"WHERE e.id != ? "
-            f"ORDER BY similarity DESC "
-            f"LIMIT {n}",
+            f"ORDER BY similarity DESC",
             [list(query_emb), exclude_id],
         ).fetchall()
     else:
@@ -72,8 +67,7 @@ def _search_by_vector(
             f"WITH query_emb AS (SELECT ?::FLOAT[] AS emb) "
             f'SELECT e.id, list_cosine_similarity(e."{emb_col}", q.emb) AS similarity '
             f"FROM embeddings e, query_emb q "
-            f"ORDER BY similarity DESC "
-            f"LIMIT {n}",
+            f"ORDER BY similarity DESC",
             [list(query_emb)],
         ).fetchall()
     return [SimilarityResult(media_id=r[0], similarity=r[1]) for r in rows]
@@ -98,7 +92,7 @@ def find_similar(view_uuid: str, request: SimilarityRequest) -> List[SimilarityR
     ).fetchone()[0]
 
     return _search_by_vector(
-        con, emb_col, query_emb, request.n, exclude_id=request.media_id
+        con, emb_col, query_emb, exclude_id=request.media_id
     )
 
 
@@ -117,4 +111,4 @@ def find_similar_vector(
     emb_col = config.embeddings
     con = ensure_embeddings_table(view_uuid, backend, emb_col)
 
-    return _search_by_vector(con, emb_col, request.embedding, request.n)
+    return _search_by_vector(con, emb_col, request.embedding)

@@ -109,7 +109,7 @@ def main():
         df.to_parquet(CACHE_PATH)
         print(f"Saved embeddings cache to {CACHE_PATH}")
 
-    clt.scatter(
+    print(clt.scatter(
         df,
         x="x",
         y="y",
@@ -118,7 +118,8 @@ def main():
         title="Wiki-Art with CLIP Similarity Search",
         embeddings="clip_embedding",
         embeddings_model="openai/clip-vit-base-patch32",
-    )
+        show=False,
+    ))
 
 
 if __name__ == "__main__":

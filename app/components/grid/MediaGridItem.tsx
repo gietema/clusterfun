@@ -1,12 +1,14 @@
 "use client";
 import { useAtomValue } from "jotai";
 import { useEffect, useRef } from "react";
-import { faFileAudio } from "@fortawesome/free-solid-svg-icons";
+import { faFileAudio, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { configAtom, similarityResultsAtom, activeLearningAtom } from "@/app/store/atoms";
 import type { Media, PredictionItem } from "@/app/types";
 import PreviewMedia from "../shared/PreviewMedia";
 import MediaLabels from "./MediaLabels";
+
+export const EXCLUDE_LABEL = "exclude";
 
 interface MediaGridItemProps {
   media: Media;
@@ -18,11 +20,12 @@ interface MediaGridItemProps {
   onClick: () => void;
   onHover: () => void;
   onLabelToggle: (label: string) => void;
+  onExclude?: () => void;
 }
 
 export default function MediaGridItem({
   media, columns, showColumns, boundingBoxColumn, showBboxLabel,
-  display, onClick, onHover, onLabelToggle,
+  display, onClick, onHover, onLabelToggle, onExclude,
 }: MediaGridItemProps) {
   const config = useAtomValue(configAtom);
   const similarityResults = useAtomValue(similarityResultsAtom);
@@ -33,10 +36,17 @@ export default function MediaGridItem({
     (p) => p.media_id === media.index,
   );
 
+  const isExcluded = media.labels?.includes(EXCLUDE_LABEL);
+
   useEffect(() => {
     const el = elementRef.current;
     if (!el || !config?.labels) return;
     const handler = (e: KeyboardEvent) => {
+      if (e.key === "x" && alState && onExclude) {
+        e.preventDefault();
+        onExclude();
+        return;
+      }
       const key = parseInt(e.key);
       if (key >= 1 && key <= 9 && key <= config.labels.length) {
         onLabelToggle(config.labels[key - 1]);
@@ -44,7 +54,7 @@ export default function MediaGridItem({
     };
     el.addEventListener("keydown", handler);
     return () => el.removeEventListener("keydown", handler);
-  }, [config, media.index, onLabelToggle]);
+  }, [config, media.index, onLabelToggle, alState, onExclude]);
 
   if (!config?.labels) return null;
 
@@ -56,14 +66,28 @@ export default function MediaGridItem({
     <div
       ref={elementRef}
       tabIndex={0}
-      className="flex h-full cursor-pointer flex-col overflow-hidden border border-gray-200 transition-colors hover:border-gray-300"
+      className="group flex h-full cursor-pointer flex-col overflow-hidden border border-gray-200 transition-colors hover:border-gray-300"
       onClick={onClick}
       onMouseEnter={() => {
         onHover();
         elementRef.current?.focus();
       }}
     >
-      <div className="flex-grow">
+      <div className="relative flex-grow">
+        {alState && onExclude && !isExcluded && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onExclude(); }}
+            className="absolute right-1 top-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white opacity-0 shadow transition-opacity hover:bg-red-600 group-hover:opacity-100"
+            title="Exclude (x)"
+          >
+            <FontAwesomeIcon icon={faXmark} className="text-xs" />
+          </button>
+        )}
+        {isExcluded && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40">
+            <span className="rounded bg-red-500 px-2 py-0.5 text-xs font-medium text-white">excluded</span>
+          </div>
+        )}
         {media.type !== "audio" ? (
           <PreviewMedia
             media={media}

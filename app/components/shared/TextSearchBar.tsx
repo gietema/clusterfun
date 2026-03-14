@@ -8,7 +8,6 @@ import {
   gridValuesAtom,
   showPageAtom,
   similarityResultsAtom,
-  similarityQueryAtom,
 } from "@/app/store/atoms";
 import { fetchSimilarVector } from "@/app/lib/api";
 import { encodeText } from "@/app/lib/clip";
@@ -58,7 +57,6 @@ export default function TextSearchBar({ searchesFullDataset }: TextSearchBarProp
   const setGridValues = useSetAtom(gridValuesAtom);
   const setShowPage = useSetAtom(showPageAtom);
   const setSimilarityResults = useSetAtom(similarityResultsAtom);
-  const setSimilarityQuery = useSetAtom(similarityQueryAtom);
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
@@ -86,7 +84,6 @@ export default function TextSearchBar({ searchesFullDataset }: TextSearchBarProp
         scores[r.media_id] = r.similarity;
       }
       setSimilarityResults(scores);
-      setSimilarityQuery({ type: "vector", embedding });
       setMediaIndicesStack((prev) => [...prev, ids]);
       setGridValues((prev) => ({ ...prev, page: 0 }));
       setShowPage("grid");

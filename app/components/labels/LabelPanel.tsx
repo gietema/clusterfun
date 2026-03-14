@@ -1,7 +1,7 @@
 "use client";
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
-import { faCaretUp, faDownload, faRotateLeft, faTableCells } from "@fortawesome/free-solid-svg-icons";
+import { faBolt, faCaretUp, faDownload, faRotateLeft, faTableCells, faStop, faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { saveAs } from "file-saver";
 import toast from "react-hot-toast";
@@ -14,6 +14,8 @@ import {
 } from "@/app/lib/api";
 import type { LabelCount } from "@/app/types";
 import { useLabelUndo } from "@/app/lib/use-label-undo";
+import { useActiveLearning } from "@/app/lib/use-active-learning";
+import { AL_METHODS } from "@/app/lib/active-learning";
 
 interface LabelPanelProps {
   onHide: () => void;
@@ -27,6 +29,8 @@ export default function LabelPanel({ onHide }: LabelPanelProps) {
   const mediaIndices = useAtomValue(currentMediaIndicesAtom);
   const [labelCounts, setLabelCounts] = useState<LabelCount[]>([]);
   const { pushAction, undo, canUndo } = useLabelUndo();
+  const { isAvailable, isActive, alState, stop, refit, methodId, setMethodId, mlpLayers, setMlpLayers, classFilter, setClassFilter, sortBy, setSortBy } = useActiveLearning();
+  const [alLoading, setAlLoading] = useState(false);
 
   useEffect(() => {
     fetchLabelCounts(uuid, mediaIndices).then(setLabelCounts);
@@ -71,6 +75,12 @@ export default function LabelPanel({ onHide }: LabelPanelProps) {
         pushAction({ type: "add", label, mediaIds: toProcess });
       }
     }
+  };
+
+  const handleFit = async () => {
+    setAlLoading(true);
+    await refit();
+    setAlLoading(false);
   };
 
   const handleDownload = async (currentSelection: boolean, label?: string) => {
@@ -206,6 +216,110 @@ export default function LabelPanel({ onHide }: LabelPanelProps) {
             )}
           </tbody>
         </table>
+      )}
+      {/* Active learning */}
+      {isAvailable && (
+        <div className="mt-3 border-t border-gray-200 pt-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={methodId}
+              onChange={(e) => setMethodId(e.target.value)}
+              className="rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
+              title="Active learning method"
+            >
+              {AL_METHODS.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+            {methodId === "mlp" && (
+              <div className="flex items-center gap-0.5 rounded-md border border-gray-200 p-0.5">
+                {[1, 2, 3].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setMlpLayers(n)}
+                    className={`rounded px-1.5 py-0.5 text-xs transition-colors ${
+                      mlpLayers === n
+                        ? "bg-gray-800 text-white"
+                        : "text-gray-500 hover:bg-gray-100"
+                    }`}
+                    title={`${n} hidden layer${n > 1 ? "s" : ""}`}
+                  >
+                    {n}L
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-gray-500">Show</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as ProbeSortBy)}
+                className="rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
+              >
+                <option value="confidence">most similar first</option>
+                <option value="uncertainty">most uncertain first</option>
+              </select>
+            </div>
+            <button
+              onClick={() => handleFit()}
+              disabled={alLoading}
+              className="flex items-center gap-1.5 rounded-md bg-gray-800 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
+            >
+              <FontAwesomeIcon icon={isActive ? faArrowsRotate : faBolt} className={alLoading ? "animate-spin" : ""} />
+              {alLoading ? "Fitting..." : isActive ? "Refit" : "Suggest next"}
+            </button>
+            {isActive && (
+              <button
+                onClick={stop}
+                className="rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-600 transition-colors hover:bg-gray-100"
+              >
+                <FontAwesomeIcon icon={faStop} />
+              </button>
+            )}
+            {alState && (
+              <span className="text-xs text-gray-500">
+                {alState.nLabeled} labeled
+              </span>
+            )}
+          </div>
+          {/* Method description */}
+          <div className="mt-1 text-xs text-gray-400">
+            {AL_METHODS.find((m) => m.id === methodId)?.description}
+          </div>
+          {/* Class filter pills */}
+          {isActive && alState && alState.labelClasses.length > 1 && (
+            <div className="mt-2 flex flex-wrap gap-1">
+              <button
+                onClick={() => setClassFilter(null)}
+                className={`rounded-full px-2.5 py-0.5 text-xs transition-colors ${
+                  classFilter === null
+                    ? "bg-gray-800 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                All
+              </button>
+              {alState.labelClasses.map((cls) => {
+                const count = alState.predictions.filter((p) => p.predicted_class === cls).length;
+                return (
+                  <button
+                    key={cls}
+                    onClick={() => setClassFilter(cls)}
+                    className={`rounded-full px-2.5 py-0.5 text-xs transition-colors ${
+                      classFilter === cls
+                        ? "bg-gray-800 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    {cls} <span className="opacity-60">{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
       )}
       {/* Add new label + undo */}
       <div className="mt-3 border-t border-gray-200 pt-3">

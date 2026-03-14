@@ -152,7 +152,10 @@ export interface PredictionItem {
   predicted_class: string;
   uncertainty: number;
   probabilities: Record<string, number>;
+  score: number;
 }
+
+export type ProbeSortBy = "confidence" | "uncertainty";
 
 export interface ProbeResponse {
   predictions: PredictionItem[];
