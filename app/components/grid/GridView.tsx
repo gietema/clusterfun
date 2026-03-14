@@ -1,18 +1,17 @@
 "use client";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { faSquare } from "@fortawesome/free-regular-svg-icons";
-import { faBarChart, faCaretDown, faTableCells } from "@fortawesome/free-solid-svg-icons";
+import { faBarChart, faTableCells } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { saveAs } from "file-saver";
 import {
   configAtom, gridValuesAtom, mediaAtom,
   currentMediaIndicesAtom, mediaItemsAtom, uuidAtom,
+  mediaIndicesStackAtom,
 } from "@/app/store/atoms";
-import { fetchMediaItems, downloadGridCsv, saveLabel, deleteLabel } from "@/app/lib/api";
+import { fetchMediaItems, saveLabel, deleteLabel } from "@/app/lib/api";
 import type { Media } from "@/app/types";
-import BackButton from "../shared/BackButton";
-import SideBar from "../shared/SideBar";
+// BackButton removed – tabs handle navigation, "← N selected" link handles stack pop
 import ResizableLayout from "../shared/ResizableLayout";
 import FilterBar from "../filters/FilterBar";
 import MediaGridItem, { EXCLUDE_LABEL } from "./MediaGridItem";
@@ -20,29 +19,31 @@ import Pagination from "./Pagination";
 import SortDropdown from "./SortDropdown";
 import ShowValueDropdown from "./ShowValueDropdown";
 import BoundingBoxCheckbox from "./BoundingBoxCheckbox";
-import LabelPanel from "../labels/LabelPanel";
 import MediaVisualization from "./MediaVisualization";
-import TextSearchBar from "../shared/TextSearchBar";
+import GridWorkspaceSidebar from "./GridWorkspaceSidebar";
 import { useLabelUndo } from "@/app/lib/use-label-undo";
 import { useMediaPreview } from "@/app/lib/use-media-preview";
 import { useActiveLearning } from "@/app/lib/use-active-learning";
+import { useState } from "react";
 
 interface GridViewProps {
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 export default function GridView({ onBack }: GridViewProps) {
   const mediaIndices = useAtomValue(currentMediaIndicesAtom);
+  const mediaIndicesStack = useAtomValue(mediaIndicesStackAtom);
   const uuid = useAtomValue(uuidAtom);
   const config = useAtomValue(configAtom);
   const setSideMedia = useSetAtom(mediaAtom);
   const [mediaItems, setMediaItems] = useAtom(mediaItemsAtom);
   const [gridValues, setGridValues] = useAtom(gridValuesAtom);
   const [showStats, setShowStats] = useState(false);
-  const [showLabelPanel, setShowLabelPanel] = useState(false);
   const { pushAction, undo } = useLabelUndo();
   const { openMedia } = useMediaPreview();
   const { isActive } = useActiveLearning();
+
+  const canGoBack = onBack && mediaIndicesStack.length > 1;
 
   const loadMedia = (sortCol?: string, asc?: boolean) => {
     if (!uuid) return;
@@ -59,18 +60,14 @@ export default function GridView({ onBack }: GridViewProps) {
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      const isInput = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT";
       if ((e.metaKey || e.ctrlKey) && e.key === "z") {
         e.preventDefault();
         undo();
-      } else if (e.key === "Escape" && config?.type !== "grid") {
-        onBack();
-      } else if (e.key === "l" && !isInput && !e.metaKey && !e.ctrlKey) {
-        setShowLabelPanel((s) => !s);
+      } else if (e.key === "Escape" && canGoBack) {
+        onBack!();
       }
     },
-    [undo, onBack, config?.type],
+    [undo, canGoBack, onBack],
   );
 
   useEffect(() => {
@@ -97,10 +94,6 @@ export default function GridView({ onBack }: GridViewProps) {
     setGridValues((prev) => ({ ...prev, page: newPage }));
     fetchMediaItems(uuid, mediaIndices, newPage, gridValues.sortBy || undefined, gridValues.asc)
       .then(setMediaItems);
-  };
-
-  const handleDownload = () => {
-    downloadGridCsv(uuid, mediaIndices).then((blob) => saveAs(blob, "data.csv"));
   };
 
   const handleLabelToggle = (media: Media, label: string) => {
@@ -149,29 +142,17 @@ export default function GridView({ onBack }: GridViewProps) {
 
   if (!config) return null;
 
-  const sidebarContent = (
-    <div className="pl-2">
-      <button
-        className="mb-2 w-full cursor-pointer rounded-md bg-gray-800 px-3 py-1.5 text-center text-xs font-medium text-white transition-colors hover:bg-gray-700"
-        onClick={handleDownload}
-      >
-        Download grid as csv
-      </button>
-      <SideBar />
-    </div>
-  );
-
   return (
-    <ResizableLayout sidebar={sidebarContent}>
-      {config.title && <div className="mb-2 text-sm font-medium text-gray-900">{config.title}</div>}
-      <TextSearchBar searchesFullDataset={config.type !== "grid"} />
+    <ResizableLayout sidebar={<GridWorkspaceSidebar />}>
+      {config.title && <div className="mb-2 px-3 pt-2 text-sm font-medium text-gray-900">{config.title}</div>}
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 px-3 py-2">
-        {config.type !== "grid" && (
-          <div className="flex items-center gap-2">
-            <BackButton onClick={onBack} />
-            <span className="text-xs text-gray-500">{mediaIndices.length} selected</span>
-          </div>
+        {canGoBack ? (
+          <button onClick={onBack!} className="text-xs text-gray-500 hover:text-gray-700">
+            ← {mediaIndices.length} selected
+          </button>
+        ) : (
+          <span className="text-xs text-gray-500">{mediaIndices.length} items</span>
         )}
         <SortDropdown
           columns={config.columns}
@@ -223,24 +204,6 @@ export default function GridView({ onBack }: GridViewProps) {
       )}
 
       <div className="px-3 pt-2"><FilterBar /></div>
-
-      {/* Label panel toggle */}
-      <div
-        className={`mx-3 mt-2 w-auto text-center text-xs ${
-          showLabelPanel
-            ? "-mb-2 h-3 rounded-t-lg bg-gray-100"
-            : "cursor-pointer rounded-md bg-gray-100 py-1.5 text-gray-600 transition-colors hover:bg-gray-200"
-        }`}
-        onClick={() => setShowLabelPanel((s) => !s)}
-      >
-        {!showLabelPanel && (
-          <div>
-            <span className="mr-1.5">Labelling</span>
-            <FontAwesomeIcon icon={faCaretDown} className="text-gray-400" />
-          </div>
-        )}
-      </div>
-      {showLabelPanel && <div className="mx-3"><LabelPanel onHide={() => setShowLabelPanel(false)} /></div>}
 
       {/* Media grid */}
       <div

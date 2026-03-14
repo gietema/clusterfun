@@ -75,7 +75,7 @@ export default function ResizableLayout({ sidebar, children }: ResizableLayoutPr
 
   return (
     <div ref={containerRef} className="flex h-full w-full">
-      <div ref={mainRef} style={{ width: `calc(100% - ${sw}px)` }} className="min-w-0 flex-shrink-0">
+      <div ref={mainRef} style={{ width: `calc(100% - ${sw}px)` }} className="h-full min-w-0 flex-shrink-0">
         {children}
       </div>
       <div

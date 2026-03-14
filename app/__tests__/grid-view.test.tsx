@@ -20,7 +20,7 @@ vi.mock("@/app/lib/api", () => ({
   fetchColumns: vi.fn().mockResolvedValue([]),
   fetchColumnValues: vi.fn().mockResolvedValue([]),
   fetchFilteredPlotData: vi.fn().mockResolvedValue([]),
-  fetchLabelCounts: vi.fn().mockResolvedValue({}),
+  fetchLabelCounts: vi.fn().mockResolvedValue([]),
   fetchMedia: vi.fn().mockResolvedValue({
     index: 0,
     src: "/media/img_0.jpg",
@@ -82,21 +82,28 @@ describe("GridView", () => {
     expect(previews).toHaveLength(5);
   });
 
-  it("shows selected count", () => {
+  it("shows item count", () => {
     renderGrid();
-    expect(screen.getByText("5 selected")).toBeInTheDocument();
+    expect(screen.getByText("5 items")).toBeInTheDocument();
   });
 
-  it("calls onBack when back button is clicked", () => {
-    renderGrid();
-    const backBtn = screen.getByText("back");
+  it("shows selected count link for filtered subset", () => {
+    // Two levels in the stack = filtered subset
+    renderGrid([[mediaIndicesStackAtom, [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4]]]]);
+    expect(screen.getByText(/5 selected/)).toBeInTheDocument();
+  });
+
+  it("calls onBack when selected link is clicked", () => {
+    renderGrid([[mediaIndicesStackAtom, [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4]]]]);
+    const backBtn = screen.getByText(/5 selected/);
     fireEvent.click(backBtn);
     expect(onBack).toHaveBeenCalledOnce();
   });
 
-  it("shows download button", () => {
+  it("shows items count without back when at base level", () => {
     renderGrid();
-    expect(screen.getByText("Download grid as csv")).toBeInTheDocument();
+    expect(screen.getByText("5 items")).toBeInTheDocument();
+    expect(screen.queryByText(/selected/)).not.toBeInTheDocument();
   });
 
   it("fetches media items on mount", async () => {
@@ -156,19 +163,16 @@ describe("GridView", () => {
     });
   });
 
-  it("toggles label panel with L key", () => {
-    renderGrid();
-    expect(screen.queryByText("Add label")).not.toBeInTheDocument();
-    fireEvent.keyDown(window, { key: "l" });
-    expect(screen.getByText("Add label")).toBeInTheDocument();
-    fireEvent.keyDown(window, { key: "l" });
-    expect(screen.queryByText("Add label")).not.toBeInTheDocument();
-  });
-
-  it("calls onBack on Escape key for non-grid types", () => {
-    renderGrid();
+  it("calls onBack on Escape key for filtered subset", () => {
+    renderGrid([[mediaIndicesStackAtom, [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4]]]]);
     fireEvent.keyDown(window, { key: "Escape" });
     expect(onBack).toHaveBeenCalled();
+  });
+
+  it("does not call onBack on Escape when at base level", () => {
+    renderGrid();
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(onBack).not.toHaveBeenCalled();
   });
 
   it("handles pagination next", async () => {
@@ -179,14 +183,7 @@ describe("GridView", () => {
       [mediaIndicesStackAtom, [manyIndices]],
       [mediaItemsAtom, mediaItems],
     ]);
-    // With 100 items, pagination shows: "1 / 2"
     expect(screen.getByText("1 / 3")).toBeInTheDocument();
-    // Find the next page button (right double arrow)
-    const buttons = screen.getAllByRole("button");
-    // The last pagination button is the "next" one (right double angle)
-    const nextBtn = buttons.find((btn) => !btn.hasAttribute("disabled") &&
-      btn.textContent === "" && btn.closest(".justify-between"));
-    // Just click the second button in the pagination area
     const paginationArea = screen.getByText("1 / 3").parentElement!;
     const paginationButtons = paginationArea.querySelectorAll("button");
     fireEvent.click(paginationButtons[1]); // Next button
@@ -201,22 +198,15 @@ describe("GridView", () => {
     });
   });
 
-  it("label panel shows label checkboxes on click", () => {
+  it("shows labels section in sidebar by default", () => {
     renderGrid();
-    // Click the "Labelling" toggle
-    fireEvent.click(screen.getByText("Labelling"));
-    // Should show label names from config (may appear multiple times in grid items too)
-    const goodElements = screen.getAllByText("good");
-    const badElements = screen.getAllByText("bad");
-    expect(goodElements.length).toBeGreaterThanOrEqual(1);
-    expect(badElements.length).toBeGreaterThanOrEqual(1);
+    // Labels section is always visible in sidebar (not behind a toggle)
+    expect(screen.getByText("Labels")).toBeInTheDocument();
   });
 
   it("toggling label via click on label checkbox calls saveLabel", async () => {
     renderGrid();
-    // Click on the label text in a grid item's MediaLabels
     const goodLabels = screen.getAllByText("good");
-    // The label checkboxes are in each grid item
     const labelCheckbox = goodLabels[0].closest("label");
     if (labelCheckbox) {
       fireEvent.click(labelCheckbox);

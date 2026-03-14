@@ -15,6 +15,7 @@ import {
 } from "@/app/store/atoms";
 import { fetchUuid, fetchPlotData, fetchFilteredPlotData, fetchMedia } from "@/app/lib/api";
 import { useUrlState } from "@/app/lib/use-url-state";
+import TabNavigation from "./shared/TabNavigation";
 import PlotPage from "./plot/PlotPage";
 import GridView from "./grid/GridView";
 import MediaPage from "./media/MediaPage";
@@ -60,8 +61,6 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
   }, [uuid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Populate media indices when grid view is shown but stack is empty.
-  // Handles: grid-type configs on initial load, deep-linking to ?view=grid
-  // for any config type, and filtered initial loads (e.g. from URL filters).
   useEffect(() => {
     if (showPage !== "grid" || mediaIndices.length > 0 || !data) return;
 
@@ -85,31 +84,39 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
     setShowPage("grid");
   };
 
-  switch (showPage) {
-    case "grid":
-      return (
-        <GridView
-          onBack={() => {
-            setMediaIndices([]);
-            setGridValues((prev) => ({ ...prev, page: 0 }));
-            setSimilarityResults({});
-            setShowPage("plot");
-          }}
-        />
-      );
-    case "media":
-      return mediaIndex !== undefined ? (
-        <MediaPage
-          mediaIndex={mediaIndex}
-          onBack={() => {
-            setMediaIndex(undefined);
-            setShowPage(mediaIndices.length > 0 ? "grid" : "plot");
-          }}
-        />
-      ) : (
-        <div className="text-black">Loading...</div>
-      );
-    default:
-      return <PlotPage onMediaSelect={handleMediaIndices} />;
+  // Pop one level from the indices stack (back from filtered subset).
+  // If only one level remains, that's the "all items" level — stay on grid.
+  const handleGridBack = () => {
+    setMediaIndices((prev) => {
+      if (prev.length <= 1) return prev;
+      return prev.slice(0, -1);
+    });
+    setGridValues((prev) => ({ ...prev, page: 0 }));
+    setSimilarityResults({});
+  };
+
+  if (showPage === "media" && mediaIndex !== undefined) {
+    return (
+      <MediaPage
+        mediaIndex={mediaIndex}
+        onBack={() => {
+          setMediaIndex(undefined);
+          setShowPage(mediaIndices.length > 0 ? "grid" : "plot");
+        }}
+      />
+    );
   }
+
+  return (
+    <div className="flex h-screen flex-col">
+      <TabNavigation />
+      <div className="min-h-0 flex-1">
+        {showPage === "grid" ? (
+          <GridView onBack={handleGridBack} />
+        ) : (
+          <PlotPage onMediaSelect={handleMediaIndices} />
+        )}
+      </div>
+    </div>
+  );
 }

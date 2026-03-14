@@ -46,11 +46,7 @@ function ProgressCircle({ progress }: { progress: number }) {
   );
 }
 
-interface TextSearchBarProps {
-  searchesFullDataset?: boolean;
-}
-
-export default function TextSearchBar({ searchesFullDataset }: TextSearchBarProps) {
+export default function TextSearchBar() {
   const config = useAtomValue(configAtom);
   const uuid = useAtomValue(uuidAtom);
   const setMediaIndicesStack = useSetAtom(mediaIndicesStackAtom);
@@ -97,8 +93,8 @@ export default function TextSearchBar({ searchesFullDataset }: TextSearchBarProp
   };
 
   return (
-    <div className="px-3 py-2">
-      <form onSubmit={handleSubmit} className="flex items-center gap-2">
+    <div>
+      <form onSubmit={handleSubmit} className="flex items-center gap-1.5">
         <input
           type="text"
           value={query}
@@ -106,25 +102,25 @@ export default function TextSearchBar({ searchesFullDataset }: TextSearchBarProp
             setQuery(e.target.value);
             if (error) setError(null);
           }}
-          placeholder={searchesFullDataset ? "Search entire dataset by text..." : "Search by text..."}
-          className="w-64 rounded-md border border-gray-300 px-2.5 py-1.5 text-sm focus:border-gray-500 focus:outline-none"
+          placeholder="Search by text..."
+          className="min-w-0 flex-grow rounded-md border border-gray-200 px-2 py-1 text-xs focus:border-gray-400 focus:outline-none"
         />
         <button
           type="submit"
           disabled={searching || !query.trim()}
-          className="cursor-pointer rounded-md bg-gray-800 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
+          className="shrink-0 rounded-md bg-gray-800 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
         >
-          {searching ? "Searching..." : "Search"}
+          {searching ? "..." : "Search"}
         </button>
-        {progress !== null && (
-          <div className="flex items-center gap-1.5">
-            <ProgressCircle progress={progress} />
-            <span className="text-xs text-gray-500">
-              Loading model {Math.round(progress)}%
-            </span>
-          </div>
-        )}
       </form>
+      {progress !== null && (
+        <div className="mt-1.5 flex items-center gap-1.5">
+          <ProgressCircle progress={progress} />
+          <span className="text-xs text-gray-500">
+            Loading model {Math.round(progress)}%
+          </span>
+        </div>
+      )}
       {error && (
         <p className="mt-1 text-xs text-red-600">{error}</p>
       )}

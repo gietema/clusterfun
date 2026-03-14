@@ -97,7 +97,10 @@ export default function PlotlyChart({
       autosize: true,
       margin: { l: 40, r: 0, b: 40, t: 0, pad: 0 },
       shapes,
-      legend: { traceorder: "normal" },
+      legend: {
+        traceorder: "normal",
+        ...(config.color ? { title: { text: config.color } } : {}),
+      },
     });
   }, [config, revision, data]);
 
