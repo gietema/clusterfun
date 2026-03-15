@@ -4,13 +4,12 @@ import { useAtomValue, useSetAtom } from "jotai";
 import {
   configAtom,
   uuidAtom,
-  mediaIndicesStackAtom,
-  gridValuesAtom,
   showPageAtom,
   similarityResultsAtom,
 } from "@/app/store/atoms";
 import { fetchSimilarVector } from "@/app/lib/api";
 import { encodeText } from "@/app/lib/clip";
+import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
 
 function ProgressCircle({ progress }: { progress: number }) {
   const size = 20;
@@ -49,10 +48,9 @@ function ProgressCircle({ progress }: { progress: number }) {
 export default function TextSearchBar() {
   const config = useAtomValue(configAtom);
   const uuid = useAtomValue(uuidAtom);
-  const setMediaIndicesStack = useSetAtom(mediaIndicesStackAtom);
-  const setGridValues = useSetAtom(gridValuesAtom);
   const setShowPage = useSetAtom(showPageAtom);
   const setSimilarityResults = useSetAtom(similarityResultsAtom);
+  const { replaceTop } = useBreadcrumbNav();
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
@@ -80,11 +78,7 @@ export default function TextSearchBar() {
         scores[r.media_id] = r.similarity;
       }
       setSimilarityResults(scores);
-      // Replace the top selection level rather than stacking searches
-      setMediaIndicesStack((prev) =>
-        prev.length > 1 ? [...prev.slice(0, -1), ids] : [...prev, ids],
-      );
-      setGridValues((prev) => ({ ...prev, page: 0 }));
+      replaceTop(ids, `Search: ${query.trim()}`);
       setShowPage("grid");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Search failed";

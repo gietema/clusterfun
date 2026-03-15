@@ -2,17 +2,18 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useEffect, useMemo } from "react";
 import { faSquare } from "@fortawesome/free-regular-svg-icons";
-import { faBarChart, faTableCells, faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
+import { faBarChart, faTableCells, faFloppyDisk, faCrosshairs } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   configAtom, gridValuesAtom, mediaAtom,
   currentMediaIndicesAtom, mediaItemsAtom, uuidAtom,
-  mediaIndicesStackAtom, labelFilterAtom,
+  mediaIndicesStackAtom,
   filtersAtom, similarityResultsAtom, showPageAtom,
 } from "@/app/store/atoms";
 import { fetchMediaItems, saveLabel, deleteLabel, saveView } from "@/app/lib/api";
 import type { Media } from "@/app/types";
-// BackButton removed – tabs handle navigation, "← N selected" link handles stack pop
+import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
+import BreadcrumbTrail from "../shared/BreadcrumbTrail";
 import ResizableLayout from "../shared/ResizableLayout";
 import FilterBar from "../filters/FilterBar";
 import MediaGridItem, { EXCLUDE_LABEL } from "./MediaGridItem";
@@ -22,6 +23,8 @@ import ShowValueDropdown from "./ShowValueDropdown";
 import BoundingBoxCheckbox from "./BoundingBoxCheckbox";
 import MediaVisualization from "./MediaVisualization";
 import GridWorkspaceSidebar from "./GridWorkspaceSidebar";
+import FocusMode from "./FocusMode";
+import ReviewMode from "./ReviewMode";
 import { useLabelUndo } from "@/app/lib/use-label-undo";
 import { useMediaPreview } from "@/app/lib/use-media-preview";
 import { useActiveLearning } from "@/app/lib/use-active-learning";
@@ -41,14 +44,16 @@ export default function GridView({ onBack }: GridViewProps) {
   const [gridValues, setGridValues] = useAtom(gridValuesAtom);
   const setUuid = useSetAtom(uuidAtom);
   const setShowPage = useSetAtom(showPageAtom);
-  const setMediaIndicesStack = useSetAtom(mediaIndicesStackAtom);
   const setFilters = useSetAtom(filtersAtom);
   const setSimilarityResults = useSetAtom(similarityResultsAtom);
-  const [labelFilter, setLabelFilter] = useAtom(labelFilterAtom);
+  const { reset: resetBreadcrumbs } = useBreadcrumbNav();
   const [showStats, setShowStats] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
+  const [reviewMode, setReviewMode] = useState(false);
   const [showSaveForm, setShowSaveForm] = useState(false);
   const [saveTitle, setSaveTitle] = useState("");
   const [saving, setSaving] = useState(false);
+  const [savedViewUuid, setSavedViewUuid] = useState<string | null>(null);
   const { pushAction, undo, redo } = useLabelUndo();
   const { openMedia } = useMediaPreview();
   const { isActive } = useActiveLearning();
@@ -94,9 +99,15 @@ export default function GridView({ onBack }: GridViewProps) {
         undo();
       } else if (e.key === "Escape" && canGoBack) {
         onBack!();
+      } else if (e.key === "f" && !e.metaKey && !e.ctrlKey && config?.labels && config.labels.length > 0) {
+        // Don't trigger if typing in an input
+        const tag = (e.target as HTMLElement)?.tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+        e.preventDefault();
+        setFocusMode(true);
       }
     },
-    [undo, redo, canGoBack, onBack],
+    [undo, redo, canGoBack, onBack, config?.labels],
   );
 
   useEffect(() => {
@@ -172,7 +183,7 @@ export default function GridView({ onBack }: GridViewProps) {
   if (!config) return null;
 
   return (
-    <ResizableLayout sidebar={<GridWorkspaceSidebar />}>
+    <ResizableLayout sidebar={<GridWorkspaceSidebar onReview={() => setReviewMode(true)} />}>
       <div className="flex h-full flex-col">
       {config.title && <div className="mb-2 shrink-0 px-3 pt-2 text-sm font-medium text-gray-900">{config.title}</div>}
       {/* Toolbar */}
@@ -231,6 +242,15 @@ export default function GridView({ onBack }: GridViewProps) {
             maxPage={Math.max(0, Math.ceil(effectiveIndices.length / 50) - 1)}
             onPageChange={handlePageChange}
           />
+          {config.labels && config.labels.length > 0 && (
+            <button
+              onClick={() => setFocusMode(true)}
+              className="rounded-md px-2 py-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900"
+              title="Focus mode (F)"
+            >
+              <FontAwesomeIcon icon={faCrosshairs} />
+            </button>
+          )}
           <button
             onClick={() => setShowStats((s) => !s)}
             className="rounded-md px-2 py-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900"
@@ -248,21 +268,7 @@ export default function GridView({ onBack }: GridViewProps) {
 
       <div className="flex shrink-0 items-center gap-2 px-3 py-2">
         <FilterBar />
-        {mediaIndicesStack.length > 1 && (
-          <span className="flex shrink-0 items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[11px] text-blue-700">
-            <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M4 4h16v2.172a2 2 0 0 1-.586 1.414L13 14v5l-2 2v-7L4.586 7.586A2 2 0 0 1 4 6.172V4z" />
-            </svg>
-            {labelFilter ? `Label: ${labelFilter}` : "Selection"} ({mediaIndices.length})
-            <button
-              onClick={() => onBack?.()}
-              className="ml-0.5 text-blue-400 hover:text-blue-700"
-              title="Clear selection"
-            >
-              ×
-            </button>
-          </span>
-        )}
+        <BreadcrumbTrail />
         {mediaIndicesStack.length > 1 && !showSaveForm && (
           <button
             onClick={() => setShowSaveForm(true)}
@@ -273,7 +279,7 @@ export default function GridView({ onBack }: GridViewProps) {
             Save as view
           </button>
         )}
-        {showSaveForm && (
+        {showSaveForm && !savedViewUuid && (
           <form
             className="flex shrink-0 items-center gap-1.5"
             onSubmit={async (e) => {
@@ -281,17 +287,7 @@ export default function GridView({ onBack }: GridViewProps) {
               setSaving(true);
               try {
                 const { uuid: newUuid } = await saveView(uuid, mediaIndices, saveTitle.trim() || undefined);
-                // Navigate to the new view
-                setMediaIndicesStack([]);
-                setGridValues({ sortBy: "", asc: true, page: 0, numberOfColumns: 5, showColumnValues: [], showBboxLabel: false, subsample: 0 });
-                setMediaItems([]);
-                setFilters([]);
-                setLabelFilter(null);
-                setSimilarityResults({});
-                setUuid(newUuid);
-                setShowPage("grid");
-                setShowSaveForm(false);
-                setSaveTitle("");
+                setSavedViewUuid(newUuid);
               } catch { /* ignore */ }
               setSaving(false);
             }}
@@ -320,6 +316,34 @@ export default function GridView({ onBack }: GridViewProps) {
               Cancel
             </button>
           </form>
+        )}
+        {savedViewUuid && (
+          <div className="flex shrink-0 items-center gap-2">
+            <span className="text-[11px] text-green-600">Saved!</span>
+            <button
+              onClick={() => {
+                resetBreadcrumbs();
+                setGridValues({ sortBy: "", asc: true, page: 0, numberOfColumns: 5, showColumnValues: [], showBboxLabel: false, subsample: 0 });
+                setMediaItems([]);
+                setFilters([]);
+                setSimilarityResults({});
+                setUuid(savedViewUuid);
+                setShowPage("grid");
+                setShowSaveForm(false);
+                setSaveTitle("");
+                setSavedViewUuid(null);
+              }}
+              className="text-[11px] text-blue-600 underline decoration-blue-300 hover:text-blue-800"
+            >
+              Open view
+            </button>
+            <button
+              onClick={() => { setShowSaveForm(false); setSaveTitle(""); setSavedViewUuid(null); }}
+              className="text-[11px] text-gray-400 hover:text-gray-700"
+            >
+              Dismiss
+            </button>
+          </div>
         )}
       </div>
 
@@ -352,6 +376,25 @@ export default function GridView({ onBack }: GridViewProps) {
         </div>
       </div>
       </div>
+      {focusMode && (
+        <FocusMode
+          mediaIndices={effectiveIndices}
+          onLabelToggle={handleLabelToggle}
+          onExit={() => {
+            setFocusMode(false);
+            loadMedia();
+          }}
+        />
+      )}
+      {reviewMode && (
+        <ReviewMode
+          onLabelToggle={handleLabelToggle}
+          onExit={() => {
+            setReviewMode(false);
+            loadMedia();
+          }}
+        />
+      )}
     </ResizableLayout>
   );
 }

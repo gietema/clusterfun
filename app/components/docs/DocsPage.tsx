@@ -18,6 +18,7 @@ const SECTIONS: Section[] = [
   { id: "multi-plot", title: "Multi-Plot Dashboard", icon: "panels" },
   { id: "selection", title: "Selection Tools", icon: "lasso" },
   { id: "labels", title: "Labels & Labeling", icon: "tag" },
+  { id: "focus-mode", title: "Focus Mode", icon: "focus" },
   { id: "projects", title: "Projects", icon: "folder" },
   { id: "filtering", title: "Filtering", icon: "filter" },
   { id: "insights", title: "Insights & ML", icon: "brain" },
@@ -137,6 +138,12 @@ function SectionIcon({ type }: { type: string }) {
         <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="2" y="4" width="20" height="16" rx="2" /><path d="M6 8h.001" /><path d="M10 8h.001" /><path d="M14 8h.001" /><path d="M18 8h.001" />
           <path d="M8 12h.001" /><path d="M12 12h.001" /><path d="M16 12h.001" /><path d="M7 16h10" />
+        </svg>
+      );
+    case "focus":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
         </svg>
       );
     case "code":
@@ -440,11 +447,8 @@ export default function DocsPage() {
 
   const scrollTo = (id: string) => {
     const el = sectionRefs.current[id];
-    if (el && contentRef.current) {
-      contentRef.current.scrollTo({
-        top: el.offsetTop - 24,
-        behavior: "smooth",
-      });
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
@@ -494,7 +498,7 @@ export default function DocsPage() {
           {/* ---------------------------------------------------------------- */}
           {/* Getting Started */}
           {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("getting-started")} id="getting-started" className="mb-12">
+          <section ref={registerRef("getting-started")} id="getting-started" className="mb-12 scroll-mt-6">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Getting Started</h2>
             <p className="mb-4 text-sm leading-relaxed text-gray-600">
               Clusterfun lets you explore datasets of images, videos, and audio interactively.
@@ -540,7 +544,7 @@ cfu.grid(df, media="image_path", embeddings="embedding_col")`}
           {/* ---------------------------------------------------------------- */}
           {/* Plot Types */}
           {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("plot-types")} id="plot-types" className="mb-12">
+          <section ref={registerRef("plot-types")} id="plot-types" className="mb-12 scroll-mt-6">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Plot Types</h2>
             <p className="mb-4 text-sm leading-relaxed text-gray-600">
               Clusterfun supports several plot types. Each one lets you click any data point to
@@ -589,6 +593,14 @@ cfu.grid(df, media="image_path", embeddings="embedding_col")`}
               media="path")`}
                 </CodeBlock>
               </FeatureCard>
+
+              <FeatureCard title="Embedding Map" description="2D projection of high-dimensional embeddings using UMAP, t-SNE, or PCA. Shows image thumbnails on the plot for visual exploration.">
+                <p className="mb-2 text-sm leading-relaxed text-gray-600">
+                  Select <strong>Embedding Map</strong> from the plot type dropdown. Choose a
+                  projection method (UMAP, t-SNE, or PCA), sample size, and neighbor count.
+                  The projection is cached so switching colors or re-opening is instant.
+                </p>
+              </FeatureCard>
             </div>
 
             <h3 className="mb-2 mt-6 text-sm font-semibold text-gray-900">Common parameters</h3>
@@ -617,7 +629,7 @@ cfu.grid(df, media="image_path", embeddings="embedding_col")`}
           {/* ---------------------------------------------------------------- */}
           {/* Grid View */}
           {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("grid-view")} id="grid-view" className="mb-12">
+          <section ref={registerRef("grid-view")} id="grid-view" className="mb-12 scroll-mt-6">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Grid View</h2>
             <p className="mb-4 text-sm leading-relaxed text-gray-600">
               The grid view displays your media items in a browsable gallery. Switch to it from any
@@ -625,6 +637,7 @@ cfu.grid(df, media="image_path", embeddings="embedding_col")`}
             </p>
 
             <div className="grid gap-3 sm:grid-cols-2">
+              <FeatureCard title="Subsampling" description="Use the sample dropdown (1%, 5%, 10%, 25%, 50%) to browse a random slice of your data without loading everything. Great for quickly scanning large datasets." />
               <FeatureCard title="Sorting" description="Sort items by any column in ascending or descending order using the sort dropdown in the toolbar." />
               <FeatureCard title="Grid Size" description="Adjust the number of columns (1–10) using the size slider in the toolbar. Fewer columns show larger previews." />
               <FeatureCard title="Pagination" description="Navigate pages with Previous/Next buttons. Click the page number to jump directly to any page." />
@@ -642,7 +655,7 @@ cfu.grid(df, media="image_path", embeddings="embedding_col")`}
           {/* ---------------------------------------------------------------- */}
           {/* Multi-Plot Dashboard */}
           {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("multi-plot")} id="multi-plot" className="mb-12">
+          <section ref={registerRef("multi-plot")} id="multi-plot" className="mb-12 scroll-mt-6">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Multi-Plot Dashboard</h2>
             <p className="mb-4 text-sm leading-relaxed text-gray-600">
               Create up to 4 simultaneous plots to compare different views of your data.
@@ -666,7 +679,7 @@ cfu.grid(df, media="image_path", embeddings="embedding_col")`}
           {/* ---------------------------------------------------------------- */}
           {/* Selection Tools */}
           {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("selection")} id="selection" className="mb-12">
+          <section ref={registerRef("selection")} id="selection" className="mb-12 scroll-mt-6">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Selection Tools</h2>
             <p className="mb-4 text-sm leading-relaxed text-gray-600">
               Three selection modes are available in the plot toolbar. Switch between them
@@ -711,7 +724,7 @@ cfu.grid(df, media="image_path", embeddings="embedding_col")`}
           {/* ---------------------------------------------------------------- */}
           {/* Labels & Labeling */}
           {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("labels")} id="labels" className="mb-12">
+          <section ref={registerRef("labels")} id="labels" className="mb-12 scroll-mt-6">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Labels & Labeling</h2>
             <p className="mb-4 text-sm leading-relaxed text-gray-600">
               The sidebar&apos;s Labels section lets you create, apply, and manage labels
@@ -736,9 +749,50 @@ cfu.grid(df, media="image_path", embeddings="embedding_col")`}
           </section>
 
           {/* ---------------------------------------------------------------- */}
+          {/* Focus Mode */}
+          {/* ---------------------------------------------------------------- */}
+          <section ref={registerRef("focus-mode")} id="focus-mode" className="mb-12 scroll-mt-6">
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">Focus Mode</h2>
+            <p className="mb-4 text-sm leading-relaxed text-gray-600">
+              Focus Mode presents one item at a time for fast, sequential labeling.
+              Press <Kbd>F</Kbd> in the grid view or click the crosshairs icon in the toolbar to enter.
+            </p>
+
+            <div className="space-y-3">
+              <FeatureCard title="Labeling">
+                <p className="text-sm leading-relaxed text-gray-600">
+                  Press <Kbd>1</Kbd>–<Kbd>9</Kbd> to toggle labels, just like in the grid.
+                  Each label can also be clicked as a button below the image. By default,
+                  labeling auto-advances to the next item. Toggle the <strong>auto-advance</strong> checkbox
+                  in the header to stay on the current item — useful when applying multiple labels.
+                  Press <Kbd>Enter</Kbd> to manually advance when auto-advance is off.
+                </p>
+              </FeatureCard>
+              <FeatureCard title="Navigation">
+                <p className="text-sm leading-relaxed text-gray-600">
+                  <Kbd>Space</Kbd> skips to the next item without labeling.{" "}
+                  <Kbd>Backspace</Kbd> or <Kbd>←</Kbd> goes back.{" "}
+                  <Kbd>→</Kbd> advances forward. <Kbd>Escape</Kbd> exits focus mode and returns to the grid.
+                  Side arrow buttons are also available for mouse navigation.
+                </p>
+              </FeatureCard>
+              <FeatureCard title="Zoom & Pan">
+                <p className="text-sm leading-relaxed text-gray-600">
+                  Scroll the mouse wheel to zoom in on the image. Click and drag to pan when zoomed.
+                  Double-click to toggle between zoomed and fit-to-screen views.
+                </p>
+              </FeatureCard>
+              <FeatureCard title="Active Learning Integration" description="When active learning predictions are available, Focus Mode shows the predicted class and confidence score above the image. Combined with uncertainty sorting, this creates a tight label-review loop: label a few items, refit, then focus-mode through the most uncertain items." />
+              <Tip>
+                Focus Mode prefetches upcoming images in the background so there is no loading delay as you move through items.
+              </Tip>
+            </div>
+          </section>
+
+          {/* ---------------------------------------------------------------- */}
           {/* Projects */}
           {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("projects")} id="projects" className="mb-12">
+          <section ref={registerRef("projects")} id="projects" className="mb-12 scroll-mt-6">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Projects</h2>
             <p className="mb-4 text-sm leading-relaxed text-gray-600">
               Projects let you persist labels across multiple views of the same dataset.
@@ -807,7 +861,7 @@ clusterfun abc123-def456`}
           {/* ---------------------------------------------------------------- */}
           {/* Filtering */}
           {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("filtering")} id="filtering" className="mb-12">
+          <section ref={registerRef("filtering")} id="filtering" className="mb-12 scroll-mt-6">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Filtering</h2>
             <p className="mb-4 text-sm leading-relaxed text-gray-600">
               Add column-based filters to narrow down your data. Filters appear in the
@@ -830,14 +884,45 @@ clusterfun abc123-def456`}
           {/* ---------------------------------------------------------------- */}
           {/* Insights & ML */}
           {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("insights")} id="insights" className="mb-12">
+          <section ref={registerRef("insights")} id="insights" className="mb-12 scroll-mt-6">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Insights & ML</h2>
             <p className="mb-4 text-sm leading-relaxed text-gray-600">
-              When your data includes embeddings, the Insights panel in the grid sidebar
-              provides ML-powered exploration tools. For small datasets (&le;5,000 items),
-              these run entirely in the browser with no server round-trip.
+              The Insights tab provides dataset analysis tools. Image statistics work on any
+              image dataset. Embedding-powered tools (outliers, duplicates, weirdest) require
+              embeddings — for small datasets (&le;5,000 items), these run entirely in the browser.
             </p>
 
+            <h3 className="mb-2 text-sm font-semibold text-gray-900">Image Statistics</h3>
+            <p className="mb-3 text-sm leading-relaxed text-gray-600">
+              Click <strong>Compute</strong> to automatically analyse every image in your dataset.
+              The following per-image metrics are calculated and added as new columns:
+            </p>
+            <div className="mb-4 overflow-hidden rounded-lg border border-gray-200">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-gray-200 bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-2 font-medium text-gray-600">Metric</th>
+                    <th className="px-4 py-2 font-medium text-gray-600">Description</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">brightness</td><td className="px-4 py-2 text-gray-600">Mean luminance (0–1)</td></tr>
+                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">contrast</td><td className="px-4 py-2 text-gray-600">Standard deviation of luminance (0–1)</td></tr>
+                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">sharpness</td><td className="px-4 py-2 text-gray-600">Laplacian variance (log scale) — higher = sharper</td></tr>
+                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">colorfulness</td><td className="px-4 py-2 text-gray-600">Hasler &amp; S&uuml;sstrunk metric (0–1)</td></tr>
+                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">saturation</td><td className="px-4 py-2 text-gray-600">Mean HSV saturation (0–1)</td></tr>
+                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">aspect_ratio</td><td className="px-4 py-2 text-gray-600">Width / height</td></tr>
+                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">width, height</td><td className="px-4 py-2 text-gray-600">Original image dimensions in pixels</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="mb-4 text-sm leading-relaxed text-gray-600">
+              Once computed, these appear as regular columns — use them in scatter plots, histograms,
+              filters, and sorting. Computation runs in the background, so you can leave the page
+              and track progress via the task indicator in the top navigation bar.
+            </p>
+
+            <h3 className="mb-2 text-sm font-semibold text-gray-900">Embedding Analysis</h3>
             <div className="grid gap-3 sm:grid-cols-3">
               <FeatureCard title="Find Outliers">
                 <p className="text-sm leading-relaxed text-gray-600">
@@ -850,7 +935,7 @@ clusterfun abc123-def456`}
               <FeatureCard title="Find Duplicates">
                 <p className="text-sm leading-relaxed text-gray-600">
                   Detects near-duplicate groups using <strong>cosine similarity</strong> with
-                  a 0.95 threshold. Results are grouped using a union-find structure so
+                  a configurable threshold. Results are grouped using a union-find structure so
                   transitive duplicates are merged.
                 </p>
               </FeatureCard>
@@ -866,13 +951,14 @@ clusterfun abc123-def456`}
             <Tip>
               After running any insight, click &quot;View in grid&quot; to see the results.
               For duplicates, you can also view individual groups to inspect each cluster.
+              Long-running tasks show progress in the top-right corner and continue when you navigate away.
             </Tip>
           </section>
 
           {/* ---------------------------------------------------------------- */}
           {/* Active Learning */}
           {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("active-learning")} id="active-learning" className="mb-12">
+          <section ref={registerRef("active-learning")} id="active-learning" className="mb-12 scroll-mt-6">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Active Learning</h2>
             <p className="mb-4 text-sm leading-relaxed text-gray-600">
               When you have labels and embeddings, the Active Learning section helps you
@@ -917,7 +1003,7 @@ clusterfun abc123-def456`}
           {/* ---------------------------------------------------------------- */}
           {/* Similarity Search */}
           {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("similarity")} id="similarity" className="mb-12">
+          <section ref={registerRef("similarity")} id="similarity" className="mb-12 scroll-mt-6">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Similarity Search</h2>
             <p className="mb-4 text-sm leading-relaxed text-gray-600">
               When embeddings are available, click the <strong>Find similar</strong> button in
@@ -933,7 +1019,7 @@ clusterfun abc123-def456`}
           {/* ---------------------------------------------------------------- */}
           {/* Text Search */}
           {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("text-search")} id="text-search" className="mb-12">
+          <section ref={registerRef("text-search")} id="text-search" className="mb-12 scroll-mt-6">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Text Search</h2>
             <p className="mb-4 text-sm leading-relaxed text-gray-600">
               When an <code className="rounded bg-gray-100 px-1 text-xs">embeddings_model</code> is
@@ -956,7 +1042,7 @@ clusterfun abc123-def456`}
           {/* ---------------------------------------------------------------- */}
           {/* Export & Download */}
           {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("export")} id="export" className="mb-12">
+          <section ref={registerRef("export")} id="export" className="mb-12 scroll-mt-6">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Export & Download</h2>
             <p className="mb-4 text-sm leading-relaxed text-gray-600">
               Export your work in several ways from the sidebar&apos;s Labels section.
@@ -973,7 +1059,7 @@ clusterfun abc123-def456`}
           {/* ---------------------------------------------------------------- */}
           {/* Media Viewer */}
           {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("media-viewer")} id="media-viewer" className="mb-12">
+          <section ref={registerRef("media-viewer")} id="media-viewer" className="mb-12 scroll-mt-6">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Media Viewer</h2>
             <p className="mb-4 text-sm leading-relaxed text-gray-600">
               Click any item in the grid to open it in the full media viewer.
@@ -998,7 +1084,7 @@ clusterfun abc123-def456`}
           {/* ---------------------------------------------------------------- */}
           {/* Keyboard Shortcuts */}
           {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("shortcuts")} id="shortcuts" className="mb-12">
+          <section ref={registerRef("shortcuts")} id="shortcuts" className="mb-12 scroll-mt-6">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Keyboard Shortcuts</h2>
 
             <div className="overflow-hidden rounded-lg border border-gray-200">
@@ -1046,6 +1132,26 @@ clusterfun abc123-def456`}
                     <td className="px-4 py-2.5 text-gray-600">Media viewer</td>
                     <td className="px-4 py-2.5 text-gray-600">Return to grid</td>
                   </tr>
+                  <tr className="bg-gray-50/50">
+                    <td className="px-4 py-2.5"><Kbd>F</Kbd></td>
+                    <td className="px-4 py-2.5 text-gray-600">Grid</td>
+                    <td className="px-4 py-2.5 text-gray-600">Enter Focus Mode</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2.5"><Kbd>Space</Kbd></td>
+                    <td className="px-4 py-2.5 text-gray-600">Focus Mode</td>
+                    <td className="px-4 py-2.5 text-gray-600">Skip to next item</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2.5"><Kbd>Backspace</Kbd></td>
+                    <td className="px-4 py-2.5 text-gray-600">Focus Mode</td>
+                    <td className="px-4 py-2.5 text-gray-600">Go back to previous item</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2.5"><Kbd>Enter</Kbd></td>
+                    <td className="px-4 py-2.5 text-gray-600">Focus Mode</td>
+                    <td className="px-4 py-2.5 text-gray-600">Confirm &amp; advance (when auto-advance is off)</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -1054,7 +1160,7 @@ clusterfun abc123-def456`}
           {/* ---------------------------------------------------------------- */}
           {/* Python API Reference */}
           {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("python-api")} id="python-api" className="mb-12">
+          <section ref={registerRef("python-api")} id="python-api" className="mb-12 scroll-mt-6">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Python API Reference</h2>
             <p className="mb-4 text-sm leading-relaxed text-gray-600">
               All plot functions share a common signature. Each returns the path to the saved

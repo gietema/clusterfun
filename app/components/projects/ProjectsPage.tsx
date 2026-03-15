@@ -3,10 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { useAtom, useSetAtom } from "jotai";
 import {
   selectedProjectAtom, uuidAtom, showPageAtom,
-  mediaIndicesStackAtom, gridValuesAtom, mediaItemsAtom,
+  gridValuesAtom, mediaItemsAtom,
   filtersAtom, labelFilterAtom, similarityResultsAtom,
 } from "@/app/store/atoms";
 import { fetchProjects, fetchProject, deleteProjectView, renameProjectView } from "@/app/lib/api";
+import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
 import type { ProjectSummary, ProjectDetail, ProjectView } from "@/app/types";
 
 const PLOT_TYPE_COLORS: Record<string, string> = {
@@ -226,12 +227,12 @@ function ProjectDetailView({ name, onBack }: { name: string; onBack: () => void 
   const [loading, setLoading] = useState(true);
   const setUuid = useSetAtom(uuidAtom);
   const setShowPage = useSetAtom(showPageAtom);
-  const setMediaIndicesStack = useSetAtom(mediaIndicesStackAtom);
   const setGridValues = useSetAtom(gridValuesAtom);
   const setMediaItems = useSetAtom(mediaItemsAtom);
   const setFilters = useSetAtom(filtersAtom);
   const setLabelFilter = useSetAtom(labelFilterAtom);
   const setSimilarityResults = useSetAtom(similarityResultsAtom);
+  const { reset: resetBreadcrumbs } = useBreadcrumbNav();
 
   const reload = () => {
     setLoading(true);
@@ -243,8 +244,8 @@ function ProjectDetailView({ name, onBack }: { name: string; onBack: () => void 
   useEffect(() => { reload(); }, [name]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleViewClick = (uuid: string, type: string) => {
-    setMediaIndicesStack([]);
-    setGridValues({ sortBy: "", asc: true, page: 0, numberOfColumns: 5, showColumnValues: [], showBboxLabel: false });
+    resetBreadcrumbs();
+    setGridValues({ sortBy: "", asc: true, page: 0, numberOfColumns: 5, showColumnValues: [], showBboxLabel: false, subsample: 0 });
     setMediaItems([]);
     setFilters([]);
     setLabelFilter(null);

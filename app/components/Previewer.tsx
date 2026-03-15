@@ -11,12 +11,11 @@ import {
   mediaIndexAtom,
   showPageAtom,
   mediaAtom,
-  similarityResultsAtom,
   labelFilterAtom,
-  textSearchQueryAtom,
 } from "@/app/store/atoms";
 import { fetchUuid, fetchPlotData, fetchFilteredPlotData, fetchMedia, fetchAllLabels } from "@/app/lib/api";
 import { useUrlState } from "@/app/lib/use-url-state";
+import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
 import TabNavigation from "./shared/TabNavigation";
 import PlotPage from "./plot/PlotPage";
 import GridView from "./grid/GridView";
@@ -35,13 +34,17 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
   const setConfig = useSetAtom(configAtom);
   const [mediaIndex, setMediaIndex] = useAtom(mediaIndexAtom);
   const [showPage, setShowPage] = useAtom(showPageAtom);
-  const [mediaIndices, setMediaIndices] = useAtom(mediaIndicesStackAtom);
-  const [gridValues, setGridValues] = useAtom(gridValuesAtom);
+  const mediaIndices = useAtomValue(mediaIndicesStackAtom);
   const filters = useAtomValue(filtersAtom);
   const setSideMedia = useSetAtom(mediaAtom);
-  const setSimilarityResults = useSetAtom(similarityResultsAtom);
-  const setTextSearchQuery = useSetAtom(textSearchQueryAtom);
-  const [labelFilter, setLabelFilter] = useAtom(labelFilterAtom);
+  const labelFilter = useAtomValue(labelFilterAtom);
+
+  const {
+    pushSelection,
+    popSelection,
+    setBaseAndSelection,
+    initBase,
+  } = useBreadcrumbNav();
 
   useUrlState();
 
@@ -60,7 +63,6 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
       if (config.type === "grid" && showPage === "plot") {
         setShowPage("grid");
       }
-      // Deep-link: if URL specified a media index, fetch it
       if (showPage === "media" && mediaIndex != null) {
         fetchMedia(uuid, mediaIndex, true).then(setSideMedia);
       }
@@ -77,8 +79,7 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
       }
       if (ids.length > 0) {
         const allIndices = data.flatMap((d) => d.id ?? []);
-        setMediaIndices([allIndices, ids]);
-        setGridValues((prev) => ({ ...prev, page: 0 }));
+        setBaseAndSelection(allIndices, ids, `Label: ${labelFilter}`);
         setShowPage("grid");
       }
     });
@@ -92,41 +93,19 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
       fetchFilteredPlotData(uuid, filters).then((filtered) => {
         if (filtered) {
           const indices = filtered.flatMap((d) => d.id ?? []);
-          setMediaIndices((prev) => (prev.length > 0 ? prev : [indices]));
+          initBase(indices);
         }
       });
     } else {
       const indices = data.flatMap((d) => d.id ?? []);
       if (indices.length > 0) {
-        setMediaIndices([indices]);
+        initBase(indices);
       }
     }
   }, [showPage, mediaIndices.length, data, filters, uuid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleMediaIndices = (newIndices: number[]) => {
-    setMediaIndices((prev) => {
-      if (prev.length === 0 && data) {
-        // Ensure a base level of all items exists so the user can go back
-        const allIndices = data.flatMap((d) => d.id ?? []);
-        return [allIndices, newIndices];
-      }
-      return [...prev, newIndices];
-    });
-    setGridValues((prev) => ({ ...prev, page: 0 }));
-    setShowPage("grid");
-  };
-
-  // Pop one level from the indices stack (back from filtered subset).
-  // If only one level remains, that's the "all items" level — stay on grid.
-  const handleGridBack = () => {
-    setMediaIndices((prev) => {
-      if (prev.length <= 1) return prev;
-      return prev.slice(0, -1);
-    });
-    setGridValues((prev) => ({ ...prev, page: 0 }));
-    setSimilarityResults({});
-    setTextSearchQuery("");
-    setLabelFilter(null);
+    pushSelection(newIndices, "Selection");
   };
 
   if (showPage === "media" && mediaIndex !== undefined) {
@@ -152,7 +131,7 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
         ) : showPage === "insights" ? (
           <InsightsPage />
         ) : showPage === "grid" ? (
-          <GridView onBack={handleGridBack} />
+          <GridView onBack={popSelection} />
         ) : (
           <PlotPage onMediaSelect={handleMediaIndices} />
         )}

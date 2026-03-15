@@ -38,6 +38,11 @@ vi.mock("@/app/lib/api", () => ({
   downloadLabelCsv: vi.fn().mockResolvedValue(new Blob()),
   saveLabelAsGrid: vi.fn().mockResolvedValue(""),
   downloadGridCsv: vi.fn().mockResolvedValue(new Blob()),
+  fetchMediaThumbnails: vi.fn().mockResolvedValue([]),
+  fetchAllLabels: vi.fn().mockResolvedValue({}),
+  saveView: vi.fn().mockResolvedValue({ uuid: "new-uuid" }),
+  fetchSimilar: vi.fn().mockResolvedValue([]),
+  fetchSimilarVector: vi.fn().mockResolvedValue([]),
 }));
 
 // Mock PreviewMedia

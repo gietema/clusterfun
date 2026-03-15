@@ -2,19 +2,11 @@
 import { useAtomValue } from "jotai";
 import { configAtom, dataAtom, dragModeAtom, highlightedPointsAtom } from "@/app/store/atoms";
 import type { PlotConfig, PlotTrace } from "@/app/types";
-import type { Thumbnail } from "./PlotPage";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Data } from "plotly.js";
 
 const Plot = dynamic(() => import("@/app/lib/PlotlyChart"), { ssr: false });
-
-export interface ViewportRange {
-  xMin: number;
-  xMax: number;
-  yMin: number;
-  yMax: number;
-}
 
 interface PlotlyChartProps {
   revision: number;
@@ -25,12 +17,6 @@ interface PlotlyChartProps {
   overrideData?: PlotTrace[];
   /** Override config for multi-plot panels */
   overrideConfig?: PlotConfig;
-  /** Thumbnail images to overlay on the plot (embedding maps) */
-  thumbnails?: Thumbnail[];
-  /** Current viewport for sizing thumbnails relative to zoom level */
-  thumbnailViewport?: ViewportRange | null;
-  /** Called (debounced) when the user zooms/pans, with the visible axis range */
-  onViewportChange?: (range: ViewportRange | null) => void;
 }
 
 function getXAxis(cfg: PlotConfig): Record<string, any> {
@@ -86,9 +72,6 @@ export default function PlotlyChart({
   onSelect,
   overrideData,
   overrideConfig,
-  thumbnails,
-  thumbnailViewport,
-  onViewportChange,
 }: PlotlyChartProps) {
   const globalConfig = useAtomValue(configAtom);
   const globalData = useAtomValue(dataAtom);
@@ -100,18 +83,6 @@ export default function PlotlyChart({
 
   const [layout, setLayout] = useState<Record<string, any>>({});
   const [isLoading, setIsLoading] = useState(true);
-
-  // Stable ref for the viewport callback so handleRelayout doesn't depend on it
-  const onViewportChangeRef = useRef(onViewportChange);
-  onViewportChangeRef.current = onViewportChange;
-  const viewportDebounceRef = useRef<ReturnType<typeof setTimeout>>();
-
-  // Cleanup timers
-  useEffect(() => {
-    return () => {
-      if (viewportDebounceRef.current) clearTimeout(viewportDebounceRef.current);
-    };
-  }, []);
 
   // Build base layout when config/data/revision change — sets axes with autorange
   useEffect(() => {
@@ -146,54 +117,6 @@ export default function PlotlyChart({
     });
   }, [config, revision, data]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Update only thumbnail images — never touches axis config so zoom is preserved
-  useEffect(() => {
-    if (!thumbnails?.length || !data) {
-      setLayout((prev) => {
-        if (!prev.images) return prev;
-        const { images: _, ...rest } = prev;
-        return rest;
-      });
-      return;
-    }
-    // Use viewport extent if zoomed, otherwise compute from data
-    let xMin: number, xMax: number, yMin: number, yMax: number;
-    if (thumbnailViewport) {
-      ({ xMin, xMax, yMin, yMax } = thumbnailViewport);
-    } else {
-      xMin = Infinity; xMax = -Infinity; yMin = Infinity; yMax = -Infinity;
-      for (const trace of data) {
-        if (!trace.x || !trace.y) continue;
-        for (let i = 0; i < trace.x.length; i++) {
-          const x = trace.x[i] as number;
-          const y = trace.y[i] as number;
-          if (x < xMin) xMin = x;
-          if (x > xMax) xMax = x;
-          if (y < yMin) yMin = y;
-          if (y > yMax) yMax = y;
-        }
-      }
-    }
-    const xRange = xMax - xMin || 1;
-    const yRange = yMax - yMin || 1;
-    const thumbSize = Math.min(xRange, yRange) * 0.06;
-    const images = thumbnails.map((t) => ({
-      source: t.src,
-      x: t.x,
-      y: t.y,
-      xref: "x",
-      yref: "y",
-      sizex: thumbSize,
-      sizey: thumbSize,
-      xanchor: "center",
-      yanchor: "middle",
-      layer: "above",
-      sizing: "contain",
-      opacity: 0.7,
-    }));
-    setLayout((prev) => ({ ...prev, images }));
-  }, [thumbnails, thumbnailViewport, data]);
-
   // Update only dragmode without resetting zoom
   useEffect(() => {
     setLayout((prev) => ({ ...prev, dragmode: dragMode }));
@@ -216,29 +139,6 @@ export default function PlotlyChart({
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Capture viewport changes from zoom/pan — debounced, only notifies parent for re-sampling
-  const handleRelayout = useCallback((e: any) => {
-    if (viewportDebounceRef.current) clearTimeout(viewportDebounceRef.current);
-    if (
-      e["xaxis.range[0]"] != null && e["xaxis.range[1]"] != null &&
-      e["yaxis.range[0]"] != null && e["yaxis.range[1]"] != null
-    ) {
-      const range: ViewportRange = {
-        xMin: e["xaxis.range[0]"],
-        xMax: e["xaxis.range[1]"],
-        yMin: e["yaxis.range[0]"],
-        yMax: e["yaxis.range[1]"],
-      };
-      viewportDebounceRef.current = setTimeout(() => {
-        onViewportChangeRef.current?.(range);
-      }, 300);
-    } else if (e["xaxis.autorange"] || e["yaxis.autorange"]) {
-      viewportDebounceRef.current = setTimeout(() => {
-        onViewportChangeRef.current?.(null);
-      }, 300);
-    }
   }, []);
 
   // Sort traces once when data changes
@@ -294,7 +194,6 @@ export default function PlotlyChart({
         useResizeHandler
         style={{ width: "100%", height: "100%" }}
         config={{ scrollZoom: true, displayModeBar: false }}
-        onRelayout={handleRelayout}
         onInitialized={() => setIsLoading(false)}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onHover={(e: any) => onHover(getPointId(e.points?.[0] ?? {}))}

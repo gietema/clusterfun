@@ -3,8 +3,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   configAtom, uuidAtom, dataAtom, columnsAtom,
-  currentMediaIndicesAtom, mediaIndicesStackAtom,
-  gridValuesAtom, showPageAtom, embeddingsCacheAtom,
+  currentMediaIndicesAtom,
+  showPageAtom, embeddingsCacheAtom,
   insightsColumnStatsAtom, insightsOutliersAtom,
   insightsDuplicatesAtom, insightsWeirdestAtom,
 } from "@/app/store/atoms";
@@ -13,6 +13,7 @@ import {
   fetchEmbeddings, fetchOutliers, fetchDuplicates,
   fetchFilteredPlotData,
 } from "@/app/lib/api";
+import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
 import type { ColumnInfo, ColumnStats, CategoricalStat, Media } from "@/app/types";
 import type { EmbeddingsResponse } from "@/app/lib/api";
 import {
@@ -306,9 +307,8 @@ export default function InsightsPage() {
   const data = useAtomValue(dataAtom);
   const [columns, setColumns] = useAtom(columnsAtom);
   const mediaIndices = useAtomValue(currentMediaIndicesAtom);
-  const setMediaIndicesStack = useSetAtom(mediaIndicesStackAtom);
-  const setGridValues = useSetAtom(gridValuesAtom);
   const setShowPage = useSetAtom(showPageAtom);
+  const { pushSelection } = useBreadcrumbNav();
   const embeddingsCache = useAtomValue(embeddingsCacheAtom);
 
   // Persistent state via atoms
@@ -391,18 +391,10 @@ export default function InsightsPage() {
 
   // Navigate to grid with a set of IDs
   const viewInGrid = useCallback(
-    (ids: number[]) => {
-      setMediaIndicesStack((prev) => {
-        if (prev.length === 0 && data) {
-          const all = data.flatMap((d) => d.id ?? []);
-          return [all, ids];
-        }
-        return [...prev, ids];
-      });
-      setGridValues((prev) => ({ ...prev, page: 0 }));
-      setShowPage("grid");
+    (ids: number[], label = "Insight results") => {
+      pushSelection(ids, label);
     },
-    [data, setMediaIndicesStack, setGridValues, setShowPage],
+    [pushSelection],
   );
 
   // Navigate to grid by filtering on a column value
@@ -414,7 +406,7 @@ export default function InsightsPage() {
         ]);
         if (traces) {
           const ids = traces.flatMap((t) => t.id ?? []);
-          if (ids.length > 0) viewInGrid(ids);
+          if (ids.length > 0) viewInGrid(ids, `${column} = ${value}`);
         }
       } catch {
         toast.error("Failed to filter data");
@@ -433,7 +425,7 @@ export default function InsightsPage() {
         ]);
         if (traces) {
           const ids = traces.flatMap((t) => t.id ?? []);
-          if (ids.length > 0) viewInGrid(ids);
+          if (ids.length > 0) viewInGrid(ids, `${column}: ${low.toFixed(1)}–${high.toFixed(1)}`);
         }
       } catch {
         toast.error("Failed to filter data");
@@ -741,7 +733,7 @@ export default function InsightsPage() {
                         {outlierState.ids.length} outliers across {outlierState.groups.length} groups
                       </span>
                       <button
-                        onClick={() => viewInGrid(outlierState.ids)}
+                        onClick={() => viewInGrid(outlierState.ids, "Outliers")}
                         className="rounded-md bg-gray-800 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-gray-700"
                       >
                         View all in grid
@@ -753,7 +745,7 @@ export default function InsightsPage() {
                           mediaItems={g.media}
                           loading={false}
                           label={`${g.label} — ${g.ids.length} outliers`}
-                          onViewAll={() => viewInGrid(g.ids)}
+                          onViewAll={() => viewInGrid(g.ids, `Outliers: ${g.label}`)}
                         />
                       </div>
                     ))}
@@ -763,7 +755,7 @@ export default function InsightsPage() {
                     mediaItems={outlierState.media}
                     loading={outlierLoading}
                     label={`${outlierState.ids.length} outliers found`}
-                    onViewAll={() => viewInGrid(outlierState.ids)}
+                    onViewAll={() => viewInGrid(outlierState.ids, "Outliers")}
                   />
                 )}
               </div>
@@ -812,7 +804,7 @@ export default function InsightsPage() {
                         {duplicateState.groups.length} duplicate group{duplicateState.groups.length !== 1 ? "s" : ""} ({duplicateState.groups.reduce((s, g) => s + g.length, 0)} items)
                       </span>
                       <button
-                        onClick={() => viewInGrid(duplicateState.groups.flat())}
+                        onClick={() => viewInGrid(duplicateState.groups.flat(), "Duplicates")}
                         className="rounded-md bg-gray-800 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-gray-700"
                       >
                         View all in grid
@@ -822,7 +814,7 @@ export default function InsightsPage() {
                       {(showAllDupGroups ? duplicateState.groups : duplicateState.groups.slice(0, 10)).map((group, i) => (
                         <button
                           key={i}
-                          onClick={() => viewInGrid(group)}
+                          onClick={() => viewInGrid(group, `Dup group ${i + 1}`)}
                           className="rounded-md border border-gray-200 px-2.5 py-1 text-xs text-gray-600 transition-colors hover:bg-gray-50"
                         >
                           Group {i + 1} ({group.length} items)
@@ -874,7 +866,7 @@ export default function InsightsPage() {
                   mediaItems={weirdState.media}
                   loading={weirdLoading}
                   label={`${weirdState.ids.length} items ranked by distance`}
-                  onViewAll={() => viewInGrid(weirdState.ids)}
+                  onViewAll={() => viewInGrid(weirdState.ids, "Weirdest")}
                 />
               </div>
             </div>

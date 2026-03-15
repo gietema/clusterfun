@@ -1,19 +1,20 @@
 "use client";
 import { useState } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtomValue } from "jotai";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTriangleExclamation, faCopy, faMagicWandSparkles } from "@fortawesome/free-solid-svg-icons";
 import toast from "react-hot-toast";
 import {
   configAtom, uuidAtom, currentMediaIndicesAtom,
-  mediaIndicesStackAtom, gridValuesAtom, embeddingsCacheAtom,
+  embeddingsCacheAtom,
 } from "@/app/store/atoms";
 import { fetchEmbeddings, fetchOutliers, fetchDuplicates } from "@/app/lib/api";
-import type { EmbeddingsResponse, OutlierResult, DuplicateGroup } from "@/app/lib/api";
+import type { EmbeddingsResponse } from "@/app/lib/api";
 import {
   computeOutlierScores, findDuplicates, computeDistanceFromCentroid,
 } from "@/app/lib/outlier-detection";
 import type { EmbeddingData } from "@/app/lib/active-learning/types";
+import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
 
 type InsightMode = "outliers" | "duplicates" | "weirdest" | null;
 
@@ -21,9 +22,8 @@ export default function InsightsPanel() {
   const config = useAtomValue(configAtom);
   const uuid = useAtomValue(uuidAtom);
   const mediaIndices = useAtomValue(currentMediaIndicesAtom);
-  const setMediaIndicesStack = useSetAtom(mediaIndicesStackAtom);
-  const setGridValues = useSetAtom(gridValuesAtom);
   const embeddingsCache = useAtomValue(embeddingsCacheAtom);
+  const { replaceTop } = useBreadcrumbNav();
 
   const [loading, setLoading] = useState<InsightMode>(null);
   const [outlierResults, setOutlierResults] = useState<{ ids: number[]; count: number } | null>(null);
@@ -35,7 +35,6 @@ export default function InsightsPanel() {
 
   const ensureEmbeddings = async (): Promise<EmbeddingData | null> => {
     if (embeddingsCache) return embeddingsCache;
-    // Load embeddings if not cached
     try {
       const resp: EmbeddingsResponse = await fetchEmbeddings(uuid, mediaIndices.slice(0, 5000));
       const flat = new Float32Array(resp.embeddings.flat());
@@ -114,15 +113,10 @@ export default function InsightsPanel() {
         const results = computeDistanceFromCentroid(emb, mediaIndices.slice(0, 5000));
         ids = results.map((r) => r.mediaId);
       } else {
-        // Fall back to outlier detection for server-side
         const results = await fetchOutliers(uuid, mediaIndices, 20, 200);
         ids = results.map((r) => r.media_id);
       }
-      // Show the weirdest items in the grid
-      setMediaIndicesStack((prev) =>
-        prev.length > 1 ? [...prev.slice(0, -1), ids] : [...prev, ids],
-      );
-      setGridValues((prev) => ({ ...prev, page: 0 }));
+      replaceTop(ids, "Weirdest");
     } catch (e) {
       console.error("Weirdest detection failed:", e);
       toast.error("Weirdness detection failed");
@@ -133,26 +127,17 @@ export default function InsightsPanel() {
 
   const viewOutliers = () => {
     if (!outlierResults) return;
-    setMediaIndicesStack((prev) =>
-      prev.length > 1 ? [...prev.slice(0, -1), outlierResults.ids] : [...prev, outlierResults.ids],
-    );
-    setGridValues((prev) => ({ ...prev, page: 0 }));
+    replaceTop(outlierResults.ids, "Outliers");
   };
 
-  const viewDuplicateGroup = (group: number[]) => {
-    setMediaIndicesStack((prev) =>
-      prev.length > 1 ? [...prev.slice(0, -1), group] : [...prev, group],
-    );
-    setGridValues((prev) => ({ ...prev, page: 0 }));
+  const viewDuplicateGroup = (group: number[], i: number) => {
+    replaceTop(group, `Dup group ${i + 1}`);
   };
 
   const viewAllDuplicates = () => {
     if (!duplicateResults) return;
     const allIds = duplicateResults.groups.flat();
-    setMediaIndicesStack((prev) =>
-      prev.length > 1 ? [...prev.slice(0, -1), allIds] : [...prev, allIds],
-    );
-    setGridValues((prev) => ({ ...prev, page: 0 }));
+    replaceTop(allIds, "Duplicates");
   };
 
   return (
@@ -213,7 +198,7 @@ export default function InsightsPanel() {
             {duplicateResults.groups.slice(0, 5).map((group, i) => (
               <button
                 key={i}
-                onClick={() => viewDuplicateGroup(group)}
+                onClick={() => viewDuplicateGroup(group, i)}
                 className="rounded bg-blue-100 px-2 py-0.5 text-blue-800 transition-colors hover:bg-blue-200"
               >
                 Group {i + 1} ({group.length})

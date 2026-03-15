@@ -45,6 +45,28 @@ export interface BoundingBox {
   label?: string;
 }
 
+// ── Annotation ──
+export type AnnotationTool = "rectangle" | "polygon";
+
+export interface RectangleData {
+  xmin: number;
+  ymin: number;
+  xmax: number;
+  ymax: number;
+}
+
+export interface PolygonData {
+  points: [number, number][];
+}
+
+export interface Annotation {
+  id: string;
+  type: AnnotationTool;
+  label: string;
+  color?: string;
+  data: RectangleData | PolygonData;
+}
+
 // ── Filter ──
 export interface Filter {
   column: string;
@@ -191,6 +213,12 @@ export interface DuplicateGroup {
   group_id: number;
   media_ids: number[];
   similarity: number;
+}
+
+// ── Breadcrumb ──
+export interface BreadcrumbMeta {
+  label: string;
+  thumbnailId?: number;
 }
 
 // ── Projects ──

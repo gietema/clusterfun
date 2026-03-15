@@ -30,6 +30,7 @@
 22. [Caching & Persistence](#22-caching--persistence)
 23. [Dependencies](#23-dependencies)
 24. [File Structure Reference](#24-file-structure-reference)
+25. [Insights & Image Statistics](#25-insights--image-statistics)
 
 ---
 
@@ -187,6 +188,16 @@ All functions return `Path` — the cache directory where the plot data is store
 - Uses `np.random.uniform` for angles and `np.sqrt(np.random.uniform)` for radii
 - Cell positions use integer offsets for each label/prediction pair
 
+### 4.8 Embedding Map (plot builder, `embedding_map` type)
+- 2D projection of high-dimensional embeddings via UMAP, t-SNE, or PCA
+- Configured via the plot builder dropdown (not a Python function — created in-browser)
+- Parameters: method (umap/tsne/pca), sample size (default 10K), n_neighbors (UMAP only)
+- Subsamples in SQL before loading to memory for efficiency
+- Projections are cached by `(view_uuid, method, sample_size, n_neighbors)`
+- Thread-safe: uses a global lock for Numba/UMAP, cached results bypass the lock
+- Displays image thumbnails on the plot (preloaded as a 48×48 grid, ~2300 images)
+- Thumbnails are fetched once and cached; all zoom/pan is purely client-side
+
 ---
 
 ## 5. Configuration Model
@@ -342,7 +353,35 @@ Base URL: `http://localhost:{port}/api/`
 |--------|------|------|----------|-------------|
 | POST | `/api/views/{uuid}/download-grid` | `MediaIndices` | CSV StreamingResponse | Download selection as CSV |
 
-### 7.7 Frontend Serving
+### 7.7 Image Statistics Endpoints
+
+| Method | Path | Body | Response | Description |
+|--------|------|------|----------|-------------|
+| POST | `/api/views/{uuid}/image-stats/compute` | — | `ImageStatsResponse` | Start computing image statistics in background thread |
+| GET | `/api/views/{uuid}/image-stats/status` | — | `ImageStatsResponse` | Poll computation progress |
+
+**ImageStatsResponse:** `{status, progress, total, done, columns}`
+
+Status values: `"idle"` (not started), `"computing"` (in progress), `"done"` (complete), `"already_computed"` (stats exist).
+
+Computed columns: `img_brightness`, `img_contrast`, `img_sharpness`, `img_colorfulness`, `img_saturation`, `img_aspect_ratio`, `img_width`, `img_height`. These are added directly to the view's parquet file and become available as regular columns in plots, filters, and sorting.
+
+### 7.8 Thumbnail Endpoints
+
+| Method | Path | Body | Response | Description |
+|--------|------|------|----------|-------------|
+| GET | `/api/views/{uuid}/media/{id}/thumbnail?size=64` | — | JPEG image | Single thumbnail (browser-cacheable) |
+| POST | `/api/views/{uuid}/media-thumbnails` | `{media_ids, max_size}` | `[{id, src}]` | Batch thumbnails as base64 data URIs |
+
+### 7.9 Plot Builder Endpoint
+
+| Method | Path | Body | Response | Description |
+|--------|------|------|----------|-------------|
+| POST | `/api/views/{uuid}/plot-data` | `PlotBuilderRequest` | `{config, data}` | Generate plot data for any type dynamically |
+
+**PlotBuilderRequest fields:** `type` (scatter/histogram/bar_chart/violin/embedding_map), `x`, `y`, `color`, `bins`, `sample_size`, `method` (umap/tsne/pca), `n_neighbors`.
+
+### 7.10 Frontend Serving
 
 | Method | Path | Response | Description |
 |--------|------|----------|-------------|
@@ -605,14 +644,14 @@ PLOT ──(drag-select)──→ GRID ──(click item)──→ MEDIA
 **Layout**: 75% grid area (left) + 25% sidebar (right)
 
 **Toolbar** (top bar):
-- Back button → returns to plot
+- Item count display (shows "N of M items" when subsampled)
+- Subsample dropdown (All data, 1%, 5%, 10%, 25%, 50%) — random client-side sample with stable seed
 - Sort dropdown (column selector + asc/desc toggle)
 - Bounding box label checkbox
 - Column value display dropdown
 - Grid columns slider (range: 1-10)
 - Pagination (prev/next, shows page X of Y)
 - Stats toggle button (bar chart icon)
-- Download CSV button
 
 **Grid area**:
 - CSS grid with configurable 1-10 columns
@@ -1158,3 +1197,43 @@ scripts/
 ├── pie.py                               # Example: pie chart
 └── audio.py                             # Example: audio grid with display
 ```
+
+---
+
+## 25. Insights & Image Statistics
+
+### 25.1 Image Statistics (`routes/image_stats.py`)
+
+Computes per-image metrics and adds them as new columns to the view's parquet file.
+
+**Computed metrics:**
+- `img_brightness` — mean luminance (0–1)
+- `img_contrast` — std of luminance (0–1)
+- `img_sharpness` — Laplacian variance (log scale)
+- `img_colorfulness` — Hasler & Susstrunk metric (0–1)
+- `img_saturation` — mean HSV saturation (0–1)
+- `img_aspect_ratio` — width/height
+- `img_width`, `img_height` — original pixel dimensions
+
+**Processing:** Images are resized to 128×128 before computation. 8 concurrent threads with chunked futures (1000 at a time). Progress is tracked in-memory and polled by the frontend every second. Results are written directly to the parquet file and the DuckDB cache is invalidated so new columns appear immediately.
+
+### 25.2 Background Task Queue
+
+Long-running tasks (image statistics) run in a background thread. The **TaskQueueIndicator** component in the top navigation bar shows:
+- A progress ring when tasks are running
+- A dropdown with task details (name, progress bar, counts)
+- A success indicator when complete (auto-dismissed after 30 seconds)
+
+The indicator persists across page switches (uses a Jotai atom). Users can start a computation on the Insights tab and navigate away freely.
+
+### 25.3 Grid Subsampling
+
+The grid toolbar includes a **subsample dropdown** (All data, 1%, 5%, 10%, 25%, 50%). This applies a client-side random sample with a stable seed (Fisher-Yates shuffle with LCG). The item count shows "N of M items" when subsampled. Pagination, sorting, and stats all operate on the subsampled set.
+
+### 25.4 Embedding Analysis (Insights tab)
+
+- **Outlier detection** — Local Outlier Factor (LOF) with configurable k-neighbors and threshold
+- **Near-duplicate detection** — cosine similarity with configurable threshold, union-find grouping
+- **Farthest from centroid** — ranks items by distance from the embedding centroid
+- All three can optionally group by a categorical column
+- Results link to the grid view for inspection

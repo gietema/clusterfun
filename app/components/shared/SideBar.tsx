@@ -1,24 +1,24 @@
 "use client";
 import { useState } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom, useAtom } from "jotai";
 import {
   configAtom, mediaAtom, uuidAtom,
-  mediaIndicesStackAtom, gridValuesAtom, showPageAtom,
+  showPageAtom,
   similarityResultsAtom,
 } from "@/app/store/atoms";
-import { fetchSimilar } from "@/app/lib/api";
+import { fetchSimilar, updateMetadata } from "@/app/lib/api";
+import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
 import PreviewMedia from "./PreviewMedia";
 import InformationItem from "./InformationItem";
 
 export default function SideBar() {
-  const media = useAtomValue(mediaAtom);
+  const [media, setMedia] = useAtom(mediaAtom);
   const config = useAtomValue(configAtom);
   const uuid = useAtomValue(uuidAtom);
-  const setMediaIndicesStack = useSetAtom(mediaIndicesStackAtom);
-  const setGridValues = useSetAtom(gridValuesAtom);
   const setShowPage = useSetAtom(showPageAtom);
   const setSimilarityResults = useSetAtom(similarityResultsAtom);
   const [loading, setLoading] = useState(false);
+  const { replaceTop } = useBreadcrumbNav();
 
   if (!media || !config) return <div />;
 
@@ -40,10 +40,7 @@ export default function SideBar() {
         scores[r.media_id] = r.similarity;
       }
       setSimilarityResults(scores);
-      setMediaIndicesStack((prev) =>
-        prev.length > 1 ? [...prev.slice(0, -1), ids] : [...prev, ids],
-      );
-      setGridValues((prev) => ({ ...prev, page: 0 }));
+      replaceTop(ids, `Similar to #${media.index}`);
       setShowPage("grid");
     } finally {
       setLoading(false);
@@ -71,7 +68,19 @@ export default function SideBar() {
         )}
         <div className="overflow-y-auto" style={{ flexGrow: 1 }}>
           {entries.map(([key, value]) => (
-            <InformationItem key={key} label={key} value={value} />
+            <InformationItem
+              key={key}
+              label={key}
+              value={value}
+              onEdit={(column, newValue) => {
+                if (!media) return;
+                updateMetadata(uuid, [media.index], column, newValue).catch(console.error);
+                setMedia({
+                  ...media,
+                  information: { ...media.information, [column]: newValue },
+                });
+              }}
+            />
           ))}
         </div>
       </div>

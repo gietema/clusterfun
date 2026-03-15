@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Media, PlotConfig, Filter, ColumnInfo, LabelCount, PlotTrace, ColumnStats, MediaMetadata, SimilarityResult, ProbeResponse, ProbeSortBy, OutlierResult, DuplicateGroup, ProjectSummary, ProjectDetail } from "@/app/types";
+import type { Media, PlotConfig, Filter, ColumnInfo, LabelCount, PlotTrace, ColumnStats, MediaMetadata, SimilarityResult, ProbeResponse, ProbeSortBy, OutlierResult, DuplicateGroup, ProjectSummary, ProjectDetail, Annotation, InformationValue } from "@/app/types";
 import { API_URL } from "./constants";
 import { createMedia } from "./media-utils";
 
@@ -335,4 +335,50 @@ export async function computeImageStats(uuid: string): Promise<ImageStatsStatus>
 export async function fetchImageStatsStatus(uuid: string): Promise<ImageStatsStatus> {
   const { data } = await axios.get<ImageStatsStatus>(`${API_URL}/views/${uuid}/image-stats/status`);
   return data;
+}
+
+// ── Annotations ──
+
+export async function fetchAnnotations(uuid: string, mediaId: number): Promise<Annotation[]> {
+  const { data } = await axios.get<Annotation[]>(`${API_URL}/views/${uuid}/annotations/${mediaId}`);
+  return data;
+}
+
+export async function saveAnnotations(uuid: string, mediaId: number, annotations: Annotation[]): Promise<void> {
+  await axios.post(`${API_URL}/views/${uuid}/annotations`, {
+    media_id: mediaId,
+    annotations,
+  });
+}
+
+export async function deleteAnnotation(uuid: string, mediaId: number, annotationId: string): Promise<void> {
+  await axios.delete(`${API_URL}/views/${uuid}/annotations`, {
+    data: { media_id: mediaId, annotation_id: annotationId },
+  });
+}
+
+export async function exportAnnotations(uuid: string, mediaIds?: number[]): Promise<any[]> {
+  const { data } = await axios.post(`${API_URL}/views/${uuid}/annotations/export`, {
+    media_ids: mediaIds ?? null,
+  });
+  return data;
+}
+
+// ── Metadata Editing ──
+
+export async function updateMetadata(
+  uuid: string,
+  mediaIds: number[],
+  column: string,
+  value: InformationValue,
+): Promise<void> {
+  await axios.patch(`${API_URL}/views/${uuid}/metadata`, {
+    media_ids: mediaIds,
+    column,
+    value,
+  });
+}
+
+export async function addColumn(uuid: string, column: string): Promise<void> {
+  await axios.post(`${API_URL}/views/${uuid}/add-column`, { column });
 }

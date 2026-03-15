@@ -3,11 +3,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   configAtom, showPageAtom, uuidAtom,
-  mediaIndicesStackAtom, gridValuesAtom,
   similarityResultsAtom, textSearchQueryAtom,
 } from "@/app/store/atoms";
 import { fetchSimilarVector } from "@/app/lib/api";
 import { encodeText } from "@/app/lib/clip";
+import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
 import TaskQueueIndicator from "./TaskQueueIndicator";
 
 function ProgressRing({ progress }: { progress: number }) {
@@ -32,10 +32,9 @@ export default function TabNavigation() {
   const config = useAtomValue(configAtom);
   const [showPage, setShowPage] = useAtom(showPageAtom);
   const uuid = useAtomValue(uuidAtom);
-  const setMediaIndicesStack = useSetAtom(mediaIndicesStackAtom);
-  const setGridValues = useSetAtom(gridValuesAtom);
   const setSimilarityResults = useSetAtom(similarityResultsAtom);
   const [searchQuery, setSearchQuery] = useAtom(textSearchQueryAtom);
+  const { replaceTop, popSelection } = useBreadcrumbNav();
 
   const [inputValue, setInputValue] = useState("");
   const [searching, setSearching] = useState(false);
@@ -83,10 +82,7 @@ export default function TabNavigation() {
       for (const r of results) scores[r.media_id] = r.similarity;
       setSimilarityResults(scores);
       setSearchQuery(query.trim());
-      setMediaIndicesStack((prev) =>
-        prev.length > 1 ? [...prev.slice(0, -1), ids] : [...prev, ids],
-      );
-      setGridValues((prev) => ({ ...prev, page: 0 }));
+      replaceTop(ids, `Search: ${query.trim()}`);
       setShowPage("grid");
       inputRef.current?.blur();
     } catch (err: unknown) {
@@ -95,19 +91,15 @@ export default function TabNavigation() {
       setSearching(false);
       setProgress(null);
     }
-  }, [config, uuid, setSimilarityResults, setSearchQuery, setMediaIndicesStack, setGridValues, setShowPage]);
+  }, [config, uuid, setSimilarityResults, setSearchQuery, replaceTop, setShowPage]);
 
   const handleClearSearch = useCallback(() => {
     setSearchQuery("");
     setInputValue("");
     setSimilarityResults({});
-    setMediaIndicesStack((prev) => {
-      if (prev.length <= 1) return prev;
-      return prev.slice(0, -1);
-    });
-    setGridValues((prev) => ({ ...prev, page: 0 }));
+    popSelection();
     setError(null);
-  }, [setSearchQuery, setSimilarityResults, setMediaIndicesStack, setGridValues]);
+  }, [setSearchQuery, setSimilarityResults, popSelection]);
 
   const tabs = [
     ...(config ? [

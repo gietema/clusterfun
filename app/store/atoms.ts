@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import type { PlotConfig, Media, Filter, GridValues, LabelAction, PlotTrace, PredictionItem, PlotPanelConfig, ColumnInfo } from "@/app/types";
+import type { PlotConfig, Media, Filter, GridValues, LabelAction, PlotTrace, PredictionItem, PlotPanelConfig, ColumnInfo, BreadcrumbMeta } from "@/app/types";
 
 export const dataAtom = atom<PlotTrace[] | undefined>(undefined);
 export const configAtom = atom<PlotConfig | undefined>(undefined);
@@ -11,6 +11,7 @@ export const currentMediaIndicesAtom = atom<number[]>(
     return stack.length > 0 ? stack[stack.length - 1] : [];
   },
 );
+export const breadcrumbsAtom = atom<BreadcrumbMeta[]>([]);
 export const filtersAtom = atom<Filter[]>([]);
 export const gridValuesAtom = atom<GridValues>({
   sortBy: "",

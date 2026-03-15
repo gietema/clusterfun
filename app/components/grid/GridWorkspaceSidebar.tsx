@@ -1,93 +1,42 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
-  faBolt, faDownload, faRotateLeft,
-  faStop, faArrowsRotate, faChevronDown, faChevronRight, faXmark,
-  faArrowRight,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { saveAs } from "file-saver";
-import {
-  configAtom, currentMediaIndicesAtom, mediaItemsAtom, uuidAtom,
-  mediaAtom, mediaIndicesStackAtom, gridValuesAtom, showPageAtom,
-  similarityResultsAtom, labelFilterAtom,
+  configAtom, mediaItemsAtom, uuidAtom,
+  mediaAtom, showPageAtom, similarityResultsAtom,
 } from "@/app/store/atoms";
-import {
-  fetchLabelCounts, saveLabel, deleteLabel,
-  downloadLabelCsv, fetchSimilar, fetchAllLabels,
-} from "@/app/lib/api";
-import type { LabelCount } from "@/app/types";
+import { fetchSimilar, updateMetadata, addColumn } from "@/app/lib/api";
+import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
+import type { InformationValue } from "@/app/types";
 import { getLabelColor } from "@/app/lib/label-colors";
+import { saveLabel, deleteLabel } from "@/app/lib/api";
 import { useLabelUndo } from "@/app/lib/use-label-undo";
-import { useActiveLearning } from "@/app/lib/use-active-learning";
-import { AL_METHODS } from "@/app/lib/active-learning";
 import PreviewMedia from "../shared/PreviewMedia";
 import InformationItem from "../shared/InformationItem";
+import Section from "../shared/Section";
+import LabelsSection from "./LabelsSection";
+import ActiveLearningSection from "./ActiveLearningSection";
 
-function Section({ title, defaultOpen = false, children, badge }: {
-  title: string;
-  defaultOpen?: boolean;
-  children: React.ReactNode;
-  badge?: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <div className="border-b border-gray-200">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex w-full items-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"
-      >
-        <FontAwesomeIcon icon={open ? faChevronDown : faChevronRight} className="w-2.5 text-gray-400" />
-        {title}
-        {badge && <span className="ml-auto">{badge}</span>}
-      </button>
-      {open && <div className="px-3 pb-3">{children}</div>}
-    </div>
-  );
+interface GridWorkspaceSidebarProps {
+  onReview?: () => void;
 }
 
-export default function GridWorkspaceSidebar() {
+export default function GridWorkspaceSidebar({ onReview }: GridWorkspaceSidebarProps = {}) {
   const uuid = useAtomValue(uuidAtom);
   const [config, setConfig] = useAtom(configAtom);
   const [media, setSideMedia] = useAtom(mediaAtom);
   const [mediaItems, setMediaItems] = useAtom(mediaItemsAtom);
-  const mediaIndices = useAtomValue(currentMediaIndicesAtom);
-  const setMediaIndicesStack = useSetAtom(mediaIndicesStackAtom);
-  const setGridValues = useSetAtom(gridValuesAtom);
   const setShowPage = useSetAtom(showPageAtom);
   const setSimilarityResults = useSetAtom(similarityResultsAtom);
-  const setLabelFilter = useSetAtom(labelFilterAtom);
+  const { replaceTop } = useBreadcrumbNav();
+  const { pushAction } = useLabelUndo();
 
-  const [labelCounts, setLabelCounts] = useState<LabelCount[]>([]);
-  const [newLabel, setNewLabel] = useState("");
-  const [alLoading, setAlLoading] = useState(false);
+  const [newColumn, setNewColumn] = useState("");
   const [findSimilarLoading, setFindSimilarLoading] = useState(false);
-
-  const { pushAction, undo, redo, canUndo, canRedo } = useLabelUndo();
-  const {
-    isAvailable, isActive, alState, stop, refit,
-    methodId, setMethodId, mlpLayers, setMlpLayers,
-    classFilter, setClassFilter, sortBy, setSortBy,
-  } = useActiveLearning();
-
-  useEffect(() => {
-    fetchLabelCounts(uuid, mediaIndices).then(setLabelCounts);
-  }, [mediaIndices, mediaItems, uuid]);
 
   if (!config) return null;
 
-  // ── Label handlers ──
-  const handleAddLabel = () => {
-    if (!newLabel || config.labels.includes(newLabel)) return;
-    setConfig({ ...config, labels: [...config.labels, newLabel] });
-    setNewLabel("");
-  };
-
-  const handleRemoveLabel = (label: string) => {
-    setConfig({ ...config, labels: config.labels.filter((l) => l !== label) });
-  };
-
+  // ── Preview label toggle ──
   const handlePreviewLabelToggle = (label: string) => {
     if (!media) return;
     const isRemove = media.labels?.includes(label);
@@ -98,7 +47,6 @@ export default function GridWorkspaceSidebar() {
       saveLabel(uuid, [media.index], label).catch(console.error);
       pushAction({ type: "add", label, mediaIds: [media.index] });
     }
-    // Update the preview media
     const labels = media.labels ? [...media.labels] : [];
     if (isRemove) {
       setSideMedia({ ...media, labels: labels.filter((l) => l !== label) });
@@ -106,7 +54,6 @@ export default function GridWorkspaceSidebar() {
       if (!labels.includes(label)) labels.push(label);
       setSideMedia({ ...media, labels });
     }
-    // Update grid items
     setMediaItems((items) =>
       items.map((m) => {
         if (m.index !== media.index) return m;
@@ -118,65 +65,7 @@ export default function GridWorkspaceSidebar() {
     );
   };
 
-  const handleLabelAllOnPage = (label: string) => {
-    const allHave = mediaItems.every((m) => m.labels?.includes(label));
-    const toProcess: number[] = [];
-
-    setMediaItems((items) =>
-      items.map((m) => {
-        const labels = m.labels ? [...m.labels] : [];
-        if (allHave) {
-          if (labels.includes(label)) {
-            toProcess.push(m.index);
-            return { ...m, labels: labels.filter((l) => l !== label) };
-          }
-        } else {
-          if (!labels.includes(label)) {
-            toProcess.push(m.index);
-            return { ...m, labels: [...labels, label] };
-          }
-        }
-        return m;
-      }),
-    );
-
-    if (toProcess.length > 0) {
-      if (allHave) {
-        deleteLabel(uuid, toProcess, label).catch(console.error);
-        pushAction({ type: "remove", label, mediaIds: toProcess });
-      } else {
-        saveLabel(uuid, toProcess, label).catch(console.error);
-        pushAction({ type: "add", label, mediaIds: toProcess });
-      }
-    }
-  };
-
-  const handleDownload = async () => {
-    const blob = await downloadLabelCsv(uuid, [], undefined);
-    saveAs(blob, `${uuid}_labels.csv`);
-  };
-
-  const handleShowLabel = async (label: string) => {
-    const allLabels = await fetchAllLabels(uuid);
-    const ids: number[] = [];
-    for (const [mediaId, labels] of Object.entries(allLabels)) {
-      if (labels.includes(label)) ids.push(parseInt(mediaId));
-    }
-    if (ids.length === 0) return;
-    setLabelFilter(label);
-    setMediaIndicesStack((prev) => {
-      const base = prev.length > 0 ? prev[0] : mediaIndices;
-      return [base, ids];
-    });
-    setGridValues((prev) => ({ ...prev, page: 0 }));
-  };
-
-  const handleFit = async () => {
-    setAlLoading(true);
-    await refit();
-    setAlLoading(false);
-  };
-
+  // ── Find similar ──
   const handleFindSimilar = async () => {
     if (!media || !config?.embeddings) return;
     setFindSimilarLoading(true);
@@ -186,20 +75,66 @@ export default function GridWorkspaceSidebar() {
       const scores: Record<number, number> = {};
       for (const r of results) scores[r.media_id] = r.similarity;
       setSimilarityResults(scores);
-      setMediaIndicesStack((prev) =>
-        prev.length > 1 ? [...prev.slice(0, -1), ids] : [...prev, ids],
-      );
-      setGridValues((prev) => ({ ...prev, page: 0 }));
+      replaceTop(ids, `Similar to #${media.index}`);
       setShowPage("grid");
     } finally {
       setFindSimilarLoading(false);
     }
   };
 
-  // Build label count lookup
-  const countByLabel = new Map(labelCounts.map((lc) => [lc.label, lc]));
-  const totalSelection = labelCounts.reduce((sum, lc) => sum + lc.inCurrentSelection, 0);
-  const totalDataset = labelCounts.reduce((sum, lc) => sum + lc.inEntireDataset, 0);
+  // ── Metadata editing ──
+  const handleMetadataEdit = (column: string, value: InformationValue) => {
+    if (!media) return;
+    updateMetadata(uuid, [media.index], column, value).catch(console.error);
+    setSideMedia({
+      ...media,
+      information: { ...media.information, [column]: value },
+    });
+    setMediaItems((items) =>
+      items.map((m) =>
+        m.index === media.index
+          ? { ...m, information: { ...m.information, [column]: value } }
+          : m,
+      ),
+    );
+  };
+
+  const handleMetadataEditAll = (column: string, value: InformationValue) => {
+    const ids = mediaItems.map((m) => m.index);
+    updateMetadata(uuid, ids, column, value).catch(console.error);
+    setMediaItems((items) =>
+      items.map((m) => ({
+        ...m,
+        information: { ...m.information, [column]: value },
+      })),
+    );
+    if (media) {
+      setSideMedia({
+        ...media,
+        information: { ...media.information, [column]: value },
+      });
+    }
+  };
+
+  const handleAddColumn = () => {
+    const name = newColumn.trim();
+    if (!name || config.columns.includes(name)) return;
+    addColumn(uuid, name).catch(console.error);
+    setConfig({ ...config, columns: [...config.columns, name] });
+    setMediaItems((items) =>
+      items.map((m) => ({
+        ...m,
+        information: { ...m.information, [name]: null },
+      })),
+    );
+    if (media) {
+      setSideMedia({
+        ...media,
+        information: { ...media.information, [name]: null },
+      });
+    }
+    setNewColumn("");
+  };
 
   const info = media?.information;
   const entries = info
@@ -230,8 +165,30 @@ export default function GridWorkspaceSidebar() {
             )}
             <div>
               {entries.map(([key, value]) => (
-                <InformationItem key={key} label={key} value={value} />
+                <InformationItem
+                  key={key}
+                  label={key}
+                  value={value}
+                  onEdit={handleMetadataEdit}
+                  onEditAll={handleMetadataEditAll}
+                />
               ))}
+              <div className="mt-2 flex items-center gap-1">
+                <input
+                  placeholder="New column"
+                  type="text"
+                  className="min-w-0 flex-grow rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
+                  value={newColumn}
+                  onChange={(e) => setNewColumn(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleAddColumn(); }}
+                />
+                <button
+                  className="shrink-0 rounded-md bg-gray-800 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-gray-700"
+                  onClick={handleAddColumn}
+                >
+                  Add
+                </button>
+              </div>
             </div>
             {/* Quick label toggles for previewed item */}
             {config.labels.length > 0 && (
@@ -263,241 +220,8 @@ export default function GridWorkspaceSidebar() {
         )}
       </Section>
 
-      {/* Labels */}
-      <Section
-        title="Labels"
-        defaultOpen
-        badge={
-          (canUndo || canRedo) ? (
-            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-              <button
-                onClick={undo}
-                disabled={!canUndo}
-                className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-700 disabled:opacity-30 disabled:hover:bg-transparent"
-                title="Undo (Ctrl+Z)"
-              >
-                <FontAwesomeIcon icon={faRotateLeft} />
-              </button>
-              <button
-                onClick={redo}
-                disabled={!canRedo}
-                className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-700 disabled:opacity-30 disabled:hover:bg-transparent"
-                title="Redo (Ctrl+Shift+Z)"
-              >
-                <FontAwesomeIcon icon={faRotateLeft} className="scale-x-[-1]" />
-              </button>
-            </div>
-          ) : undefined
-        }
-      >
-        {/* Label list */}
-        <div className="mb-2 space-y-1">
-          {config.labels.map((label, idx) => {
-            const lc = countByLabel.get(label);
-            const inSel = lc?.inCurrentSelection ?? 0;
-            const inAll = lc?.inEntireDataset ?? 0;
-            const color = getLabelColor(idx);
-            const allOnPageHave = mediaItems.length > 0 && mediaItems.every((m) => m.labels?.includes(label));
-            return (
-              <div key={label} className="rounded-md border border-gray-100 bg-gray-50 px-2 py-1.5">
-                <div className="flex items-center gap-1.5">
-                  <span
-                    className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: color }}
-                  />
-                  <span className="flex-grow truncate text-xs font-medium text-gray-800">{label}</span>
-                  <span className="text-[10px] text-gray-400">{idx + 1}</span>
-                  {inSel === 0 && inAll === 0 && (
-                    <button
-                      className="text-gray-300 hover:text-red-500"
-                      onClick={() => handleRemoveLabel(label)}
-                      title="Remove label"
-                    >
-                      <FontAwesomeIcon icon={faXmark} className="text-[10px]" />
-                    </button>
-                  )}
-                </div>
-                <div className="mt-1 flex items-center gap-2 text-[10px] text-gray-500">
-                  <span>{inSel} in page</span>
-                  <span>{inAll} total</span>
-                  <div className="ml-auto flex items-center gap-1">
-                    <button
-                      className="rounded px-1 py-px text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700"
-                      onClick={() => handleLabelAllOnPage(label)}
-                      title={allOnPageHave ? "Remove from all on page" : "Apply to all on page"}
-                    >
-                      {allOnPageHave ? "Remove all" : "Label page"}
-                    </button>
-                    {inAll > 0 && (
-                      <button
-                        className="flex items-center gap-0.5 rounded px-1 py-px text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700"
-                        onClick={() => handleShowLabel(label)}
-                        title={`Show all ${inAll} items with "${label}"`}
-                      >
-                        Show <FontAwesomeIcon icon={faArrowRight} className="text-[8px]" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        {/* Add label */}
-        <div className="flex items-center gap-1">
-          <input
-            placeholder="New label name"
-            type="text"
-            className="min-w-0 flex-grow rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
-            value={newLabel}
-            onChange={(e) => setNewLabel(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") handleAddLabel(); }}
-          />
-          <button
-            className="shrink-0 rounded-md bg-gray-800 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-gray-700"
-            onClick={handleAddLabel}
-          >
-            Add
-          </button>
-        </div>
-        <div className="mt-1.5 flex items-center justify-between">
-          <p className="text-xs text-gray-400">
-            Keys 1-9 to label. Ctrl+Z undo. Ctrl+Shift+Z redo.
-          </p>
-          {totalDataset > 0 && (
-            <button
-              className="flex items-center gap-1 text-[10px] text-gray-400 transition-colors hover:text-gray-700"
-              onClick={handleDownload}
-              title="Download all labels as CSV"
-            >
-              <FontAwesomeIcon icon={faDownload} className="text-[9px]" />
-              CSV
-            </button>
-          )}
-        </div>
-      </Section>
-
-      {/* Active Learning */}
-      {isAvailable && (
-        <Section title="Active learning" defaultOpen>
-          {/* Method selection */}
-          <div className="space-y-2">
-            <div>
-              <div className="mb-1 text-xs text-gray-500">Method</div>
-              <div className="flex items-center gap-1.5">
-                <select
-                  value={methodId}
-                  onChange={(e) => setMethodId(e.target.value)}
-                  className="min-w-0 flex-grow rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
-                >
-                  {AL_METHODS.map((m) => (
-                    <option key={m.id} value={m.id}>{m.name}</option>
-                  ))}
-                </select>
-                {methodId === "mlp" && (
-                  <div className="flex items-center gap-0.5 rounded-md border border-gray-200 p-0.5">
-                    {[1, 2, 3].map((n) => (
-                      <button
-                        key={n}
-                        onClick={() => setMlpLayers(n)}
-                        className={`rounded px-1.5 py-0.5 text-xs transition-colors ${
-                          mlpLayers === n
-                            ? "bg-gray-800 text-white"
-                            : "text-gray-500 hover:bg-gray-100"
-                        }`}
-                        title={`${n} hidden layer${n > 1 ? "s" : ""}`}
-                      >
-                        {n}L
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="mt-1 text-xs text-gray-400">
-                {AL_METHODS.find((m) => m.id === methodId)?.description}
-              </div>
-            </div>
-
-            {/* Action */}
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={handleFit}
-                disabled={alLoading}
-                className="flex items-center gap-1.5 rounded-md bg-gray-800 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
-              >
-                <FontAwesomeIcon icon={isActive ? faArrowsRotate : faBolt} className={alLoading ? "animate-spin" : ""} />
-                {alLoading ? "Fitting..." : isActive ? "Refit" : "Suggest next"}
-              </button>
-              {isActive && (
-                <button
-                  onClick={stop}
-                  className="rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-600 transition-colors hover:bg-gray-100"
-                  title="Stop active learning"
-                >
-                  <FontAwesomeIcon icon={faStop} />
-                </button>
-              )}
-              {alState && (
-                <span className="text-xs text-gray-500">
-                  {alState.nLabeled} labeled
-                </span>
-              )}
-            </div>
-
-            {/* Results (when active) */}
-            {isActive && (
-              <div className="space-y-2 border-t border-gray-100 pt-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-gray-500">Sort by</span>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as "confidence" | "uncertainty")}
-                    className="rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
-                  >
-                    <option value="confidence">most similar first</option>
-                    <option value="uncertainty">most uncertain first</option>
-                  </select>
-                </div>
-
-                {/* Class filter pills */}
-                {alState && alState.labelClasses.length > 1 && (
-                  <div>
-                    <div className="mb-1 text-xs text-gray-500">Filter by class</div>
-                    <div className="flex flex-wrap gap-1">
-                      <button
-                        onClick={() => setClassFilter(null)}
-                        className={`rounded-full px-2.5 py-0.5 text-xs transition-colors ${
-                          classFilter === null
-                            ? "bg-gray-800 text-white"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
-                      >
-                        All
-                      </button>
-                      {alState.labelClasses.map((cls) => {
-                        const count = alState.predictions.filter((p) => p.predicted_class === cls).length;
-                        return (
-                          <button
-                            key={cls}
-                            onClick={() => setClassFilter(cls)}
-                            className={`rounded-full px-2.5 py-0.5 text-xs transition-colors ${
-                              classFilter === cls
-                                ? "bg-gray-800 text-white"
-                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                            }`}
-                          >
-                            {cls} <span className="opacity-60">{count}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </Section>
-      )}
+      <LabelsSection />
+      <ActiveLearningSection onReview={onReview} />
     </div>
   );
 }

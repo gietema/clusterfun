@@ -13,6 +13,7 @@ from clusterfun.models.media_item import MediaItem
 from clusterfun.storage.backends.base import StorageBackend
 from clusterfun.storage.local.data import get_data_dict
 from clusterfun.storage.local.helpers import get_filter_query, get_media_query
+from clusterfun.storage.local.annotation_manager import AnnotationManager
 from clusterfun.storage.local.label_manager import LabelManager
 from clusterfun.storage.local.project_label_manager import ProjectLabelManager
 from clusterfun.storage.query import get_connection, run_query
@@ -30,6 +31,7 @@ class DataLoader:
         self.uuid = uuid
         self.backend = backend
         self._label_manager: Optional[Union[LabelManager, ProjectLabelManager]] = None
+        self._annotation_manager: Optional[AnnotationManager] = None
 
     @property
     def label_manager(self) -> Union[LabelManager, ProjectLabelManager]:
@@ -46,6 +48,12 @@ class DataLoader:
             else:
                 self._label_manager = LabelManager(self.uuid, self.backend)
         return self._label_manager
+
+    @property
+    def annotation_manager(self) -> AnnotationManager:
+        if self._annotation_manager is None:
+            self._annotation_manager = AnnotationManager(self.uuid, self.backend)
+        return self._annotation_manager
 
     def load(self) -> Tuple[str, Dict[str, Any], Config]:
         """Load the data and config for the given uuid."""
