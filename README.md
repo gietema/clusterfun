@@ -6,16 +6,24 @@
 
 - [Getting started](#getting-started)
 - [A simple example](#a-simple-example)
-- [Main features](#main-features)
-- [Default parameters](#default-parameters)
-- [Plot types](#plot-types)
-  - [Bar chart](#bar-chart)
-  - [Confusion matrix](#confusion-matrix)
-  - [Grid](#grid)
-  - [Histogram](#histogram)
-  - [Pie chart](#pie-chart)
-  - [Scatterplot](#scatterplot)
-  - [Violin plot](#violin-plot)
+- [Plotting](#plotting)
+  - [Default parameters](#default-parameters)
+  - [Plot types](#plot-types)
+- [Labelling](#labelling)
+  - [Applying labels](#applying-labels)
+  - [Exporting labels](#exporting-labels)
+- [Annotations](#annotations)
+- [Embeddings & Similarity](#embeddings--similarity)
+  - [Passing embeddings](#passing-embeddings)
+  - [Similarity search](#similarity-search)
+  - [2D embedding maps](#2d-embedding-maps)
+- [Dataset Insights](#dataset-insights)
+  - [Outlier detection](#outlier-detection)
+  - [Duplicate detection](#duplicate-detection)
+  - [Farthest from centroid](#farthest-from-centroid)
+  - [Image statistics](#image-statistics)
+- [Active Learning](#active-learning)
+  - [Probe methods](#probe-methods)
 - [Data loading](#data-loading)
 
 ## Getting started
@@ -24,7 +32,7 @@ Clusterfun can be installed with pip:
 
 `pip install clusterfun`
 
-Clusterfun requires Python 3.8 or higher.
+Clusterfun requires Python 3.9 or higher.
 
 Plots accept data in the form of a pandas DataFrame, which will be installed automatically if not already present.
 No account, payment, or internet connection is required to use clusterfun. Clusterfun is open source and free to use.
@@ -50,11 +58,11 @@ As you can see, a clusterfun plot takes as input a pandas dataframe and column n
 
 This makes clusterfun ideal for quickly visualising image data, which can be useful in the context of building datasets, exploring edge cases and debugging model performance.
 
-## Main features
+## Plotting
 
-## Default parameters
+### Default parameters
 
-The default parameters for the plot types are as follows:
+The default parameters shared across all plot types:
 
 - `df: pd.DataFrame` (required)
 
@@ -62,7 +70,7 @@ The default parameters for the plot types are as follows:
 
 - `media: str` (required)
 
-  The column name of the media to display in the plot. See data loading for more information about the type of media that can be displayed.
+  The column name of the media to display in the plot. See [data loading](#data-loading) for more information about the type of media that can be displayed.
 
 - `show: bool = True`
 
@@ -102,272 +110,186 @@ The default parameters for the plot types are as follows:
   }
   ```
 
-## Plot types
+### Plot types
 
-The following plot types are available:
-
-- Bar chart
-- Confusion matrix
-- Grid
-- Histogram
-- Pie chart
-- Scatterplot
-- Violin plot
-
-### Bar chart
+#### Bar chart
 
 ```python
-def bar_chart(
-    df: pd.DataFrame,
-    x: str,
-    media: str,
-    color: Optional[str] = None,
-    ...
-) -> Path:
-```
-
-#### Parameters
-
-- `df: pd.DataFrame`
-  The dataframe with the data to plot
-- `x: str`
-  The column name of the data for the bar chart. One bar per unique value will be plotted.
-- `media: str`
-  The column name of the media to display
-- `color: Optional[str] = None`
-  If added, the color will be used to create a stacked bar chart.
-
-#### Example
-
-```python
-import pandas as pd
-import clusterfun as clt
-
-df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main/wiki-art.csv")
 clt.bar_chart(df, x="painter", media="img_path", color="style")
 ```
 
+- `x: str` — column for the bar chart. One bar per unique value.
+- `color: Optional[str]` — creates a stacked bar chart.
+
 ![Example bar](data/bar.png)
 
-### Confusion matrix
+#### Confusion matrix
 
 ```python
-def confusion_matrix(
-    df: pd.DataFrame,
-    y_true: str,
-    y_pred: str,
-    media: str,
-    ...
-) -> Path:
-```
-
-#### Parameters
-
-- `df: pd.DataFrame`
-
-  The dataframe with the data to plot
-
-- `y_true: str`
-
-  The ground truth label. Values can be integers or strings.
-
-- `y_pred: str`
-
-  The column name of the predicted label. Values can be integers or strings.
-
-- `media: str`
-
-  The column name of the media to display
-
-#### Example
-
-```python
-import pandas as pd
-import clusterfun as clt
-
-df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main/cifar10.csv")
 clt.confusion_matrix(df, y_true="label", y_pred="pred", media="img_path")
 ```
 
+- `y_true: str` — ground truth label column.
+- `y_pred: str` — predicted label column.
+
 ![Example confusion matrix](data/confusion.png)
 
-### Grid
+#### Grid
 
 ```python
-def grid(
-    df: pd.DataFrame,
-    media: str,
-    ...
-) -> Path:
-```
-
-#### Parameters
-
-- `df: pd.DataFrame`
-
-  The dataframe with the data to plot
-
-- `media: str`
-
-  The column name of the media to display
-
-#### Example
-
-```python
-import pandas as pd
-import clusterfun as clt
-
-df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main/wiki-art.csv")
 clt.grid(df, media="img_path")
 ```
 
+Displays items in a browsable grid layout.
+
 ![Example grid](data/grid.png)
 
-### Histogram
+#### Histogram
 
 ```python
-def histogram(
-    df: pd.DataFrame,
-    x: str,
-    media: str,
-    bins: int = 20,
-    ...
-) -> Path:
+clt.histogram(df, x="brightness", media="img_path", bins=20)
 ```
 
-#### Parameters
-
-- `df: pd.DataFrame`
-
-  The dataframe with the data to plot
-
-- `x: str`
-
-  The column name of the data for the histogram
-
-- `media: str`
-
-  The column name of the media to display
-
-- `bins: int = 20`
-
-  The number of bins to use for the histogram
-
-#### Example
-
-```python
-import pandas as pd
-import clusterfun as clt
-
-df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main/wiki-art.csv")
-clt.histogram(df, x="brightness", media="img_path")
-```
+- `x: str` — column for the histogram.
+- `bins: int = 20` — number of bins.
 
 ![Example histogram](data/histogram.png)
 
-### Pie chart
+#### Pie chart
 
 ```python
-def pie(
-    df: pd.DataFrame,
-    color: str,
-) -> Path:
-```
-
-#### Parameters
-
-- `df: pd.DataFrame`
-
-  The dataframe with the data to plot
-
-- `color`
-
-  Column for the pies of the pie chart
-
-#### Example
-
-```python
-import pandas as pd
-import clusterfun as clt
-
-df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main/wiki-art.csv")
 clt.pie_chart(df, color="painter", media="img_path")
 ```
 
+- `color: str` — column for the pie slices.
+
 ![Example pie](data/pie.png)
 
-### Scatterplot
-
-```def scatter(
-    df: pd.DataFrame,
-    x: str,
-    y: str,
-    ...
-) -> Path:
-```
-
-#### Parameters
-
-- `df: pd.DataFrame`
-
-  The dataframe with the data to plot
-
-- `x: str`
-
-  The column name of the data for the x-axis
-
-- `y: str`
-
-  The column name of the data for the y-axis
-
-#### Example
+#### Scatterplot
 
 ```python
-import pandas as pd
-import clusterfun as clt
-
-df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main/wiki-art.csv")
 clt.scatter(df, x="x", y="y", media="img_path")
 ```
 
+- `x: str` — column for the x-axis.
+- `y: str` — column for the y-axis.
+
 ![Example scatter](data/scatter.png)
 
-### Violin plot
+#### Violin plot
 
 ```python
-def violin(
-    df: pd.DataFrame,
-    y: str,
-    ...
-) -> Path:
-```
-
-#### Parameters
-
-- `df: pd.DataFrame`
-
-  The dataframe with the data to plot
-
-- `y: str`
-
-  The column name of the data for the y-axis
-
-#### Example
-
-```python
-import pandas as pd
-import clusterfun as clt
-
-df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main/wiki-art.csv")
-df = df[df.painter.isin(["Pablo Picasso", "Juan Gris", "Georges Braque", "Fernand Leger"])]
 clt.violin(df, y="brightness", media="img_path")
 ```
 
+- `y: str` — column for the y-axis.
+
 ![Example violin](data/violin.png)
+
+## Labelling
+
+Clusterfun includes a built-in labelling workflow for assigning labels to items directly in the UI.
+
+### Applying labels
+
+Select items in any plot or grid view, then use the label panel to assign a label. Labels are stored alongside the view data and can be used for filtering, active learning, and export.
+
+- Select items by clicking/dragging on a plot or using the grid checkboxes
+- Type a label name and press Enter to apply it
+- Labels can be added or removed from any selection
+- Undo/redo support for label actions
+
+### Exporting labels
+
+Labels can be exported as CSV or used to create new filtered grid views:
+
+- **Download CSV** — exports media paths and their assigned labels
+- **Save as grid** — creates a new view containing only the labelled items
+
+## Annotations
+
+Draw rectangle and polygon annotations directly on images in the detail view. Annotations are stored per-image and can be exported in bulk.
+
+- **Rectangle tool** — click and drag to draw bounding boxes
+- **Polygon tool** — click to place vertices, close the polygon by clicking the first point
+- Each annotation has a label and optional color
+- Export all annotations as JSON via the annotations export endpoint
+
+## Embeddings & Similarity
+
+Embedding-powered features require an `embeddings` column in your dataframe containing pre-computed embedding vectors.
+
+### Passing embeddings
+
+```python
+clt.scatter(df, x="x", y="y", media="img_path", embeddings="embedding_col")
+```
+
+The `embeddings` parameter accepts a column name containing lists/arrays of floats. Once provided, similarity search, insights, and active learning features become available.
+
+### Similarity search
+
+Click any item to find its nearest neighbors in embedding space. Results are ranked by cosine similarity and displayed in a panel for quick browsing.
+
+### 2D embedding maps
+
+The plot builder can generate 2D embedding maps using dimensionality reduction:
+
+- **UMAP** — preserves local structure, good for cluster visualization
+- **t-SNE** — emphasizes local neighborhoods
+- **PCA** — fast linear projection
+
+## Dataset Insights
+
+The Insights tab provides automated analysis of your dataset using column statistics and embeddings. For large datasets (> 10K items), analyses run in the background with progress tracking.
+
+### Outlier detection
+
+Uses Local Outlier Factor (LOF) to find items most different from their neighbors. Configurable parameters:
+
+- **k neighbors** — number of neighbors for LOF (default: 20)
+- **min score** — LOF threshold; lower values return more outliers (default: 1.5)
+- **group by** — detect outliers within each group independently (e.g. per-class)
+
+Scales to millions of items via FAISS approximate nearest neighbor search.
+
+### Duplicate detection
+
+Finds groups of near-duplicate items based on cosine similarity in embedding space.
+
+- **threshold** — minimum similarity to consider a pair as duplicates (default: 0.95)
+- Returns connected components grouped via union-find
+
+### Farthest from centroid
+
+Ranks items by cosine distance from the dataset centroid. Items at the top are the most unusual relative to the overall dataset. Uses streaming computation (no FAISS needed), so it works efficiently at any scale.
+
+### Image statistics
+
+Computes per-image statistics and adds them as new columns to the dataset:
+
+- Brightness, contrast, sharpness, colorfulness, saturation
+- Aspect ratio, width, height
+
+Once computed, these columns appear in plots, filters, and column distributions.
+
+## Active Learning
+
+Label a small number of items, then let the active learning probe rank the rest of the dataset by relevance. The probe trains on your labelled embeddings and scores unlabeled items in streaming chunks.
+
+### Probe methods
+
+- **Centroid** — single-class: ranks by cosine similarity to the centroid of labelled items
+- **Prototype** — multi-class: per-class centroids with softmax scoring
+- **KNN** — builds a small FAISS index of labelled items, votes by weighted neighbors
+- **Linear** — logistic regression (requires scikit-learn)
+- **MLP** — multi-layer perceptron classifier (requires scikit-learn)
+
+The method is auto-selected based on the number of label classes, or can be chosen manually. All methods stream through unlabeled items in 100K chunks to handle large datasets.
 
 ## Data loading
 
-Clusterfun supports AWS S3 and local data storage and loading.
+Clusterfun supports AWS S3, Google Cloud Storage, and local data storage.
 The dataframe column corresponding to the media value in the plot will be used to determine where to load the media from.
 
 ```python
@@ -377,7 +299,6 @@ df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main
 clt.grid(df, media="img_column")
 ```
 
-AWS S3 media should start with `s3://`.
-Make sure to set a `AWS_REGION` environment variable to the region where your data is stored.
-
-Support for Google Cloud Storage is coming soon.
+- **Local files** — use relative or absolute file paths
+- **AWS S3** — media paths should start with `s3://`. Set the `AWS_REGION` environment variable to the region where your data is stored.
+- **Google Cloud Storage** — media paths should start with `gs://`. Install the optional `gcs` extra: `pip install clusterfun[gcs]`.
