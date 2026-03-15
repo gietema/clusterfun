@@ -568,9 +568,25 @@ export default function InsightsPage() {
         }
         groups = (response as import("@/app/types").DuplicateGroup[]).map((g) => g.media_ids);
       }
-      const previewIds = groups.flatMap((g) => g.slice(0, 2)).slice(0, 12);
-      const media = await loadPreviewMedia(previewIds);
-      setDuplicateState({ groups, media });
+      // Load per-group media previews (up to 6 images per group, first 20 groups)
+      const groupMedia: Media[][] = [];
+      const previewGroups = groups.slice(0, 20);
+      const allPreviewIds = previewGroups.flatMap((g) => g.slice(0, 6));
+      let allMedia: Media[] = [];
+      if (allPreviewIds.length > 0) {
+        try {
+          allMedia = await fetchMediaItems(uuid, allPreviewIds, 0);
+        } catch { /* ignore */ }
+      }
+      const mediaById = new Map(allMedia.map((m) => [m.index, m]));
+      for (const g of previewGroups) {
+        groupMedia.push(g.slice(0, 6).map((id) => mediaById.get(id)).filter(Boolean) as Media[]);
+      }
+      // Pad remaining groups with empty arrays
+      for (let i = previewGroups.length; i < groups.length; i++) {
+        groupMedia.push([]);
+      }
+      setDuplicateState({ groups, groupMedia });
     } catch {
       toast.error("Duplicate detection failed");
     } finally {
@@ -887,7 +903,7 @@ export default function InsightsPage() {
                   </div>
                 )}
                 {!duplicateLoading && duplicateState.groups.length > 0 && (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-gray-700">
                         {duplicateState.groups.length} duplicate group{duplicateState.groups.length !== 1 ? "s" : ""} ({duplicateState.groups.reduce((s, g) => s + g.length, 0)} items)
@@ -899,36 +915,48 @@ export default function InsightsPage() {
                         View all in grid
                       </button>
                     </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {(showAllDupGroups ? duplicateState.groups : duplicateState.groups.slice(0, 10)).map((group, i) => (
-                        <button
-                          key={i}
-                          onClick={() => viewInGrid(group, `Dup group ${i + 1}`)}
-                          className="rounded-md border border-gray-200 px-2.5 py-1 text-xs text-gray-600 transition-colors hover:bg-gray-50"
-                        >
-                          Group {i + 1} ({group.length} items)
-                        </button>
-                      ))}
-                      {duplicateState.groups.length > 10 && (
-                        <button
-                          onClick={() => setShowAllDupGroups((v) => !v)}
-                          className="px-1 py-1 text-xs text-gray-500 underline decoration-gray-300 hover:text-gray-700"
-                        >
-                          {showAllDupGroups ? "Show less" : `+${duplicateState.groups.length - 10} more`}
-                        </button>
-                      )}
+                    <div className="space-y-2">
+                      {(showAllDupGroups ? duplicateState.groups : duplicateState.groups.slice(0, 10)).map((group, i) => {
+                        const media = duplicateState.groupMedia[i] ?? [];
+                        return (
+                          <div
+                            key={i}
+                            onClick={() => viewInGrid(group, `Dup group ${i + 1}`)}
+                            className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-150 p-2 transition-colors hover:border-gray-300 hover:bg-gray-50"
+                          >
+                            <div className="flex shrink-0 gap-1">
+                              {media.slice(0, 4).map((m) => (
+                                <img
+                                  key={m.index}
+                                  src={m.src}
+                                  alt={`Item ${m.index}`}
+                                  className="h-12 w-12 rounded object-cover"
+                                />
+                              ))}
+                              {media.length === 0 && (
+                                <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-100 text-[10px] text-gray-400">
+                                  {group.length}
+                                </div>
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-medium text-gray-700">Group {i + 1}</div>
+                              <div className="text-[11px] text-gray-400">{group.length} items</div>
+                            </div>
+                            <svg className="h-4 w-4 shrink-0 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="m9 18 6-6-6-6" />
+                            </svg>
+                          </div>
+                        );
+                      })}
                     </div>
-                    {duplicateState.media.length > 0 && (
-                      <div className="flex gap-1.5 overflow-x-auto pb-1">
-                        {duplicateState.media.map((m) => (
-                          <img
-                            key={m.index}
-                            src={m.src}
-                            alt={`Item ${m.index}`}
-                            className="h-16 w-16 shrink-0 rounded object-cover"
-                          />
-                        ))}
-                      </div>
+                    {duplicateState.groups.length > 10 && (
+                      <button
+                        onClick={() => setShowAllDupGroups((v) => !v)}
+                        className="text-xs text-gray-500 underline decoration-gray-300 hover:text-gray-700"
+                      >
+                        {showAllDupGroups ? "Show less" : `Show ${duplicateState.groups.length - 10} more groups`}
+                      </button>
                     )}
                   </div>
                 )}

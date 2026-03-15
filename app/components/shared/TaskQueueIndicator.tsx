@@ -109,10 +109,18 @@ export default function TaskQueueIndicator() {
                       }
                     } else if (task.type === "duplicates" && s.results) {
                       const groups = s.results.map((g: any) => g.media_ids);
-                      const previewIds = groups.flatMap((g: number[]) => g.slice(0, 2)).slice(0, 12);
-                      fetchMediaItems(task.viewUuid, previewIds, 0)
-                        .then((media) => setDuplicateState({ groups, media }))
-                        .catch(() => setDuplicateState({ groups, media: [] }));
+                      const previewGroups = groups.slice(0, 20);
+                      const allPreviewIds = previewGroups.flatMap((g: number[]) => g.slice(0, 6));
+                      fetchMediaItems(task.viewUuid, allPreviewIds, 0)
+                        .then((media) => {
+                          const byId = new Map(media.map((m: any) => [m.index, m]));
+                          const groupMedia = previewGroups.map((g: number[]) =>
+                            g.slice(0, 6).map((id: number) => byId.get(id)).filter(Boolean),
+                          );
+                          for (let j = previewGroups.length; j < groups.length; j++) groupMedia.push([]);
+                          setDuplicateState({ groups, groupMedia });
+                        })
+                        .catch(() => setDuplicateState({ groups, groupMedia: groups.map(() => []) }));
                     } else if (task.type === "centroid_distance" && s.results) {
                       const ids = s.results.map((r: any) => r.media_id);
                       fetchMediaItems(task.viewUuid, ids.slice(0, 12), 0)

@@ -79,8 +79,8 @@ export const insightsOutliersAtom = atom<{
 
 export const insightsDuplicatesAtom = atom<{
   groups: number[][];
-  media: import("@/app/types").Media[];
-}>({ groups: [], media: [] });
+  groupMedia: import("@/app/types").Media[][];  // per-group media previews
+}>({ groups: [], groupMedia: [] });
 
 export const insightsWeirdestAtom = atom<{
   ids: number[];
