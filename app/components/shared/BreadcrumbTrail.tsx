@@ -1,84 +1,47 @@
 "use client";
-import { useEffect, useState } from "react";
 import { useAtomValue } from "jotai";
 import {
   breadcrumbsAtom,
   mediaIndicesStackAtom,
-  uuidAtom,
   configAtom,
 } from "@/app/store/atoms";
-import { fetchMediaThumbnails } from "@/app/lib/api";
 import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
 
+/**
+ * Shows a compact context indicator when viewing a subset of data.
+ * Displays the current context label (e.g. "label = tench") with a
+ * count and a back button. Replaces the old breadcrumb trail.
+ */
 export default function BreadcrumbTrail() {
   const crumbs = useAtomValue(breadcrumbsAtom);
   const stack = useAtomValue(mediaIndicesStackAtom);
-  const uuid = useAtomValue(uuidAtom);
   const config = useAtomValue(configAtom);
-  const { jumpTo } = useBreadcrumbNav();
-  const [thumbs, setThumbs] = useState<Record<number, string>>({});
+  const { popSelection } = useBreadcrumbNav();
 
-  // Fetch thumbnails for breadcrumb representative items
-  useEffect(() => {
-    const ids = crumbs
-      .map((c) => c.thumbnailId)
-      .filter((id): id is number => id != null)
-      .filter((id) => !thumbs[id]);
-
-    if (ids.length === 0 || !uuid || uuid === "recent") return;
-
-    const unique = [...new Set(ids)];
-    fetchMediaThumbnails(uuid, unique, 32).then((results) => {
-      setThumbs((prev) => {
-        const next = { ...prev };
-        for (const r of results) next[r.id] = r.src;
-        return next;
-      });
-    });
-  }, [crumbs, uuid]); // eslint-disable-line react-hooks/exhaustive-deps
-
+  // Only show when there's a context beyond "All"
   if (crumbs.length <= 1) return null;
 
-  return (
-    <div className="flex items-center gap-0.5 overflow-x-auto">
-      {crumbs.map((crumb, i) => {
-        const stackLen = stack[i]?.length ?? 0;
-        const count = crumb.filterCount ?? (stackLen > 0 ? stackLen : (i === 0 ? (config?.total_count ?? 0) : null));
-        const isLast = i === crumbs.length - 1;
-        const thumb = crumb.thumbnailId != null ? thumbs[crumb.thumbnailId] : null;
+  const current = crumbs[crumbs.length - 1];
+  const stackLen = stack[stack.length - 1]?.length ?? 0;
+  const count = current.filterCount ?? (stackLen > 0 ? stackLen : null);
 
-        return (
-          <div key={i} className="flex shrink-0 items-center gap-0.5">
-            {i > 0 && (
-              <svg className="h-3 w-3 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M9 18l6-6-6-6" />
-              </svg>
-            )}
-            <button
-              onClick={() => { if (!isLast) jumpTo(i); }}
-              className={`flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-[11px] transition-colors ${
-                isLast
-                  ? "bg-blue-50 font-medium text-blue-700"
-                  : "text-gray-500 hover:bg-gray-100 hover:text-gray-800"
-              }`}
-            >
-              {thumb && (
-                <img
-                  src={thumb}
-                  alt=""
-                  className="h-5 w-5 rounded-sm object-cover"
-                />
-              )}
-              <span className="max-w-[120px] truncate">{crumb.label}</span>
-              {count != null && count > 0 && (
-                <span className={`tabular-nums ${isLast ? "text-blue-500" : "text-gray-400"}`}>
-                  ({count.toLocaleString()})
-                </span>
-              )}
-            </button>
-          </div>
-        );
-      })}
+  return (
+    <div className="flex items-center gap-1.5">
+      <button
+        onClick={popSelection}
+        className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+        title="Back"
+      >
+        <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+      </button>
+      <span className="rounded-md bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700">
+        {current.label}
+        {count != null && count > 0 && (
+          <span className="ml-1 text-blue-500">({count.toLocaleString()})</span>
+        )}
+      </span>
     </div>
   );
 }
