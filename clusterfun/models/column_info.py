@@ -8,3 +8,4 @@ class ColumnInfo(BaseModel):
 
     name: str
     dtype: str
+    n_unique: int = 0

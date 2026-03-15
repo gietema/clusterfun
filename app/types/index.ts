@@ -78,6 +78,7 @@ export interface HeightWidth {
 export interface ColumnInfo {
   name: string;
   dtype: string;
+  n_unique: number;
 }
 
 // ── Dropdown Option ──
@@ -161,4 +162,26 @@ export interface ProbeResponse {
   predictions: PredictionItem[];
   label_classes: string[];
   n_labeled: number;
+}
+
+// ── Plot Builder ──
+export interface PlotPanelConfig {
+  id: string;
+  type: string;
+  x?: string;
+  y?: string;
+  color?: string;
+  colorIsCategorical?: boolean;
+}
+
+// ── Outlier / Duplicate Detection ──
+export interface OutlierResult {
+  media_id: number;
+  score: number;
+}
+
+export interface DuplicateGroup {
+  group_id: number;
+  media_ids: number[];
+  similarity: number;
 }

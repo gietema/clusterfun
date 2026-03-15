@@ -30,28 +30,26 @@ describe("FilterBar", () => {
       { id: [0, 1], x: [1, 2] },
     ]);
     mockFetchColumns.mockResolvedValue([
-      { name: "category", dtype: "object" },
-      { name: "score", dtype: "float64" },
+      { name: "category", dtype: "object", n_unique: 5 },
+      { name: "score", dtype: "float64", n_unique: 100 },
     ]);
     mockFetchColumnValues.mockResolvedValue([]);
   });
 
-  it("renders FiltersManager", () => {
+  it("renders FiltersManager with Filter button", () => {
     renderWithAtoms(<FilterBar />, [
       [uuidAtom, "test-uuid"],
       [configAtom, testConfig],
     ]);
-    // FiltersManager renders a "Filters" button
-    expect(screen.getByText(/Filters/)).toBeInTheDocument();
+    expect(screen.getByText("Filter")).toBeInTheDocument();
   });
 
   it("fetches filtered data when filters change", async () => {
-    const { store } = renderWithAtoms(<FilterBar />, [
+    renderWithAtoms(<FilterBar />, [
       [uuidAtom, "test-uuid"],
       [configAtom, testConfig],
       [mediaIndicesStackAtom, [[0, 1, 2, 3]]],
     ]);
-    // Initial render triggers fetch with empty filters
     await waitFor(() => {
       expect(mockFetchFilteredPlotData).toHaveBeenCalledWith("test-uuid", []);
     });
@@ -69,7 +67,6 @@ describe("FilterBar", () => {
     ]);
     await waitFor(() => {
       const stack = store.get(mediaIndicesStackAtom);
-      // The filter should push a new filtered set onto the stack
       expect(stack.length).toBeGreaterThanOrEqual(1);
     });
   });
@@ -84,7 +81,6 @@ describe("FilterBar", () => {
     await waitFor(() => {
       expect(mockFetchFilteredPlotData).toHaveBeenCalled();
     });
-    // fetchMediaItems should NOT be called from FilterBar
     expect(fetchMediaItems).not.toHaveBeenCalled();
   });
 });
@@ -93,66 +89,63 @@ describe("FiltersManager", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFetchColumns.mockResolvedValue([
-      { name: "category", dtype: "object" },
-      { name: "score", dtype: "float64" },
+      { name: "category", dtype: "object", n_unique: 5 },
+      { name: "score", dtype: "float64", n_unique: 100 },
     ]);
     mockFetchColumnValues.mockResolvedValue([]);
   });
 
-  it("shows Filters button", () => {
+  it("shows Filter button", () => {
     renderWithAtoms(<FiltersManager />, [
       [uuidAtom, "test-uuid"],
     ]);
-    expect(screen.getByText(/Filters/)).toBeInTheDocument();
+    expect(screen.getByText("Filter")).toBeInTheDocument();
   });
 
-  it("creates a filter when Filters button is clicked with no existing filters", async () => {
+  it("creates a filter when Filter button is clicked with no existing filters", async () => {
     const { store } = renderWithAtoms(<FiltersManager />, [
       [uuidAtom, "test-uuid"],
     ]);
-    fireEvent.click(screen.getByText(/Filters/));
+    fireEvent.click(screen.getByText("Filter"));
     expect(store.get(filtersAtom)).toHaveLength(1);
-    // The created filter should have empty column/comparison/values
     expect(store.get(filtersAtom)[0]).toEqual({
       column: "",
-      comparison: "",
+      comparison: "=",
       values: [],
     });
   });
 
-  it("shows + button when filters exist and panel is open", () => {
+  it("shows Add filter button when panel is open", () => {
     renderWithAtoms(<FiltersManager />, [
       [uuidAtom, "test-uuid"],
       [filtersAtom, [{ column: "category", comparison: "=", values: ["cat"] }]],
     ]);
-    // Click to open filters
     fireEvent.click(screen.getByText(/Filters/));
-    expect(screen.getByText("+")).toBeInTheDocument();
+    expect(screen.getByText("Add filter")).toBeInTheDocument();
   });
 
-  it("adds another filter when + is clicked", () => {
+  it("adds another filter when Add filter is clicked", () => {
     const { store } = renderWithAtoms(<FiltersManager />, [
       [uuidAtom, "test-uuid"],
       [filtersAtom, [{ column: "category", comparison: "=", values: ["cat"] }]],
     ]);
     fireEvent.click(screen.getByText(/Filters/));
-    fireEvent.click(screen.getByText("+"));
+    fireEvent.click(screen.getByText("Add filter"));
     expect(store.get(filtersAtom)).toHaveLength(2);
   });
 
-  it("removes filter when x is clicked", () => {
+  it("removes filter when remove button is clicked", () => {
     const { store } = renderWithAtoms(<FiltersManager />, [
       [uuidAtom, "test-uuid"],
       [filtersAtom, [{ column: "category", comparison: "=", values: [] }]],
     ]);
-    fireEvent.click(screen.getByText(/Filters/));
-    // Click the remove button (×) — use getAllByText since value pills also have ×
-    const removeButtons = screen.getAllByText("×");
-    fireEvent.click(removeButtons[0]);
+    fireEvent.click(screen.getByText("Filter"));
+    const removeBtn = screen.getByTitle("Remove filter");
+    fireEvent.click(removeBtn);
     expect(store.get(filtersAtom)).toHaveLength(0);
   });
 
-  it("shows filter count in button text", () => {
+  it("shows filter count in button text for complete filters", () => {
     renderWithAtoms(<FiltersManager />, [
       [uuidAtom, "test-uuid"],
       [filtersAtom, [

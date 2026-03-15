@@ -24,6 +24,7 @@ import { AL_METHODS } from "@/app/lib/active-learning";
 import PreviewMedia from "../shared/PreviewMedia";
 import InformationItem from "../shared/InformationItem";
 import TextSearchBar from "../shared/TextSearchBar";
+import InsightsPanel from "./InsightsPanel";
 
 function Section({ title, defaultOpen = false, children, badge }: {
   title: string;
@@ -338,6 +339,13 @@ export default function GridWorkspaceSidebar() {
           Use keys 1-9 to label items. Ctrl+Z to undo.
         </p>
       </Section>
+
+      {/* Insights */}
+      {config.embeddings && (
+        <Section title="Insights">
+          <InsightsPanel />
+        </Section>
+      )}
 
       {/* Active Learning */}
       {isAvailable && (

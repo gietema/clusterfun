@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Media, PlotConfig, Filter, ColumnInfo, LabelCount, PlotTrace, ColumnStats, MediaMetadata, SimilarityResult, ProbeResponse, ProbeSortBy } from "@/app/types";
+import type { Media, PlotConfig, Filter, ColumnInfo, LabelCount, PlotTrace, ColumnStats, MediaMetadata, SimilarityResult, ProbeResponse, ProbeSortBy, OutlierResult, DuplicateGroup } from "@/app/types";
 import { API_URL } from "./constants";
 import { createMedia } from "./media-utils";
 
@@ -204,4 +204,53 @@ export async function downloadGridCsv(uuid: string, mediaIds: number[]): Promise
     media_ids: mediaIds,
   });
   return new Blob([data], { type: "text/csv;charset=utf-8" });
+}
+
+// ── Dynamic Plot Builder ──
+
+export interface PlotBuilderRequest {
+  type: string;
+  x?: string;
+  y?: string;
+  color?: string;
+  color_is_categorical?: boolean;
+  bins?: number;
+}
+
+export async function fetchDynamicPlotData(
+  uuid: string,
+  req: PlotBuilderRequest,
+): Promise<{ config: PlotConfig; data: PlotTrace[] }> {
+  const { data } = await axios.post(`${API_URL}/views/${uuid}/plot-data`, req);
+  return { config: data.config as PlotConfig, data: data.data };
+}
+
+// ── Insights (Outliers / Duplicates) ──
+
+export async function fetchOutliers(
+  uuid: string,
+  mediaIds: number[] = [],
+  k = 20,
+  limit = 100,
+): Promise<OutlierResult[]> {
+  const { data } = await axios.post(`${API_URL}/views/${uuid}/outliers`, {
+    media_ids: mediaIds,
+    k,
+    limit,
+  });
+  return data;
+}
+
+export async function fetchDuplicates(
+  uuid: string,
+  mediaIds: number[] = [],
+  threshold = 0.95,
+  limit = 100,
+): Promise<DuplicateGroup[]> {
+  const { data } = await axios.post(`${API_URL}/views/${uuid}/duplicates`, {
+    media_ids: mediaIds,
+    threshold,
+    limit,
+  });
+  return data;
 }

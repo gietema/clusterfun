@@ -184,9 +184,9 @@ describe("GridView", () => {
       [mediaItemsAtom, mediaItems],
     ]);
     expect(screen.getByText("1 / 3")).toBeInTheDocument();
-    const paginationArea = screen.getByText("1 / 3").parentElement!;
+    const paginationArea = screen.getByText("1 / 3").closest(".flex")!;
     const paginationButtons = paginationArea.querySelectorAll("button");
-    fireEvent.click(paginationButtons[1]); // Next button
+    fireEvent.click(paginationButtons[paginationButtons.length - 1]); // Next button (last button)
     await waitFor(() => {
       expect(fetchMediaItems).toHaveBeenCalledWith(
         "test-uuid",

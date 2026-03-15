@@ -75,21 +75,28 @@ def get_filter_query(
             query += " AND "
         first_valid = False
         # Add filter to query string with parameterized placeholders
-        if filter_item.comparison in ["IN", "NOT IN"]:
+        if filter_item.comparison in ["COL =", "COL !="]:
+            # Column-to-column comparison: no parameter, both sides are column names
+            op = "=" if filter_item.comparison == "COL =" else "!="
+            other_col = str(filter_item.values[0]).replace('"', '""')
+            col_name = filter_item.column.replace('"', '""')
+            query += f'"{col_name}" {op} "{other_col}"'
+        elif filter_item.comparison in ["IN", "NOT IN"]:
             placeholders = ",".join("?" for _ in filter_item.values)
             query += f"{filter_item.column} {filter_item.comparison} ({placeholders})"
         else:
             query += f"{filter_item.column} {filter_item.comparison} ?"
-        # Add the values to the params list
-        for value in filter_item.values:
-            if str(value).isnumeric() or is_float(value):
-                params.append(
-                    float(value)
-                    if is_float(value) and not str(value).isnumeric()
-                    else value
-                )
-            else:
-                params.append(value)
+        # Add the values to the params list (skip for column comparisons)
+        if filter_item.comparison not in ["COL =", "COL !="]:
+            for value in filter_item.values:
+                if str(value).isnumeric() or is_float(value):
+                    params.append(
+                        float(value)
+                        if is_float(value) and not str(value).isnumeric()
+                        else value
+                    )
+                else:
+                    params.append(value)
     return query, params
 
 

@@ -19,6 +19,7 @@ import TabNavigation from "./shared/TabNavigation";
 import PlotPage from "./plot/PlotPage";
 import GridView from "./grid/GridView";
 import MediaPage from "./media/MediaPage";
+import DocsPage from "./docs/DocsPage";
 
 interface PreviewerProps {
   uuidProp: string;
@@ -119,7 +120,9 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
     <div className="flex h-screen flex-col overflow-hidden">
       <TabNavigation />
       <div className="min-h-0 flex-1 overflow-hidden">
-        {showPage === "grid" ? (
+        {showPage === "docs" ? (
+          <DocsPage />
+        ) : showPage === "grid" ? (
           <GridView onBack={handleGridBack} />
         ) : (
           <PlotPage onMediaSelect={handleMediaIndices} />

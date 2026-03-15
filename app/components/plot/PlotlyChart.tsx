@@ -1,9 +1,9 @@
 "use client";
 import { useAtomValue } from "jotai";
-import { configAtom, dataAtom } from "@/app/store/atoms";
+import { configAtom, dataAtom, dragModeAtom, highlightedPointsAtom } from "@/app/store/atoms";
 import type { PlotConfig, PlotTrace } from "@/app/types";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Data } from "plotly.js";
 
 const Plot = dynamic(() => import("@/app/lib/PlotlyChart"), { ssr: false });
@@ -13,6 +13,10 @@ interface PlotlyChartProps {
   onHover: (index: number | undefined) => void;
   onClick: (index: number | undefined) => void;
   onSelect: (indices: number[]) => void;
+  /** Override data for multi-plot panels */
+  overrideData?: PlotTrace[];
+  /** Override config for multi-plot panels */
+  overrideConfig?: PlotConfig;
 }
 
 function getXAxis(cfg: PlotConfig): Record<string, any> {
@@ -66,9 +70,16 @@ export default function PlotlyChart({
   onHover,
   onClick,
   onSelect,
+  overrideData,
+  overrideConfig,
 }: PlotlyChartProps) {
-  const config = useAtomValue(configAtom);
-  const data = useAtomValue(dataAtom);
+  const globalConfig = useAtomValue(configAtom);
+  const globalData = useAtomValue(dataAtom);
+  const dragMode = useAtomValue(dragModeAtom);
+  const highlightedIds = useAtomValue(highlightedPointsAtom);
+
+  const config = overrideConfig ?? globalConfig;
+  const data = overrideData ?? globalData;
 
   const [layout, setLayout] = useState<Record<string, any>>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -92,7 +103,7 @@ export default function PlotlyChart({
         title: { text: config.y, font: { color: "black", size: 11 } },
       },
       displayModeBar: false,
-      dragmode: "select",
+      dragmode: dragMode,
       datarevision: revision,
       autosize: true,
       margin: { l: 40, r: 0, b: 40, t: 0, pad: 0 },
@@ -102,7 +113,7 @@ export default function PlotlyChart({
         ...(config.color ? { title: { text: config.color } } : {}),
       },
     });
-  }, [config, revision, data]);
+  }, [config, revision, data, dragMode]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -138,20 +149,31 @@ export default function PlotlyChart({
     }
   };
 
+  // Apply linked brushing: compute selectedpoints per trace
+  const displayData = useMemo(() => {
+    if (!data) return [];
+    const sorted = [...data].sort((a: PlotTrace, b: PlotTrace) =>
+      ((a.name ?? "") > (b.name ?? "") ? 1 : -1),
+    );
+    if (highlightedIds.size === 0) return sorted;
+    return sorted.map((trace) => ({
+      ...trace,
+      selectedpoints: trace.id
+        .map((id, idx) => (highlightedIds.has(id) ? idx : -1))
+        .filter((idx) => idx >= 0),
+    }));
+  }, [data, highlightedIds]);
+
   if (!config || !data) return null;
 
   const getPointId = (point: { data?: { id?: number[] }; pointIndex?: number }): number | undefined => {
     return point?.data?.id?.[point.pointIndex ?? 0];
   };
 
-  const sortedData = [...data].sort((a: PlotTrace, b: PlotTrace) =>
-    ((a.name ?? "") > (b.name ?? "") ? 1 : -1),
-  );
-
   return (
     <>
       {isLoading && (
-        <div className="flex items-center justify-center" style={{ height: "477px" }}>
+        <div className="flex h-full items-center justify-center">
           <svg
             aria-hidden="true"
             className="h-8 w-8 animate-spin fill-orange-500 text-gray-200"
@@ -170,7 +192,7 @@ export default function PlotlyChart({
         </div>
       )}
       <Plot
-        data={sortedData as unknown as Data[]}
+        data={displayData as unknown as Data[]}
         layout={layout}
         revision={revision}
         useResizeHandler

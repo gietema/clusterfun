@@ -33,7 +33,7 @@ def columns(view_uuid: str) -> List[ColumnInfo]:
     df = get_loader(view_uuid).get_dataframe()
     column_info = []
     for col in df.columns:
-        column_info.append(ColumnInfo(name=col, dtype=str(df[col].dtype)))
+        column_info.append(ColumnInfo(name=col, dtype=str(df[col].dtype), n_unique=int(df[col].nunique())))
     return column_info
 
 

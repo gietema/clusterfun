@@ -59,8 +59,11 @@ class Filter(BaseModel):
         def value_is_valid(value) -> bool:
             if self.column not in columns:
                 return False
-            if self.comparison not in [">", "<", "=", "!=", ">=", "<=", "IN", "NOT IN"]:
+            if self.comparison not in [">", "<", "=", "!=", ">=", "<=", "IN", "NOT IN", "COL =", "COL !="]:
                 return False
+            # Column-to-column comparisons: value is a column name, not a data value
+            if self.comparison in ("COL =", "COL !="):
+                return str(value) in columns
             # validate result of value: should be value of column if categorical else number
             if (
                 not str(value).isnumeric()

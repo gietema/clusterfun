@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import type { PlotConfig, Media, Filter, GridValues, LabelAction, PlotTrace, PredictionItem } from "@/app/types";
+import type { PlotConfig, Media, Filter, GridValues, LabelAction, PlotTrace, PredictionItem, PlotPanelConfig } from "@/app/types";
 
 export const dataAtom = atom<PlotTrace[] | undefined>(undefined);
 export const configAtom = atom<PlotConfig | undefined>(undefined);
@@ -47,3 +47,14 @@ export const embeddingsCacheAtom = atom<{
   dimension: number;
   idToIndex: Map<number, number>;
 } | null>(null);
+
+// Plot interaction
+export const dragModeAtom = atom<"select" | "lasso" | "pan">("select");
+
+// Multi-plot panels
+export const plotPanelsAtom = atom<PlotPanelConfig[]>([]);
+export const plotPanelDataAtom = atom<Record<string, PlotTrace[]>>({});
+export const highlightedPointsAtom = atom<Set<number>>(new Set());
+
+// Column metadata (cached)
+export const columnsAtom = atom<{ name: string; dtype: string }[]>([]);
