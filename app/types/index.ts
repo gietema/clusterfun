@@ -221,6 +221,10 @@ export interface DuplicateGroup {
 export interface BreadcrumbMeta {
   label: string;
   thumbnailId?: number;
+  /** Server-side filters for this breadcrumb level (scalable alternative to ID arrays). */
+  filters?: Filter[];
+  /** Cached count for filter-based breadcrumbs (avoids re-fetching). */
+  filterCount?: number;
 }
 
 // ── Projects ──

@@ -4,10 +4,10 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   configAtom, uuidAtom, dataAtom, columnsAtom,
   currentMediaIndicesAtom,
-  showPageAtom, embeddingsCacheAtom,
+  embeddingsCacheAtom,
   insightsColumnStatsAtom, insightsOutliersAtom,
   insightsDuplicatesAtom, insightsWeirdestAtom,
-  backgroundTasksAtom, filtersAtom, gridValuesAtom,
+  backgroundTasksAtom,
 } from "@/app/store/atoms";
 import {
   fetchColumns, fetchColumnStats, fetchMediaItems,
@@ -309,8 +309,7 @@ export default function InsightsPage() {
   const data = useAtomValue(dataAtom);
   const [columns, setColumns] = useAtom(columnsAtom);
   const mediaIndices = useAtomValue(currentMediaIndicesAtom);
-  const setShowPage = useSetAtom(showPageAtom);
-  const { pushSelection } = useBreadcrumbNav();
+  const { pushSelection, pushFilter } = useBreadcrumbNav();
   const embeddingsCache = useAtomValue(embeddingsCacheAtom);
 
   // Persistent state via atoms
@@ -407,30 +406,34 @@ export default function InsightsPage() {
     [pushSelection],
   );
 
-  // Navigate to grid by setting a filter — O(1), no ID transfer.
+  // Navigate to grid by pushing a filter breadcrumb — O(1), no ID transfer.
   // The grid paginates server-side with the filter applied.
-  const setFilters = useSetAtom(filtersAtom);
-  const setGridValues = useSetAtom(gridValuesAtom);
-
   const viewByColumnValue = useCallback(
     (column: string, value: string) => {
-      setFilters([{ column, comparison: "=", values: [value] }]);
-      setGridValues((prev) => ({ ...prev, page: 0 }));
-      setShowPage("grid");
+      const stats = columnStats[column];
+      const count = stats?.type === "categorical"
+        ? stats.data.find((d) => d.label === value)?.count
+        : undefined;
+      pushFilter(
+        [{ column, comparison: "=", values: [value] }],
+        `${column} = ${value}`,
+        count,
+      );
     },
-    [setFilters, setGridValues, setShowPage],
+    [pushFilter, columnStats],
   );
 
   const viewByNumericRange = useCallback(
     (column: string, low: number, high: number) => {
-      setFilters([
-        { column, comparison: ">=", values: [low.toString()] },
-        { column, comparison: "<=", values: [high.toString()] },
-      ]);
-      setGridValues((prev) => ({ ...prev, page: 0 }));
-      setShowPage("grid");
+      pushFilter(
+        [
+          { column, comparison: ">=", values: [low.toString()] },
+          { column, comparison: "<=", values: [high.toString()] },
+        ],
+        `${column}: ${low.toFixed(1)}\u2013${high.toFixed(1)}`,
+      );
     },
-    [setFilters, setGridValues, setShowPage],
+    [pushFilter],
   );
 
   // ── Embedding helpers ──

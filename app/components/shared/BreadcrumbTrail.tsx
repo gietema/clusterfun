@@ -40,7 +40,7 @@ export default function BreadcrumbTrail() {
   return (
     <div className="flex items-center gap-0.5 overflow-x-auto">
       {crumbs.map((crumb, i) => {
-        const count = stack[i]?.length ?? 0;
+        const count = crumb.filterCount ?? stack[i]?.length ?? 0;
         const isLast = i === crumbs.length - 1;
         const thumb = crumb.thumbnailId != null ? thumbs[crumb.thumbnailId] : null;
 
