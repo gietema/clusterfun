@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import type { PlotConfig, Media, Filter, GridValues, LabelAction, PlotTrace, PredictionItem, PlotPanelConfig } from "@/app/types";
+import type { PlotConfig, Media, Filter, GridValues, LabelAction, PlotTrace, PredictionItem, PlotPanelConfig, ColumnInfo } from "@/app/types";
 
 export const dataAtom = atom<PlotTrace[] | undefined>(undefined);
 export const configAtom = atom<PlotConfig | undefined>(undefined);
@@ -25,6 +25,9 @@ export const showPageAtom = atom<string>("plot");
 export const mediaAtom = atom<Media | undefined>(undefined);
 export const mediaItemsAtom = atom<Media[]>([]);
 export const labelUndoStackAtom = atom<LabelAction[]>([]);
+export const labelRedoStackAtom = atom<LabelAction[]>([]);
+export const labelFilterAtom = atom<string | null>(null);
+export const selectedProjectAtom = atom<string | null>(null);
 export const sidebarWidthAtom = atom<number | null>(null);
 export const similarityResultsAtom = atom<Record<number, number>>({});
 
@@ -57,4 +60,25 @@ export const plotPanelDataAtom = atom<Record<string, PlotTrace[]>>({});
 export const highlightedPointsAtom = atom<Set<number>>(new Set());
 
 // Column metadata (cached)
-export const columnsAtom = atom<{ name: string; dtype: string }[]>([]);
+export const columnsAtom = atom<ColumnInfo[]>([]);
+
+// Text search
+export const textSearchQueryAtom = atom<string>("");
+
+// Insights tab persistent state
+export const insightsColumnStatsAtom = atom<Record<string, import("@/app/types").ColumnStats>>({});
+
+export const insightsOutliersAtom = atom<{
+  ids: number[];
+  media: import("@/app/types").Media[];
+}>({ ids: [], media: [] });
+
+export const insightsDuplicatesAtom = atom<{
+  groups: number[][];
+  media: import("@/app/types").Media[];
+}>({ groups: [], media: [] });
+
+export const insightsWeirdestAtom = atom<{
+  ids: number[];
+  media: import("@/app/types").Media[];
+}>({ ids: [], media: [] });

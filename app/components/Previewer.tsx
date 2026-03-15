@@ -12,14 +12,18 @@ import {
   showPageAtom,
   mediaAtom,
   similarityResultsAtom,
+  labelFilterAtom,
+  textSearchQueryAtom,
 } from "@/app/store/atoms";
-import { fetchUuid, fetchPlotData, fetchFilteredPlotData, fetchMedia } from "@/app/lib/api";
+import { fetchUuid, fetchPlotData, fetchFilteredPlotData, fetchMedia, fetchAllLabels } from "@/app/lib/api";
 import { useUrlState } from "@/app/lib/use-url-state";
 import TabNavigation from "./shared/TabNavigation";
 import PlotPage from "./plot/PlotPage";
 import GridView from "./grid/GridView";
 import MediaPage from "./media/MediaPage";
 import DocsPage from "./docs/DocsPage";
+import InsightsPage from "./insights/InsightsPage";
+import ProjectsPage from "./projects/ProjectsPage";
 
 interface PreviewerProps {
   uuidProp: string;
@@ -36,6 +40,8 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
   const filters = useAtomValue(filtersAtom);
   const setSideMedia = useSetAtom(mediaAtom);
   const setSimilarityResults = useSetAtom(similarityResultsAtom);
+  const setTextSearchQuery = useSetAtom(textSearchQueryAtom);
+  const [labelFilter, setLabelFilter] = useAtom(labelFilterAtom);
 
   useUrlState();
 
@@ -60,6 +66,23 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
       }
     });
   }, [uuid]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Resolve label filter from URL into media indices
+  useEffect(() => {
+    if (!labelFilter || !data || !uuid || uuid === "recent") return;
+    fetchAllLabels(uuid).then((allLabels) => {
+      const ids: number[] = [];
+      for (const [mediaId, labels] of Object.entries(allLabels)) {
+        if (labels.includes(labelFilter)) ids.push(parseInt(mediaId));
+      }
+      if (ids.length > 0) {
+        const allIndices = data.flatMap((d) => d.id ?? []);
+        setMediaIndices([allIndices, ids]);
+        setGridValues((prev) => ({ ...prev, page: 0 }));
+        setShowPage("grid");
+      }
+    });
+  }, [uuid, data, labelFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Populate media indices when grid view is shown but stack is empty.
   useEffect(() => {
@@ -102,6 +125,8 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
     });
     setGridValues((prev) => ({ ...prev, page: 0 }));
     setSimilarityResults({});
+    setTextSearchQuery("");
+    setLabelFilter(null);
   };
 
   if (showPage === "media" && mediaIndex !== undefined) {
@@ -120,8 +145,12 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
     <div className="flex h-screen flex-col overflow-hidden">
       <TabNavigation />
       <div className="min-h-0 flex-1 overflow-hidden">
-        {showPage === "docs" ? (
+        {showPage === "projects" ? (
+          <ProjectsPage />
+        ) : showPage === "docs" ? (
           <DocsPage />
+        ) : showPage === "insights" ? (
+          <InsightsPage />
         ) : showPage === "grid" ? (
           <GridView onBack={handleGridBack} />
         ) : (

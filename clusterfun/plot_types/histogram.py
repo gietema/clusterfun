@@ -39,6 +39,7 @@ def histogram(  # pylint: disable=too-many-arguments,missing-function-docstring
     vline: Optional[float] = None,
     embeddings: Optional[str] = None,
     embeddings_model: Optional[str] = None,
+    project: Optional[str] = None,
 ) -> Path:
     # pylint: disable=too-many-locals
     if "_x" in df.columns or "_y" in df.columns:
@@ -49,24 +50,24 @@ def histogram(  # pylint: disable=too-many-arguments,missing-function-docstring
         dfs = []
         for color_item in df[color].unique():
             data_color = get_x_and_y(df[df[color] == color_item][x], bins)
-            dff = pd.DataFrame(data_color, columns=["_x", "_y"])[["_y"]]
+            dff = pd.DataFrame(data_color, columns=["_x", "_y"])
             dff.index = df[df[color] == color_item].index
             dfs.append(dff)
         dff = pd.concat(dfs)
         df = pd.merge(df, dff, left_index=True, right_index=True)
     else:
-        dff = pd.DataFrame(get_x_and_y(df[x], bins), columns=["x", "_y"])[["_y"]]
+        dff = pd.DataFrame(get_x_and_y(df[x], bins), columns=["_x", "_y"])
         df = df.join(dff)
     cfg = Config(
         type="histogram",
-        x=x,
+        x="_x",
         y="_y",
         media=media,
         columns=get_columns_for_db(
             df=df,
             media=media,
             plot_type="histogram",
-            x=x,
+            x="_x",
             y="_y",
             embeddings=embeddings,
         ),
@@ -79,6 +80,7 @@ def histogram(  # pylint: disable=too-many-arguments,missing-function-docstring
         hline=hline,
         embeddings=embeddings,
         embeddings_model=embeddings_model,
+        project=project,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)
@@ -117,29 +119,23 @@ def get_x_and_y(data: List[float], bins: int):
     -------
     List[Tuple[float, int]]
         A list of tuples representing the x and y coordinates of each dot in the histogram.
-        The x coordinate is the data point's value, and the y coordinate is its bin count.
-
-    Notes
-    -----
-    This function computes the histogram representation of the given data by first determining
-    the range of the data and dividing it into a specified number of bins. Then, it iterates
-    through the data points, increments the count for the appropriate bin, and stores the x and y
-    coordinates of each dot in the histogram.
+        The x coordinate is a uniform-random position within the dot's bin, and the y
+        coordinate is its running bin count.
     """
+    import random as _rng
+
     # Find the range of the data
     data_min = min(data)
     data_max = max(data)
     data_range = data_max - data_min
 
-    # Create a list of bin edges, which will be the x-coordinates of the histogram
+    # Create a list of bin edges
     bin_edges = [data_min + i * data_range / bins for i in range(bins + 1)]
-    # Make sure the last bin edge is equal to the maximum value of the data
     bin_edges[-1] = data_max
 
-    # Initialize a list of bin counts, which will be the y-coordinates of the histogram
+    # Initialize a list of bin counts
     bin_counts = [0 for _ in range(bins)]
 
-    # Initialize a list to store the x and y coordinates of each dot in the histogram
     dots = []
 
     # Iterate through the data and increment the count for the appropriate bin
@@ -147,8 +143,9 @@ def get_x_and_y(data: List[float], bins: int):
         for index, (low, high) in enumerate(zip(bin_edges[:-1], bin_edges[1:])):
             if low <= datum <= high:
                 bin_counts[index] += 1
-                dots.append((datum, bin_counts[index]))
+                # Scatter x uniformly within the bin so bars appear solid
+                jittered_x = _rng.uniform(low, high)
+                dots.append((jittered_x, bin_counts[index]))
                 break
 
-    # Return the x and y coordinates of each dot in the histogram as a list of tuples
     return dots

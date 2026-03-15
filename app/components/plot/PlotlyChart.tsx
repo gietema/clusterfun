@@ -84,6 +84,7 @@ export default function PlotlyChart({
   const [layout, setLayout] = useState<Record<string, any>>({});
   const [isLoading, setIsLoading] = useState(true);
 
+  // Build layout when config/data/revision change (NOT dragMode)
   useEffect(() => {
     if (!config) return;
     const shapes = [
@@ -113,7 +114,12 @@ export default function PlotlyChart({
         ...(config.color ? { title: { text: config.color } } : {}),
       },
     });
-  }, [config, revision, data, dragMode]);
+  }, [config, revision, data]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Update only dragmode without resetting zoom
+  useEffect(() => {
+    setLayout((prev) => ({ ...prev, dragmode: dragMode }));
+  }, [dragMode]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

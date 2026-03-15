@@ -4,7 +4,7 @@ from fastapi import Request
 from fastapi.responses import HTMLResponse
 
 from clusterfun.app import APP, FRONTEND_DIR
-from clusterfun.routes import views, media, labels, columns, similarity, active_learning, embeddings, plot_builder, insights
+from clusterfun.routes import views, media, labels, columns, similarity, active_learning, embeddings, plot_builder, insights, projects
 
 APP.include_router(views.router)
 APP.include_router(media.router)
@@ -15,6 +15,7 @@ APP.include_router(active_learning.router)
 APP.include_router(embeddings.router)
 APP.include_router(plot_builder.router)
 APP.include_router(insights.router)
+APP.include_router(projects.router)
 
 
 @APP.get("/{path:path}", response_class=HTMLResponse)

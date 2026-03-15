@@ -50,3 +50,21 @@ class StorageBackend(ABC):
     def get_parquet_uri_named(self, uuid: str, filename: str) -> str:
         """Return URI for a named Parquet file."""
         raise NotImplementedError
+
+    # ── Project-level storage ──
+
+    def save_project_json(self, project: str, filename: str, data: Any) -> None:
+        """Save a JSON artifact at the project level."""
+        raise NotImplementedError
+
+    def load_project_json(self, project: str, filename: str) -> Any:
+        """Load a JSON artifact from the project level."""
+        raise NotImplementedError
+
+    def project_json_exists(self, project: str, filename: str) -> bool:
+        """Check if a project-level JSON artifact exists."""
+        raise NotImplementedError
+
+    def list_projects(self) -> List[str]:
+        """List available project names."""
+        raise NotImplementedError

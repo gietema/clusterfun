@@ -65,3 +65,35 @@ class LocalBackend(StorageBackend):
 
     def get_parquet_uri_named(self, uuid: str, filename: str) -> str:
         return str(self.cache_dir / uuid / filename)
+
+    # ── Project-level storage ──
+
+    @property
+    def projects_dir(self) -> Path:
+        return self.cache_dir / "projects"
+
+    def save_project_json(self, project: str, filename: str, data: Any) -> None:
+        path = self.projects_dir / project / filename
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "wb") as f:
+            f.write(
+                orjson.dumps(
+                    data, option=orjson.OPT_NAIVE_UTC | orjson.OPT_SERIALIZE_NUMPY
+                )
+            )
+
+    def load_project_json(self, project: str, filename: str) -> Any:
+        with open(self.projects_dir / project / filename, "rb") as f:
+            return orjson.loads(f.read())
+
+    def project_json_exists(self, project: str, filename: str) -> bool:
+        return (self.projects_dir / project / filename).exists()
+
+    def list_projects(self) -> List[str]:
+        if not self.projects_dir.exists():
+            return []
+        return [
+            d.name
+            for d in self.projects_dir.iterdir()
+            if d.is_dir() and (d / "project.json").exists()
+        ]

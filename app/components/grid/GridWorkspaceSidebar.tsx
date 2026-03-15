@@ -2,29 +2,28 @@
 import { useEffect, useState } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
-  faBolt, faDownload, faRotateLeft, faTableCells,
+  faBolt, faDownload, faRotateLeft,
   faStop, faArrowsRotate, faChevronDown, faChevronRight, faXmark,
+  faArrowRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { saveAs } from "file-saver";
-import toast from "react-hot-toast";
 import {
   configAtom, currentMediaIndicesAtom, mediaItemsAtom, uuidAtom,
   mediaAtom, mediaIndicesStackAtom, gridValuesAtom, showPageAtom,
-  similarityResultsAtom,
+  similarityResultsAtom, labelFilterAtom,
 } from "@/app/store/atoms";
 import {
   fetchLabelCounts, saveLabel, deleteLabel,
-  downloadLabelCsv, saveLabelAsGrid, fetchSimilar,
+  downloadLabelCsv, fetchSimilar, fetchAllLabels,
 } from "@/app/lib/api";
 import type { LabelCount } from "@/app/types";
+import { getLabelColor } from "@/app/lib/label-colors";
 import { useLabelUndo } from "@/app/lib/use-label-undo";
 import { useActiveLearning } from "@/app/lib/use-active-learning";
 import { AL_METHODS } from "@/app/lib/active-learning";
 import PreviewMedia from "../shared/PreviewMedia";
 import InformationItem from "../shared/InformationItem";
-import TextSearchBar from "../shared/TextSearchBar";
-import InsightsPanel from "./InsightsPanel";
 
 function Section({ title, defaultOpen = false, children, badge }: {
   title: string;
@@ -51,20 +50,21 @@ function Section({ title, defaultOpen = false, children, badge }: {
 export default function GridWorkspaceSidebar() {
   const uuid = useAtomValue(uuidAtom);
   const [config, setConfig] = useAtom(configAtom);
-  const media = useAtomValue(mediaAtom);
+  const [media, setSideMedia] = useAtom(mediaAtom);
   const [mediaItems, setMediaItems] = useAtom(mediaItemsAtom);
   const mediaIndices = useAtomValue(currentMediaIndicesAtom);
   const setMediaIndicesStack = useSetAtom(mediaIndicesStackAtom);
   const setGridValues = useSetAtom(gridValuesAtom);
   const setShowPage = useSetAtom(showPageAtom);
   const setSimilarityResults = useSetAtom(similarityResultsAtom);
+  const setLabelFilter = useSetAtom(labelFilterAtom);
 
   const [labelCounts, setLabelCounts] = useState<LabelCount[]>([]);
   const [newLabel, setNewLabel] = useState("");
   const [alLoading, setAlLoading] = useState(false);
   const [findSimilarLoading, setFindSimilarLoading] = useState(false);
 
-  const { pushAction, undo, canUndo } = useLabelUndo();
+  const { pushAction, undo, redo, canUndo, canRedo } = useLabelUndo();
   const {
     isAvailable, isActive, alState, stop, refit,
     methodId, setMethodId, mlpLayers, setMlpLayers,
@@ -88,40 +88,87 @@ export default function GridWorkspaceSidebar() {
     setConfig({ ...config, labels: config.labels.filter((l) => l !== label) });
   };
 
-  const handleDownload = async (currentSelection: boolean, label?: string) => {
-    const ids = currentSelection ? mediaIndices : [];
-    const blob = await downloadLabelCsv(uuid, ids, label);
+  const handlePreviewLabelToggle = (label: string) => {
+    if (!media) return;
+    const isRemove = media.labels?.includes(label);
+    if (isRemove) {
+      deleteLabel(uuid, [media.index], label).catch(console.error);
+      pushAction({ type: "remove", label, mediaIds: [media.index] });
+    } else {
+      saveLabel(uuid, [media.index], label).catch(console.error);
+      pushAction({ type: "add", label, mediaIds: [media.index] });
+    }
+    // Update the preview media
+    const labels = media.labels ? [...media.labels] : [];
+    if (isRemove) {
+      setSideMedia({ ...media, labels: labels.filter((l) => l !== label) });
+    } else {
+      if (!labels.includes(label)) labels.push(label);
+      setSideMedia({ ...media, labels });
+    }
+    // Update grid items
+    setMediaItems((items) =>
+      items.map((m) => {
+        if (m.index !== media.index) return m;
+        const mLabels = m.labels ? [...m.labels] : [];
+        if (isRemove) return { ...m, labels: mLabels.filter((l) => l !== label) };
+        if (!mLabels.includes(label)) mLabels.push(label);
+        return { ...m, labels: mLabels };
+      }),
+    );
+  };
+
+  const handleLabelAllOnPage = (label: string) => {
+    const allHave = mediaItems.every((m) => m.labels?.includes(label));
+    const toProcess: number[] = [];
+
+    setMediaItems((items) =>
+      items.map((m) => {
+        const labels = m.labels ? [...m.labels] : [];
+        if (allHave) {
+          if (labels.includes(label)) {
+            toProcess.push(m.index);
+            return { ...m, labels: labels.filter((l) => l !== label) };
+          }
+        } else {
+          if (!labels.includes(label)) {
+            toProcess.push(m.index);
+            return { ...m, labels: [...labels, label] };
+          }
+        }
+        return m;
+      }),
+    );
+
+    if (toProcess.length > 0) {
+      if (allHave) {
+        deleteLabel(uuid, toProcess, label).catch(console.error);
+        pushAction({ type: "remove", label, mediaIds: toProcess });
+      } else {
+        saveLabel(uuid, toProcess, label).catch(console.error);
+        pushAction({ type: "add", label, mediaIds: toProcess });
+      }
+    }
+  };
+
+  const handleDownload = async () => {
+    const blob = await downloadLabelCsv(uuid, [], undefined);
     saveAs(blob, `${uuid}_labels.csv`);
   };
 
-  const handleSaveAsGrid = async (currentSelection: boolean, label?: string) => {
-    try {
-      const result = await saveLabelAsGrid(uuid, currentSelection ? mediaIndices : [], label);
-      const location = result.split("/").pop();
-      toast.custom(
-        (t) => (
-          <div className={`rounded-lg bg-white px-6 py-4 text-gray-900 shadow-lg ${t.visible ? "animate-enter" : "animate-leave"}`}>
-            Plot saved. To view the plot, run<br />
-            <div className="my-2">
-              <code className="rounded-md bg-gray-800 px-3 py-1.5 text-sm text-white">
-                <span className="text-pink-400">clusterfun</span> {location}
-              </code>
-            </div>
-            <div className="flex justify-end">
-              <button
-                className="mt-2 rounded-md bg-gray-800 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-gray-700"
-                onClick={() => toast.dismiss(t.id)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        ),
-        { duration: 10000 },
-      );
-    } catch {
-      alert("Could not save labels as new plot");
+  const handleShowLabel = async (label: string) => {
+    const allLabels = await fetchAllLabels(uuid);
+    const ids: number[] = [];
+    for (const [mediaId, labels] of Object.entries(allLabels)) {
+      if (labels.includes(label)) ids.push(parseInt(mediaId));
     }
+    if (ids.length === 0) return;
+    setLabelFilter(label);
+    setMediaIndicesStack((prev) => {
+      const base = prev.length > 0 ? prev[0] : mediaIndices;
+      return [base, ids];
+    });
+    setGridValues((prev) => ({ ...prev, page: 0 }));
   };
 
   const handleFit = async () => {
@@ -161,13 +208,6 @@ export default function GridWorkspaceSidebar() {
 
   return (
     <div className="flex h-full flex-col overflow-y-auto border-l border-gray-200">
-      {/* Search */}
-      {config.embeddings_model && (
-        <Section title="Search" defaultOpen>
-          <TextSearchBar />
-        </Section>
-      )}
-
       {/* Preview */}
       <Section title="Preview" defaultOpen>
         {media ? (
@@ -193,6 +233,30 @@ export default function GridWorkspaceSidebar() {
                 <InformationItem key={key} label={key} value={value} />
               ))}
             </div>
+            {/* Quick label toggles for previewed item */}
+            {config.labels.length > 0 && (
+              <div className="flex flex-wrap gap-1 border-t border-gray-100 pt-2">
+                {config.labels.map((label, idx) => {
+                  const isActive = media.labels?.includes(label);
+                  const color = getLabelColor(idx);
+                  return (
+                    <button
+                      key={label}
+                      onClick={() => handlePreviewLabelToggle(label)}
+                      className="flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-all"
+                      style={isActive
+                        ? { backgroundColor: color, color: "white" }
+                        : { backgroundColor: `${color}15`, color, border: `1px solid ${color}40` }
+                      }
+                      title={`${isActive ? "Remove" : "Add"} "${label}" (key: ${idx + 1})`}
+                    >
+                      {label}
+                      <span className="text-[10px] opacity-60">{idx + 1}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         ) : (
           <p className="text-xs text-gray-400">Hover an item to preview</p>
@@ -204,120 +268,81 @@ export default function GridWorkspaceSidebar() {
         title="Labels"
         defaultOpen
         badge={
-          canUndo ? (
-            <button
-              onClick={(e) => { e.stopPropagation(); undo(); }}
-              className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-700"
-              title="Undo last label action (Ctrl+Z)"
-            >
-              <FontAwesomeIcon icon={faRotateLeft} />
-              undo
-            </button>
+          (canUndo || canRedo) ? (
+            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={undo}
+                disabled={!canUndo}
+                className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-700 disabled:opacity-30 disabled:hover:bg-transparent"
+                title="Undo (Ctrl+Z)"
+              >
+                <FontAwesomeIcon icon={faRotateLeft} />
+              </button>
+              <button
+                onClick={redo}
+                disabled={!canRedo}
+                className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-700 disabled:opacity-30 disabled:hover:bg-transparent"
+                title="Redo (Ctrl+Shift+Z)"
+              >
+                <FontAwesomeIcon icon={faRotateLeft} className="scale-x-[-1]" />
+              </button>
+            </div>
           ) : undefined
         }
       >
-        {/* Always show all labels from config */}
-        <table className="mb-2 w-full border-collapse text-xs">
-          <thead>
-            <tr>
-              <th className="border border-gray-200 px-2 py-1 text-left font-medium text-gray-700">Label</th>
-              <th className="border border-gray-200 px-2 py-1 text-right font-medium text-gray-700">Selection</th>
-              <th className="border border-gray-200 px-2 py-1 text-right font-medium text-gray-700">Total</th>
-              <th className="w-8 border border-gray-200 px-1 py-1" />
-            </tr>
-          </thead>
-          <tbody>
-            {config.labels.map((label) => {
-              const lc = countByLabel.get(label);
-              const inSel = lc?.inCurrentSelection ?? 0;
-              const inAll = lc?.inEntireDataset ?? 0;
-              return (
-                <tr key={label}>
-                  <td className="border border-gray-200 px-2 py-1.5">
-                    <span className="font-medium">{label}</span>
-                  </td>
-                  <td className="border border-gray-200 px-2 py-1.5 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <span>{inSel}</span>
-                      {inSel > 0 && (
-                        <div className="flex gap-0.5">
-                          <button className="text-gray-400 hover:text-gray-700" onClick={() => handleDownload(true, label)} title="Download selection">
-                            <FontAwesomeIcon icon={faDownload} className="text-[10px]" />
-                          </button>
-                          <button className="text-gray-400 hover:text-gray-700" onClick={() => handleSaveAsGrid(true, label)} title="Save as grid">
-                            <FontAwesomeIcon icon={faTableCells} className="text-[10px]" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                  <td className="border border-gray-200 px-2 py-1.5 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <span>{inAll}</span>
-                      {inAll > 0 && (
-                        <div className="flex gap-0.5">
-                          <button className="text-gray-400 hover:text-gray-700" onClick={() => handleDownload(false, label)} title="Download all">
-                            <FontAwesomeIcon icon={faDownload} className="text-[10px]" />
-                          </button>
-                          <button className="text-gray-400 hover:text-gray-700" onClick={() => handleSaveAsGrid(false, label)} title="Save as grid">
-                            <FontAwesomeIcon icon={faTableCells} className="text-[10px]" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                  <td className="border border-gray-200 px-1 py-1.5 text-center">
-                    {inSel === 0 && inAll === 0 && (
+        {/* Label list */}
+        <div className="mb-2 space-y-1">
+          {config.labels.map((label, idx) => {
+            const lc = countByLabel.get(label);
+            const inSel = lc?.inCurrentSelection ?? 0;
+            const inAll = lc?.inEntireDataset ?? 0;
+            const color = getLabelColor(idx);
+            const allOnPageHave = mediaItems.length > 0 && mediaItems.every((m) => m.labels?.includes(label));
+            return (
+              <div key={label} className="rounded-md border border-gray-100 bg-gray-50 px-2 py-1.5">
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: color }}
+                  />
+                  <span className="flex-grow truncate text-xs font-medium text-gray-800">{label}</span>
+                  <span className="text-[10px] text-gray-400">{idx + 1}</span>
+                  {inSel === 0 && inAll === 0 && (
+                    <button
+                      className="text-gray-300 hover:text-red-500"
+                      onClick={() => handleRemoveLabel(label)}
+                      title="Remove label"
+                    >
+                      <FontAwesomeIcon icon={faXmark} className="text-[10px]" />
+                    </button>
+                  )}
+                </div>
+                <div className="mt-1 flex items-center gap-2 text-[10px] text-gray-500">
+                  <span>{inSel} in page</span>
+                  <span>{inAll} total</span>
+                  <div className="ml-auto flex items-center gap-1">
+                    <button
+                      className="rounded px-1 py-px text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700"
+                      onClick={() => handleLabelAllOnPage(label)}
+                      title={allOnPageHave ? "Remove from all on page" : "Apply to all on page"}
+                    >
+                      {allOnPageHave ? "Remove all" : "Label page"}
+                    </button>
+                    {inAll > 0 && (
                       <button
-                        className="text-gray-300 hover:text-red-500"
-                        onClick={() => handleRemoveLabel(label)}
-                        title="Remove label"
+                        className="flex items-center gap-0.5 rounded px-1 py-px text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700"
+                        onClick={() => handleShowLabel(label)}
+                        title={`Show all ${inAll} items with "${label}"`}
                       >
-                        <FontAwesomeIcon icon={faXmark} className="text-[10px]" />
+                        Show <FontAwesomeIcon icon={faArrowRight} className="text-[8px]" />
                       </button>
                     )}
-                  </td>
-                </tr>
-              );
-            })}
-            {config.labels.length > 1 && (totalSelection > 0 || totalDataset > 0) && (
-              <tr className="bg-gray-50">
-                <td className="border border-gray-200 px-2 py-1.5 font-medium">Total</td>
-                <td className="border border-gray-200 px-2 py-1.5 text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    <span>{totalSelection}</span>
-                    {totalSelection > 0 && (
-                      <div className="flex gap-0.5">
-                        <button className="text-gray-400 hover:text-gray-700" onClick={() => handleDownload(true)} title="Download all labels (selection)">
-                          <FontAwesomeIcon icon={faDownload} className="text-[10px]" />
-                        </button>
-                        <button className="text-gray-400 hover:text-gray-700" onClick={() => handleSaveAsGrid(true)} title="Save as grid">
-                          <FontAwesomeIcon icon={faTableCells} className="text-[10px]" />
-                        </button>
-                      </div>
-                    )}
                   </div>
-                </td>
-                <td className="border border-gray-200 px-2 py-1.5 text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    <span>{totalDataset}</span>
-                    {totalDataset > 0 && (
-                      <div className="flex gap-0.5">
-                        <button className="text-gray-400 hover:text-gray-700" onClick={() => handleDownload(false)} title="Download all labels">
-                          <FontAwesomeIcon icon={faDownload} className="text-[10px]" />
-                        </button>
-                        <button className="text-gray-400 hover:text-gray-700" onClick={() => handleSaveAsGrid(false)} title="Save as grid">
-                          <FontAwesomeIcon icon={faTableCells} className="text-[10px]" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </td>
-                <td className="border border-gray-200" />
-              </tr>
-            )}
-          </tbody>
-        </table>
+                </div>
+              </div>
+            );
+          })}
+        </div>
         {/* Add label */}
         <div className="flex items-center gap-1">
           <input
@@ -335,17 +360,22 @@ export default function GridWorkspaceSidebar() {
             Add
           </button>
         </div>
-        <p className="mt-1.5 text-xs text-gray-400">
-          Use keys 1-9 to label items. Ctrl+Z to undo.
-        </p>
+        <div className="mt-1.5 flex items-center justify-between">
+          <p className="text-xs text-gray-400">
+            Keys 1-9 to label. Ctrl+Z undo. Ctrl+Shift+Z redo.
+          </p>
+          {totalDataset > 0 && (
+            <button
+              className="flex items-center gap-1 text-[10px] text-gray-400 transition-colors hover:text-gray-700"
+              onClick={handleDownload}
+              title="Download all labels as CSV"
+            >
+              <FontAwesomeIcon icon={faDownload} className="text-[9px]" />
+              CSV
+            </button>
+          )}
+        </div>
       </Section>
-
-      {/* Insights */}
-      {config.embeddings && (
-        <Section title="Insights">
-          <InsightsPanel />
-        </Section>
-      )}
 
       {/* Active Learning */}
       {isAvailable && (

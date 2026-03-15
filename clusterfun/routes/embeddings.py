@@ -35,7 +35,11 @@ def get_embeddings(
         raise HTTPException(status_code=400, detail="No embeddings configured")
 
     emb_col = config.embeddings
-    con = ensure_embeddings_table(view_uuid, backend, emb_col)
+    con = ensure_embeddings_table(
+        view_uuid, backend, emb_col,
+        embeddings_source=config.embeddings_source,
+        media_col=config.media,
+    )
 
     if request.media_ids:
         placeholders = ",".join("?" for _ in request.media_ids)

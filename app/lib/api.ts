@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Media, PlotConfig, Filter, ColumnInfo, LabelCount, PlotTrace, ColumnStats, MediaMetadata, SimilarityResult, ProbeResponse, ProbeSortBy, OutlierResult, DuplicateGroup } from "@/app/types";
+import type { Media, PlotConfig, Filter, ColumnInfo, LabelCount, PlotTrace, ColumnStats, MediaMetadata, SimilarityResult, ProbeResponse, ProbeSortBy, OutlierResult, DuplicateGroup, ProjectSummary, ProjectDetail } from "@/app/types";
 import { API_URL } from "./constants";
 import { createMedia } from "./media-utils";
 
@@ -253,4 +253,38 @@ export async function fetchDuplicates(
     limit,
   });
   return data;
+}
+
+// ── Save View ──
+
+export async function saveView(
+  uuid: string,
+  mediaIds: number[],
+  title?: string,
+): Promise<{ uuid: string }> {
+  const { data } = await axios.post(`${API_URL}/views/${uuid}/save-view`, {
+    media_ids: mediaIds,
+    title: title || undefined,
+  });
+  return data;
+}
+
+// ── Projects ──
+
+export async function fetchProjects(): Promise<ProjectSummary[]> {
+  const { data } = await axios.get<ProjectSummary[]>(`${API_URL}/projects`);
+  return data;
+}
+
+export async function fetchProject(name: string): Promise<ProjectDetail> {
+  const { data } = await axios.get<ProjectDetail>(`${API_URL}/projects/${encodeURIComponent(name)}`);
+  return data;
+}
+
+export async function deleteProjectView(projectName: string, viewUuid: string): Promise<void> {
+  await axios.delete(`${API_URL}/projects/${encodeURIComponent(projectName)}/views/${viewUuid}`);
+}
+
+export async function renameProjectView(projectName: string, viewUuid: string, title: string): Promise<void> {
+  await axios.patch(`${API_URL}/projects/${encodeURIComponent(projectName)}/views/${viewUuid}`, { title });
 }

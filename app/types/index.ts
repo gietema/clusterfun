@@ -32,6 +32,7 @@ export interface PlotConfig {
   vline?: number;
   embeddings?: string;
   embeddings_model?: string;
+  project?: string;
 }
 
 // ── Bounding Box ──
@@ -172,6 +173,7 @@ export interface PlotPanelConfig {
   y?: string;
   color?: string;
   colorIsCategorical?: boolean;
+  bins?: number;
 }
 
 // ── Outlier / Duplicate Detection ──
@@ -184,4 +186,27 @@ export interface DuplicateGroup {
   group_id: number;
   media_ids: number[];
   similarity: number;
+}
+
+// ── Projects ──
+export interface ProjectSummary {
+  name: string;
+  created_at: string;
+  view_count: number;
+  label_count: number;
+}
+
+export interface ProjectView {
+  uuid: string;
+  type: string;
+  created_at: string;
+  title?: string;
+}
+
+export interface ProjectDetail {
+  name: string;
+  created_at: string;
+  label_count: number;
+  label_names: string[];
+  views: ProjectView[];
 }

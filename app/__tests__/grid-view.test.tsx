@@ -87,23 +87,15 @@ describe("GridView", () => {
     expect(screen.getByText("5 items")).toBeInTheDocument();
   });
 
-  it("shows selected count link for filtered subset", () => {
+  it("shows item count for filtered subset", () => {
     // Two levels in the stack = filtered subset
     renderGrid([[mediaIndicesStackAtom, [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4]]]]);
-    expect(screen.getByText(/5 selected/)).toBeInTheDocument();
+    expect(screen.getByText("5 items")).toBeInTheDocument();
   });
 
-  it("calls onBack when selected link is clicked", () => {
-    renderGrid([[mediaIndicesStackAtom, [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4]]]]);
-    const backBtn = screen.getByText(/5 selected/);
-    fireEvent.click(backBtn);
-    expect(onBack).toHaveBeenCalledOnce();
-  });
-
-  it("shows items count without back when at base level", () => {
+  it("shows items count at base level", () => {
     renderGrid();
     expect(screen.getByText("5 items")).toBeInTheDocument();
-    expect(screen.queryByText(/selected/)).not.toBeInTheDocument();
   });
 
   it("fetches media items on mount", async () => {

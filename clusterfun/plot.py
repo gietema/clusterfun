@@ -18,6 +18,7 @@ import dataclasses
 import os
 import socket
 import webbrowser
+from datetime import datetime, timezone
 from functools import partial
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -84,6 +85,23 @@ def get_local_port() -> int:
     sock = socket.socket()
     sock.bind(("", 0))
     return sock.getsockname()[1]
+
+
+def _register_view_with_project(
+    uuid: str, cfg: Config, backend: Any
+) -> None:
+    """Register a view UUID with its project manifest."""
+    project = cfg.project
+    assert project is not None
+    now = datetime.now(timezone.utc).isoformat()
+    if backend.project_json_exists(project, "project.json"):
+        manifest = backend.load_project_json(project, "project.json")
+    else:
+        manifest = {"name": project, "created_at": now, "views": []}
+    manifest["views"].append(
+        {"uuid": uuid, "type": cfg.type, "created_at": now}
+    )
+    backend.save_project_json(project, "project.json", manifest)
 
 
 class Plot:
@@ -166,6 +184,24 @@ class Plot:
             )
             APP.mount("/media", StaticFiles(directory=common_media_path), name="media")
         LocalStorer().save(uuid, df, cfg)
+
+        # If this view belongs to a project, register it and write id-to-path mapping
+        if cfg.project:
+            backend = get_backend()
+            _register_view_with_project(uuid, cfg, backend)
+            # Build id_to_path mapping: index → original media path
+            # At this point, local paths in df[cfg.media] have been replaced with /media/...
+            # so we reverse that substitution to get original paths.
+            id_to_path: Dict[str, str] = {}
+            for idx, media_val in df[cfg.media].items():
+                original = str(media_val)
+                if cfg.common_media_path and original.startswith("/media"):
+                    original = original.replace(
+                        "/media", cfg.common_media_path, 1
+                    )
+                id_to_path[str(idx)] = original
+            backend.save_json(uuid, "id_to_path.json", id_to_path)
+
         return cls(uuid, df.to_dict(), cfg)
 
     @classmethod

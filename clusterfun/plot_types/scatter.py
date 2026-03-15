@@ -32,6 +32,7 @@ def scatter(
     vline: Optional[float] = None,
     embeddings: Optional[str] = None,
     embeddings_model: Optional[str] = None,
+    project: Optional[str] = None,
 ):  # pylint: disable=too-many-arguments,missing-function-docstring
     cfg = Config(
         type="scatter",
@@ -48,6 +49,7 @@ def scatter(
         hline=hline,
         embeddings=embeddings,
         embeddings_model=embeddings_model,
+        project=project,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

@@ -1,17 +1,19 @@
-"""Compute CLIP embeddings for the wiki-art dataset and launch a scatter plot with similarity search.
+"""Compute CLIP embeddings and launch a scatter plot with similarity search.
 
 Usage:
-    uv run --with torch --with transformers scripts/similarity.py
+    uv run --with click --with torch --with transformers scripts/similarity.py [--dataset wiki-art]
 """
 
 from pathlib import Path
 
+import click
 import pandas as pd
 import torch
 from PIL import Image
 from transformers import CLIPModel, CLIPProcessor
 
 import clusterfun as clt
+from datasets import dataset_option, load_dataset
 
 
 def load_image(url: str) -> Image.Image | None:
@@ -29,7 +31,7 @@ def load_image(url: str) -> Image.Image | None:
 
 def compute_clip_embeddings(
     image_urls: list[str], batch_size: int = 32
-) -> list[list[float]]:
+) -> tuple[list[list[float]], list[int]]:
     """Compute CLIP embeddings for a list of image URLs."""
     device = (
         "mps"
@@ -85,40 +87,42 @@ def compute_clip_embeddings(
     return embeddings, valid_indices
 
 
-CACHE_PATH = Path(__file__).parent / "wiki_art_with_embeddings.parquet"
+@click.command()
+@dataset_option
+def main(dataset):
+    cache_path = Path(__file__).parent / f"{dataset}_with_embeddings.parquet"
 
-
-def main():
-    if CACHE_PATH.exists():
-        df = pd.read_parquet(CACHE_PATH)
-        print(f"Loaded {len(df)} paintings with cached embeddings from {CACHE_PATH}")
+    if cache_path.exists():
+        df = pd.read_parquet(cache_path)
+        print(f"Loaded {len(df)} items with cached embeddings from {cache_path}")
     else:
-        df = pd.read_csv(
-            "https://raw.githubusercontent.com/gietema/clusterfun-data/main/wiki-art.csv"
-        )
-        print(f"Loaded {len(df)} paintings")
-
+        df, _ = load_dataset(dataset)
         print("Computing CLIP embeddings...")
         embeddings, valid_indices = compute_clip_embeddings(df["img_path"].tolist())
 
-        # Keep only rows where embedding was computed successfully
         df = df.iloc[valid_indices].reset_index(drop=True)
         df["clip_embedding"] = embeddings
-        print(f"Computed embeddings for {len(df)} paintings ({len(embeddings[0])}-dim)")
+        print(f"Computed embeddings for {len(df)} items ({len(embeddings[0])}-dim)")
 
-        df.to_parquet(CACHE_PATH)
-        print(f"Saved embeddings cache to {CACHE_PATH}")
+        df.to_parquet(cache_path)
+        print(f"Saved embeddings cache to {cache_path}")
+
+    # Re-read dataset config (need it for column names)
+    from datasets import DATASETS
+
+    ds = DATASETS[dataset]
 
     print(clt.scatter(
         df,
-        x="x",
-        y="y",
-        media="img_path",
-        color="painter",
-        title="Wiki-Art with CLIP Similarity Search",
+        x=ds.x,
+        y=ds.y,
+        media=ds.media,
+        color=ds.color,
+        title=f"{ds.name} with CLIP Similarity Search",
         embeddings="clip_embedding",
         embeddings_model="openai/clip-vit-base-patch32",
         show=False,
+        project=dataset,
     ))
 
 

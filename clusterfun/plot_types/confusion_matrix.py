@@ -27,6 +27,7 @@ def confusion_matrix(
     display: Optional[Union[str, List[str]]] = None,
     embeddings: Optional[str] = None,
     embeddings_model: Optional[str] = None,
+    project: Optional[str] = None,
 ):  # pylint: disable=too-many-arguments,missing-function-docstring,too-many-locals
 
     labels = sorted(df[y_true].unique().tolist())
@@ -78,6 +79,7 @@ def confusion_matrix(
         display=display,
         embeddings=embeddings,
         embeddings_model=embeddings_model,
+        project=project,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

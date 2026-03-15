@@ -5,8 +5,8 @@ import { faFileAudio, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { configAtom, similarityResultsAtom, activeLearningAtom } from "@/app/store/atoms";
 import type { Media, PredictionItem } from "@/app/types";
+import { getLabelColor } from "@/app/lib/label-colors";
 import PreviewMedia from "../shared/PreviewMedia";
-import MediaLabels from "./MediaLabels";
 
 export const EXCLUDE_LABEL = "exclude";
 
@@ -74,6 +74,25 @@ export default function MediaGridItem({
       }}
     >
       <div className="relative flex-grow">
+        {/* Label badges overlay */}
+        {media.labels && media.labels.length > 0 && config?.labels && (
+          <div className="absolute left-1 top-1 z-10 flex flex-wrap gap-0.5">
+            {media.labels.map((label) => {
+              const labelIndex = config.labels.indexOf(label);
+              if (labelIndex === -1) return null;
+              return (
+                <span
+                  key={label}
+                  className="rounded px-1 py-px text-[10px] font-medium leading-tight text-white shadow-sm"
+                  style={{ backgroundColor: getLabelColor(labelIndex) }}
+                  title={label}
+                >
+                  {columns >= 6 ? (labelIndex + 1) : label}
+                </span>
+              );
+            })}
+          </div>
+        )}
         {alState && onExclude && !isExcluded && (
           <button
             onClick={(e) => { e.stopPropagation(); onExclude(); }}
@@ -148,10 +167,6 @@ export default function MediaGridItem({
           ))}
         </div>
       )}
-      <MediaLabels
-        mediaLabels={media.labels ?? []}
-        onLabelToggle={onLabelToggle}
-      />
     </div>
   );
 }

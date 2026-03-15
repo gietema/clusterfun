@@ -44,13 +44,21 @@ def get_connection(uuid: str, backend: StorageBackend) -> duckdb.DuckDBPyConnect
 
 
 def ensure_embeddings_table(
-    uuid: str, backend: StorageBackend, emb_col: str
+    uuid: str,
+    backend: StorageBackend,
+    emb_col: str,
+    embeddings_source: Optional[str] = None,
+    media_col: Optional[str] = None,
 ) -> duckdb.DuckDBPyConnection:
     """Set up embeddings for similarity search.
 
     Tries to create an in-memory TABLE with an HNSW index (via the ``vss``
     extension) for O(log n) queries.  Falls back to a plain VIEW over the
     Parquet file (brute-force scan) when the extension is unavailable.
+
+    When ``embeddings_source`` is set, embeddings are loaded from the source
+    view and joined through the ``media_col`` column, avoiding a full copy
+    of the embeddings file.
     """
     con = get_connection(uuid, backend)
     try:
@@ -59,18 +67,35 @@ def ensure_embeddings_table(
     except duckdb.CatalogException:
         pass
 
-    emb_uri = backend.get_parquet_uri_named(uuid, "embeddings.parquet")
+    if embeddings_source and media_col:
+        emb_uri = backend.get_parquet_uri_named(embeddings_source, "embeddings.parquet")
+        source_data_uri = backend.get_parquet_uri(embeddings_source)
+    else:
+        emb_uri = backend.get_parquet_uri_named(uuid, "embeddings.parquet")
 
     try:
         con.execute("INSTALL vss; LOAD vss;")
         dim = con.execute(
             f"SELECT len(\"{emb_col}\") FROM read_parquet('{emb_uri}') LIMIT 1"
         ).fetchone()[0]
-        con.execute(
-            f"CREATE TABLE embeddings AS "
-            f'SELECT id, "{emb_col}"::FLOAT[{dim}] AS "{emb_col}" '
-            f"FROM read_parquet('{emb_uri}')"
-        )
+
+        if embeddings_source and media_col:
+            # Join source embeddings to current view through the media column.
+            con.execute(
+                f"CREATE TABLE embeddings AS "
+                f"SELECT cur.id, src_emb.\"{emb_col}\"::FLOAT[{dim}] AS \"{emb_col}\" "
+                f"FROM database cur "
+                f"JOIN read_parquet('{source_data_uri}') src "
+                f"  ON cur.\"{media_col}\" = src.\"{media_col}\" "
+                f"JOIN read_parquet('{emb_uri}') src_emb "
+                f"  ON src.id = src_emb.id"
+            )
+        else:
+            con.execute(
+                f"CREATE TABLE embeddings AS "
+                f'SELECT id, "{emb_col}"::FLOAT[{dim}] AS "{emb_col}" '
+                f"FROM read_parquet('{emb_uri}')"
+            )
         con.execute(
             f"CREATE INDEX emb_hnsw_idx ON embeddings "
             f"USING HNSW (\"{emb_col}\") WITH (metric = 'cosine')"
@@ -81,9 +106,21 @@ def ensure_embeddings_table(
             con.execute("DROP TABLE IF EXISTS embeddings")
         except Exception:
             pass
-        con.execute(
-            f"CREATE VIEW embeddings AS SELECT * FROM read_parquet('{emb_uri}')"
-        )
+
+        if embeddings_source and media_col:
+            con.execute(
+                f"CREATE VIEW embeddings AS "
+                f"SELECT cur.id, src_emb.\"{emb_col}\" "
+                f"FROM database cur "
+                f"JOIN read_parquet('{source_data_uri}') src "
+                f"  ON cur.\"{media_col}\" = src.\"{media_col}\" "
+                f"JOIN read_parquet('{emb_uri}') src_emb "
+                f"  ON src.id = src_emb.id"
+            )
+        else:
+            con.execute(
+                f"CREATE VIEW embeddings AS SELECT * FROM read_parquet('{emb_uri}')"
+            )
 
     return con
 

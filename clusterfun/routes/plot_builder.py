@@ -65,31 +65,38 @@ def _build_histogram_data(
     """Generate histogram trace data with computed _y bin counts."""
     np.random.seed(42)
 
-    color = cfg.color if cfg.color_is_categorical else None
+    cat_color = cfg.color if cfg.color and cfg.color_is_categorical else None
     x_col = cfg.x
 
-    if color is not None:
+    if cat_color is not None:
         # Fetch id, x, and color columns
         rows = con.execute(
-            f"SELECT id, {_safe_col(x_col)}, {_safe_col(color)} FROM database"
+            f"SELECT id, {_safe_col(x_col)}, {_safe_col(cat_color)} FROM database"
         ).fetchall()
-        df = pd.DataFrame(rows, columns=["id", x_col, color])
+        df = pd.DataFrame(rows, columns=["id", x_col, cat_color])
 
-        # Compute _y per color group
+        # Compute _x and _y per color group
         dfs = []
-        for color_val in df[color].unique():
-            mask = df[color] == color_val
+        for color_val in df[cat_color].unique():
+            mask = df[cat_color] == color_val
             subset = df.loc[mask, x_col].tolist()
             dots = get_x_and_y(subset, bins)
-            y_vals = [d[1] for d in dots]
             sub_df = df.loc[mask].copy()
-            sub_df["_y"] = y_vals
+            sub_df["_x"] = [d[0] for d in dots]
+            sub_df["_y"] = [d[1] for d in dots]
             dfs.append(sub_df)
         df = pd.concat(dfs)
     else:
-        rows = con.execute(f"SELECT id, {_safe_col(x_col)} FROM database").fetchall()
-        df = pd.DataFrame(rows, columns=["id", x_col])
+        # Fetch id, x, and optionally a non-categorical color column
+        select_cols = f"id, {_safe_col(x_col)}"
+        df_cols = ["id", x_col]
+        if cfg.color and not cfg.color_is_categorical and cfg.color != x_col:
+            select_cols += f", {_safe_col(cfg.color)}"
+            df_cols.append(cfg.color)
+        rows = con.execute(f"SELECT {select_cols} FROM database").fetchall()
+        df = pd.DataFrame(rows, columns=df_cols)
         dots = get_x_and_y(df[x_col].tolist(), bins)
+        df["_x"] = [d[0] for d in dots]
         df["_y"] = [d[1] for d in dots]
 
     # Register the transformed data in a temporary DuckDB connection
@@ -98,7 +105,7 @@ def _build_histogram_data(
         tmp_con.register("df_view", df)
         tmp_con.execute("CREATE VIEW database AS SELECT * FROM df_view")
 
-        hist_cfg = dataclasses.replace(cfg, y="_y")
+        hist_cfg = dataclasses.replace(cfg, x="_x", y="_y")
         data, colors_out = get_data_dict(tmp_con, hist_cfg)
     finally:
         tmp_con.close()
@@ -112,27 +119,32 @@ def _build_violin_data(
     np.random.seed(42)
 
     y_col = cfg.y
-    color = cfg.color if cfg.color_is_categorical else None
+    cat_color = cfg.color if cfg.color and cfg.color_is_categorical else None
     colors_out: Optional[List[str]] = None
 
-    if color is not None:
+    if cat_color is not None:
         rows = con.execute(
-            f"SELECT id, {_safe_col(y_col)}, {_safe_col(color)} FROM database"
+            f"SELECT id, {_safe_col(y_col)}, {_safe_col(cat_color)} FROM database"
         ).fetchall()
-        df = pd.DataFrame(rows, columns=["id", y_col, color])
+        df = pd.DataFrame(rows, columns=["id", y_col, cat_color])
 
         x_items = np.zeros(len(df))
-        unique_colors = df[color].unique().tolist()
+        unique_colors = df[cat_color].unique().tolist()
         colors_out = unique_colors
         for idx, color_val in enumerate(unique_colors):
-            mask = df[color] == color_val
+            mask = df[cat_color] == color_val
             indices = df.index[mask]
             y_vals = df.loc[mask, y_col].tolist()
             x_items[indices] = get_violin_x_single(y_vals) + (idx * 2)
         df["_x"] = x_items
     else:
-        rows = con.execute(f"SELECT id, {_safe_col(y_col)} FROM database").fetchall()
-        df = pd.DataFrame(rows, columns=["id", y_col])
+        select_cols = f"id, {_safe_col(y_col)}"
+        df_cols = ["id", y_col]
+        if cfg.color and not cfg.color_is_categorical and cfg.color != y_col:
+            select_cols += f", {_safe_col(cfg.color)}"
+            df_cols.append(cfg.color)
+        rows = con.execute(f"SELECT {select_cols} FROM database").fetchall()
+        df = pd.DataFrame(rows, columns=df_cols)
         df["_x"] = get_violin_x_single(df[y_col].tolist())
 
     # Register the transformed data in a temporary DuckDB connection
@@ -159,21 +171,26 @@ def _build_bar_chart_data(
     np.random.seed(42)
 
     x_col = cfg.x
-    color = cfg.color if cfg.color_is_categorical else None
+    cat_color = cfg.color if cfg.color and cfg.color_is_categorical else None
 
-    if color is not None:
+    if cat_color is not None:
         rows = con.execute(
-            f"SELECT id, {_safe_col(x_col)}, {_safe_col(color)} FROM database"
+            f"SELECT id, {_safe_col(x_col)}, {_safe_col(cat_color)} FROM database"
         ).fetchall()
-        df = pd.DataFrame(rows, columns=["id", x_col, color])
+        df = pd.DataFrame(rows, columns=["id", x_col, cat_color])
     else:
-        rows = con.execute(f"SELECT id, {_safe_col(x_col)} FROM database").fetchall()
-        df = pd.DataFrame(rows, columns=["id", x_col])
+        select_cols = f"id, {_safe_col(x_col)}"
+        df_cols = ["id", x_col]
+        if cfg.color and not cfg.color_is_categorical and cfg.color != x_col:
+            select_cols += f", {_safe_col(cfg.color)}"
+            df_cols.append(cfg.color)
+        rows = con.execute(f"SELECT {select_cols} FROM database").fetchall()
+        df = pd.DataFrame(rows, columns=df_cols)
 
     df["_x"] = 0.0
     df["_y"] = 0.0
 
-    if color is None or not cfg.color_is_categorical:
+    if cat_color is None or not cfg.color_is_categorical:
         for index, (value, count) in enumerate(df[x_col].value_counts().items()):
             mask = df[x_col] == value
             df.loc[mask, "_x"] = np.random.uniform(
@@ -184,8 +201,8 @@ def _build_bar_chart_data(
         for x_index, (x_value, _) in enumerate(df[x_col].value_counts().items()):
             data_x = df[df[x_col] == x_value]
             stacked_y_ref = 0
-            for y_value, y_count in data_x[color].value_counts().items():
-                mask = (df[x_col] == x_value) & (df[color] == y_value)
+            for y_value, y_count in data_x[cat_color].value_counts().items():
+                mask = (df[x_col] == x_value) & (df[cat_color] == y_value)
                 df.loc[mask, "_x"] = np.random.uniform(
                     low=x_index, high=0.7 + x_index, size=y_count
                 )

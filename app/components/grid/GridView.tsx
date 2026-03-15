@@ -2,14 +2,15 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useEffect } from "react";
 import { faSquare } from "@fortawesome/free-regular-svg-icons";
-import { faBarChart, faTableCells } from "@fortawesome/free-solid-svg-icons";
+import { faBarChart, faTableCells, faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   configAtom, gridValuesAtom, mediaAtom,
   currentMediaIndicesAtom, mediaItemsAtom, uuidAtom,
-  mediaIndicesStackAtom,
+  mediaIndicesStackAtom, labelFilterAtom,
+  filtersAtom, similarityResultsAtom, showPageAtom,
 } from "@/app/store/atoms";
-import { fetchMediaItems, saveLabel, deleteLabel } from "@/app/lib/api";
+import { fetchMediaItems, saveLabel, deleteLabel, saveView } from "@/app/lib/api";
 import type { Media } from "@/app/types";
 // BackButton removed – tabs handle navigation, "← N selected" link handles stack pop
 import ResizableLayout from "../shared/ResizableLayout";
@@ -38,8 +39,17 @@ export default function GridView({ onBack }: GridViewProps) {
   const setSideMedia = useSetAtom(mediaAtom);
   const [mediaItems, setMediaItems] = useAtom(mediaItemsAtom);
   const [gridValues, setGridValues] = useAtom(gridValuesAtom);
+  const setUuid = useSetAtom(uuidAtom);
+  const setShowPage = useSetAtom(showPageAtom);
+  const setMediaIndicesStack = useSetAtom(mediaIndicesStackAtom);
+  const setFilters = useSetAtom(filtersAtom);
+  const setSimilarityResults = useSetAtom(similarityResultsAtom);
+  const [labelFilter, setLabelFilter] = useAtom(labelFilterAtom);
   const [showStats, setShowStats] = useState(false);
-  const { pushAction, undo } = useLabelUndo();
+  const [showSaveForm, setShowSaveForm] = useState(false);
+  const [saveTitle, setSaveTitle] = useState("");
+  const [saving, setSaving] = useState(false);
+  const { pushAction, undo, redo } = useLabelUndo();
   const { openMedia } = useMediaPreview();
   const { isActive } = useActiveLearning();
 
@@ -60,14 +70,17 @@ export default function GridView({ onBack }: GridViewProps) {
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "z") {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "z") {
+        e.preventDefault();
+        redo();
+      } else if ((e.metaKey || e.ctrlKey) && e.key === "z") {
         e.preventDefault();
         undo();
       } else if (e.key === "Escape" && canGoBack) {
         onBack!();
       }
     },
-    [undo, canGoBack, onBack],
+    [undo, redo, canGoBack, onBack],
   );
 
   useEffect(() => {
@@ -148,13 +161,7 @@ export default function GridView({ onBack }: GridViewProps) {
       {config.title && <div className="mb-2 shrink-0 px-3 pt-2 text-sm font-medium text-gray-900">{config.title}</div>}
       {/* Toolbar */}
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-gray-200 px-3 py-2">
-        {canGoBack ? (
-          <button onClick={onBack!} className="text-xs text-gray-500 hover:text-gray-700">
-            ← {mediaIndices.length} selected
-          </button>
-        ) : (
-          <span className="text-xs text-gray-500">{mediaIndices.length} items</span>
-        )}
+        <span className="text-xs text-gray-500">{mediaIndices.length} items</span>
         <SortDropdown
           columns={config.columns}
           gridValues={gridValues}
@@ -186,7 +193,7 @@ export default function GridView({ onBack }: GridViewProps) {
         <div className="ml-auto flex items-center gap-2">
           <Pagination
             page={gridValues.page}
-            maxPage={Math.floor(mediaIndices.length / 50)}
+            maxPage={Math.max(0, Math.ceil(mediaIndices.length / 50) - 1)}
             onPageChange={handlePageChange}
           />
           <button
@@ -204,7 +211,82 @@ export default function GridView({ onBack }: GridViewProps) {
         </div>
       )}
 
-      <div className="shrink-0 px-3 pt-2"><FilterBar /></div>
+      <div className="flex shrink-0 items-center gap-2 px-3 py-2">
+        <FilterBar />
+        {mediaIndicesStack.length > 1 && (
+          <span className="flex shrink-0 items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[11px] text-blue-700">
+            <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M4 4h16v2.172a2 2 0 0 1-.586 1.414L13 14v5l-2 2v-7L4.586 7.586A2 2 0 0 1 4 6.172V4z" />
+            </svg>
+            {labelFilter ? `Label: ${labelFilter}` : "Selection"} ({mediaIndices.length})
+            <button
+              onClick={() => onBack?.()}
+              className="ml-0.5 text-blue-400 hover:text-blue-700"
+              title="Clear selection"
+            >
+              ×
+            </button>
+          </span>
+        )}
+        {mediaIndicesStack.length > 1 && !showSaveForm && (
+          <button
+            onClick={() => setShowSaveForm(true)}
+            className="flex shrink-0 items-center gap-1 rounded-full border border-gray-200 px-2 py-0.5 text-[11px] text-gray-600 transition-colors hover:border-gray-400 hover:text-gray-900"
+            title="Save selection as new view"
+          >
+            <FontAwesomeIcon icon={faFloppyDisk} className="h-3 w-3" />
+            Save as view
+          </button>
+        )}
+        {showSaveForm && (
+          <form
+            className="flex shrink-0 items-center gap-1.5"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setSaving(true);
+              try {
+                const { uuid: newUuid } = await saveView(uuid, mediaIndices, saveTitle.trim() || undefined);
+                // Navigate to the new view
+                setMediaIndicesStack([]);
+                setGridValues({ sortBy: "", asc: true, page: 0, numberOfColumns: 5, showColumnValues: [], showBboxLabel: false });
+                setMediaItems([]);
+                setFilters([]);
+                setLabelFilter(null);
+                setSimilarityResults({});
+                setUuid(newUuid);
+                setShowPage("grid");
+                setShowSaveForm(false);
+                setSaveTitle("");
+              } catch { /* ignore */ }
+              setSaving(false);
+            }}
+          >
+            <input
+              autoFocus
+              type="text"
+              value={saveTitle}
+              onChange={(e) => setSaveTitle(e.target.value)}
+              placeholder="View name..."
+              className="w-40 rounded border border-gray-300 px-2 py-0.5 text-[11px] text-gray-700 focus:border-gray-500 focus:outline-none"
+              onKeyDown={(e) => { if (e.key === "Escape") { setShowSaveForm(false); setSaveTitle(""); } }}
+            />
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-full border border-gray-300 bg-gray-900 px-2 py-0.5 text-[11px] font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
+            >
+              {saving ? "Saving..." : "Save"}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setShowSaveForm(false); setSaveTitle(""); }}
+              className="text-[11px] text-gray-400 hover:text-gray-700"
+            >
+              Cancel
+            </button>
+          </form>
+        )}
+      </div>
 
       {/* Media grid */}
       <div

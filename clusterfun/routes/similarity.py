@@ -83,7 +83,11 @@ def find_similar(view_uuid: str, request: SimilarityRequest) -> List[SimilarityR
         return []
 
     emb_col = config.embeddings
-    con = ensure_embeddings_table(view_uuid, backend, emb_col)
+    con = ensure_embeddings_table(
+        view_uuid, backend, emb_col,
+        embeddings_source=config.embeddings_source,
+        media_col=config.media,
+    )
 
     # Fetch the query embedding from the database
     query_emb = con.execute(
@@ -109,6 +113,10 @@ def find_similar_vector(
         return []
 
     emb_col = config.embeddings
-    con = ensure_embeddings_table(view_uuid, backend, emb_col)
+    con = ensure_embeddings_table(
+        view_uuid, backend, emb_col,
+        embeddings_source=config.embeddings_source,
+        media_col=config.media,
+    )
 
     return _search_by_vector(con, emb_col, request.embedding)

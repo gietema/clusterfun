@@ -32,6 +32,7 @@ def grid(  # pylint: disable=missing-function-docstring, too-many-arguments
     display: Optional[Union[str, List[str]]] = None,
     embeddings: Optional[str] = None,
     embeddings_model: Optional[str] = None,
+    project: Optional[str] = None,
 ) -> Path:  # pylint: disable=too-many-arguments
     cfg = Config(
         type="grid",
@@ -42,6 +43,7 @@ def grid(  # pylint: disable=missing-function-docstring, too-many-arguments
         display=display,
         embeddings=embeddings,
         embeddings_model=embeddings_model,
+        project=project,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

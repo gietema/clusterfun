@@ -77,6 +77,23 @@ export default function PlotConfigPanel({ panel, onChange, onRemove }: PlotConfi
         </>
       )}
 
+      {panel.type === "histogram" && (
+        <>
+          <span className="text-gray-400">Bins</span>
+          <input
+            type="number"
+            min={5}
+            max={200}
+            value={panel.bins ?? 20}
+            onChange={(e) => {
+              const v = parseInt(e.target.value);
+              if (!isNaN(v) && v >= 1) onChange({ ...panel, bins: v });
+            }}
+            className="w-16 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
+          />
+        </>
+      )}
+
       <span className="text-gray-400">Color</span>
       <select
         value={panel.color ?? ""}

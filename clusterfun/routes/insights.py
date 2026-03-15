@@ -40,14 +40,22 @@ class DuplicateGroup(BaseModel):
 
 
 def _load_embeddings(
-    view_uuid: str, emb_col: str, media_ids: List[int]
+    view_uuid: str,
+    emb_col: str,
+    media_ids: List[int],
+    embeddings_source: str | None = None,
+    media_col: str | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Load embeddings from DuckDB, returning (ids, vectors) arrays.
 
     Caps results at MAX_EMBEDDINGS to prevent memory issues.
     """
     backend = get_backend()
-    con = ensure_embeddings_table(view_uuid, backend, emb_col)
+    con = ensure_embeddings_table(
+        view_uuid, backend, emb_col,
+        embeddings_source=embeddings_source,
+        media_col=media_col,
+    )
 
     # Escape column name for safe use in SQL identifiers
     safe_col = '"' + emb_col.replace('"', '""') + '"'
@@ -148,7 +156,11 @@ def find_outliers(view_uuid: str, request: OutlierRequest) -> List[OutlierResult
     if config.embeddings is None:
         return []
 
-    ids, vectors = _load_embeddings(view_uuid, config.embeddings, request.media_ids)
+    ids, vectors = _load_embeddings(
+        view_uuid, config.embeddings, request.media_ids,
+        embeddings_source=config.embeddings_source,
+        media_col=config.media,
+    )
     if len(ids) < 2:
         return []
 
@@ -202,7 +214,11 @@ def find_duplicates(view_uuid: str, request: DuplicateRequest) -> List[Duplicate
     if config.embeddings is None:
         return []
 
-    ids, vectors = _load_embeddings(view_uuid, config.embeddings, request.media_ids)
+    ids, vectors = _load_embeddings(
+        view_uuid, config.embeddings, request.media_ids,
+        embeddings_source=config.embeddings_source,
+        media_col=config.media,
+    )
     if len(ids) < 2:
         return []
 

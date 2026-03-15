@@ -38,6 +38,7 @@ export default function PlotPage({ onMediaSelect }: PlotPageProps) {
   const setHighlightedPoints = useSetAtom(highlightedPointsAtom);
   const [panelLoading, setPanelLoading] = useState<Record<string, boolean>>({});
   const [panelConfigs, setPanelConfigs] = useState<Record<string, PlotConfig>>({});
+  const [panelRevisions, setPanelRevisions] = useState<Record<string, number>>({});
 
   // Debounce timer ref
   const debounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -81,7 +82,8 @@ export default function PlotPage({ onMediaSelect }: PlotPageProps) {
         panel.x === config?.x &&
         panel.y === config?.y &&
         panel.color === config?.color &&
-        panel.type === config?.type
+        panel.type === config?.type &&
+        (panel.bins == null || panel.bins === 20)
       ) {
         return;
       }
@@ -94,10 +96,12 @@ export default function PlotPage({ onMediaSelect }: PlotPageProps) {
         x: panel.x,
         y: panel.y,
         color: panel.color,
+        bins: panel.type === "histogram" ? (panel.bins ?? 20) : undefined,
       })
         .then(({ data: newData, config: newConfig }) => {
           setPanelData((prev) => ({ ...prev, [panel.id]: newData }));
           setPanelConfigs((prev) => ({ ...prev, [panel.id]: newConfig }));
+          setPanelRevisions((prev) => ({ ...prev, [panel.id]: (prev[panel.id] ?? 0) + 1 }));
           // If it's the only panel, also update the global data/config atoms
           if (panels.length === 1) {
             setPlotData(newData);
@@ -144,6 +148,11 @@ export default function PlotPage({ onMediaSelect }: PlotPageProps) {
         return next;
       });
       setPanelConfigs((prev) => {
+        const next = { ...prev };
+        delete next[panelId];
+        return next;
+      });
+      setPanelRevisions((prev) => {
         const next = { ...prev };
         delete next[panelId];
         return next;
@@ -227,7 +236,7 @@ export default function PlotPage({ onMediaSelect }: PlotPageProps) {
                     )}
                     <div className="absolute inset-0">
                       <PlotlyChart
-                        revision={revision}
+                        revision={hasPanelData ? (panelRevisions[panel.id] ?? 0) : revision}
                         onHover={previewMedia}
                         onClick={handleMediaClick}
                         onSelect={handleMediaSelect}

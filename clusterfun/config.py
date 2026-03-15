@@ -81,3 +81,5 @@ class Config:  # pylint: disable=too-many-instance-attributes
     hline: Optional[float] = None
     embeddings: Optional[str] = None
     embeddings_model: Optional[str] = None
+    embeddings_source: Optional[str] = None
+    project: Optional[str] = None

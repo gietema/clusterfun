@@ -370,6 +370,18 @@ export default function FiltersManager() {
       {/* Dropdown panel */}
       {isOpen && (
         <div className="absolute left-0 top-full z-30 mt-1 w-[460px] rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-xs font-medium text-gray-700">Filters</span>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="rounded p-0.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+              title="Close"
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
           <div className="space-y-0">
             {filters.map((filter, i) => (
               <FilterRow

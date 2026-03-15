@@ -13,6 +13,17 @@ from clusterfun.storage.backends.local import LocalBackend
 from clusterfun.storage.factory import get_loader
 
 
+def _resolve_project_uuid(backend, project_name: str) -> str:
+    """Resolve a project name to its most recent view UUID."""
+    if not backend.project_json_exists(project_name, "project.json"):
+        raise FileNotFoundError(f"No project found with name '{project_name}'.")
+    manifest = backend.load_project_json(project_name, "project.json")
+    views = manifest.get("views", [])
+    if not views:
+        raise FileNotFoundError(f"Project '{project_name}' has no views.")
+    return views[-1]["uuid"]
+
+
 def main():
     """
     Serve a plot from local storage using its unique identifier.
@@ -22,9 +33,8 @@ def main():
     )
     parser.add_argument(
         "location",
-        # metavar="location",
         type=str,
-        help='The UUID for the plot, or the path to a local file. Defaults to "recent"',
+        help='The UUID for the plot, the path to a local file, or a project name. Defaults to "recent"',
         default="recent",
         nargs="?",
     )
@@ -36,6 +46,15 @@ def main():
     if path_or_uuid == "recent":
         loader = get_loader("recent")
         path_or_uuid = loader.uuid
+
+    # Check if it's a project name
+    if (
+        not os.path.exists(path_or_uuid)
+        and isinstance(backend, LocalBackend)
+        and not (backend.cache_dir / path_or_uuid).exists()
+        and backend.project_json_exists(path_or_uuid, "project.json")
+    ):
+        path_or_uuid = _resolve_project_uuid(backend, path_or_uuid)
 
     if os.path.exists(path_or_uuid):
         # if it is a path, set cache_dir to path

@@ -172,7 +172,11 @@ def fit_probe(view_uuid: str, request: ProbeRequest) -> ProbeResponse:
 
     # Load embeddings
     emb_col = config.embeddings
-    con = ensure_embeddings_table(view_uuid, backend, emb_col)
+    con = ensure_embeddings_table(
+        view_uuid, backend, emb_col,
+        embeddings_source=config.embeddings_source,
+        media_col=config.media,
+    )
 
     # Determine scope
     if request.media_ids:

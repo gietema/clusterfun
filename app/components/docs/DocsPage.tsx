@@ -18,6 +18,7 @@ const SECTIONS: Section[] = [
   { id: "multi-plot", title: "Multi-Plot Dashboard", icon: "panels" },
   { id: "selection", title: "Selection Tools", icon: "lasso" },
   { id: "labels", title: "Labels & Labeling", icon: "tag" },
+  { id: "projects", title: "Projects", icon: "folder" },
   { id: "filtering", title: "Filtering", icon: "filter" },
   { id: "insights", title: "Insights & ML", icon: "brain" },
   { id: "active-learning", title: "Active Learning", icon: "sparkle" },
@@ -75,6 +76,12 @@ function SectionIcon({ type }: { type: string }) {
       return (
         <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z" /><path d="M7 7h.01" />
+        </svg>
+      );
+    case "folder":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
         </svg>
       );
     case "filter":
@@ -709,6 +716,7 @@ cfu.grid(df, media="image_path", embeddings="embedding_col")`}
             <p className="mb-4 text-sm leading-relaxed text-gray-600">
               The sidebar&apos;s Labels section lets you create, apply, and manage labels
               for your data items. Labels are persisted and can be exported as CSV.
+              Each label gets a unique color so labelled items are instantly visible in the grid.
             </p>
 
             <div className="space-y-3">
@@ -717,11 +725,82 @@ cfu.grid(df, media="image_path", embeddings="embedding_col")`}
                 <p className="text-sm leading-relaxed text-gray-600">
                   Hover over a grid item and press <Kbd>1</Kbd>–<Kbd>9</Kbd> to
                   toggle the corresponding label. Press the same key again to remove it.
-                  You can also click labels in the sidebar.
+                  You can also click label buttons in the sidebar preview when an item is hovered.
                 </p>
               </FeatureCard>
+              <FeatureCard title="Batch Labeling" description={'Click "Label page" next to any label in the sidebar to apply it to all items currently visible on the page. Click "Remove all" to remove it from all visible items.'} />
+              <FeatureCard title="Visual Indicators" description="Labeled items show colored badges in the top-left corner of each grid item. Each label has a consistent color, matching the dot shown in the sidebar." />
               <FeatureCard title="Undo" description="Press Ctrl+Z (or Cmd+Z on Mac) to undo the last label action." />
-              <FeatureCard title="Label Counts" description="The Labels table shows the count of labeled items in the current selection and across the entire dataset." />
+              <FeatureCard title="Label Counts" description="Each label card in the sidebar shows the count of labeled items on the current page and across the entire dataset." />
+            </div>
+          </section>
+
+          {/* ---------------------------------------------------------------- */}
+          {/* Projects */}
+          {/* ---------------------------------------------------------------- */}
+          <section ref={registerRef("projects")} id="projects" className="mb-12">
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">Projects</h2>
+            <p className="mb-4 text-sm leading-relaxed text-gray-600">
+              Projects let you persist labels across multiple views of the same dataset.
+              When you create different plots (scatter, histogram, grid, etc.) with the same
+              project name, labels applied in one view are automatically available in all others.
+            </p>
+
+            <div className="space-y-3">
+              <FeatureCard title="Creating a Project">
+                <p className="text-sm leading-relaxed text-gray-600">
+                  Pass the <code className="rounded bg-gray-100 px-1 text-xs">project</code> parameter
+                  to any plot function. Views with the same project name share labels.
+                </p>
+              </FeatureCard>
+              <CodeBlock title="Example: project parameter">
+{`import clusterfun as cfu
+
+# Both views share the "my-dataset" project labels
+cfu.scatter(df, x="x", y="y", media="img", project="my-dataset")
+cfu.grid(df, media="img", project="my-dataset")`}
+              </CodeBlock>
+              <FeatureCard title="How It Works">
+                <p className="text-sm leading-relaxed text-gray-600">
+                  Labels are stored by original media path (not by dataframe index), so they
+                  transfer correctly even when your dataframe is reordered, filtered, or
+                  reconstructed. The project name appears in the tab bar when active.
+                </p>
+              </FeatureCard>
+              <FeatureCard title="Retrieving Labels from Python">
+                <p className="text-sm leading-relaxed text-gray-600">
+                  Use the Python API to access your labels programmatically for downstream
+                  ML pipelines.
+                </p>
+              </FeatureCard>
+              <CodeBlock title="Project API">
+{`import clusterfun as cfu
+
+# List all projects
+cfu.list_projects()  # ["my-dataset", "another-project"]
+
+# Get labels as a dict: {media_path: [labels]}
+labels = cfu.get_labels("my-dataset")
+
+# Get labels as a DataFrame with one column per label
+df = cfu.get_labels_df("my-dataset")
+# Columns: media_path, good, bad, ...
+
+# Filter to a specific label
+good_items = cfu.get_labels_df("my-dataset", label="good")`}
+              </CodeBlock>
+              <FeatureCard title="Serving by Project Name">
+                <p className="text-sm leading-relaxed text-gray-600">
+                  You can serve the most recent view of a project directly from the CLI:
+                </p>
+              </FeatureCard>
+              <CodeBlock title="CLI">
+{`# Serve by project name (opens most recent view)
+clusterfun my-dataset
+
+# Or by UUID as before
+clusterfun abc123-def456`}
+              </CodeBlock>
             </div>
           </section>
 
@@ -998,6 +1077,7 @@ cfu.grid(df, media="image_path", embeddings="embedding_col")`}
     hline: Optional[float] = None,
     vline: Optional[float] = None,
     color_is_categorical: bool = True,
+    project: Optional[str] = None,   # Share labels across views
 )`}
             </CodeBlock>
 
