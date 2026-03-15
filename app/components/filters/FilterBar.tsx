@@ -27,11 +27,19 @@ export default function FilterBar() {
   const setPlotData = useSetAtom(dataAtom);
   const setGridValues = useSetAtom(gridValuesAtom);
   const [mediaIndices, setMediaIndices] = useAtom(mediaIndicesStackAtom);
+  const crumbs = useAtomValue(breadcrumbsAtom);
   const setCrumbs = useSetAtom(breadcrumbsAtom);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
+  // Check if the active filters came from a breadcrumb (not user-created)
+  const currentCrumb = crumbs.length > 0 ? crumbs[crumbs.length - 1] : null;
+  const filtersFromBreadcrumb = currentCrumb?.filters && currentCrumb.filters.length > 0;
+
   // Only apply complete filters, debounced
   useEffect(() => {
+    // Skip if filters are breadcrumb-driven — the grid handles them directly
+    if (filtersFromBreadcrumb) return;
+
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     const completeFilters = filters.filter(isComplete);
@@ -56,7 +64,10 @@ export default function FilterBar() {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [filters, filtersFromBreadcrumb]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Hide the filter bar when filters are breadcrumb-driven
+  if (filtersFromBreadcrumb) return null;
 
   return <FiltersManager />;
 }
