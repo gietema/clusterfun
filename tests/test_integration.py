@@ -835,6 +835,47 @@ class TestFactoryAndRecent:
 # ---------------------------------------------------------------------------
 
 
+class TestLocalMediaServing:
+    """Images stored on local disk should be served via /media/ static mount."""
+
+    def test_local_images_served_via_media_route(self, local_backend, client, tmp_path):
+        # Create local image files in two subdirs (to get common_media_path as parent)
+        img_dir_a = tmp_path / "test_images" / "classA"
+        img_dir_b = tmp_path / "test_images" / "classB"
+        img_dir_a.mkdir(parents=True)
+        img_dir_b.mkdir(parents=True)
+        img_a = img_dir_a / "dog.jpg"
+        img_a.write_bytes(b"\xff\xd8\xff\xe0" + b"\x00" * 100)
+        img_b = img_dir_b / "cat.jpg"
+        img_b.write_bytes(b"\xff\xd8\xff\xe0" + b"\x00" * 50)
+
+        # Reset media dirs from previous tests
+        from clusterfun.main import _media_dirs
+        _media_dirs.clear()
+
+        # Create a grid view pointing to local images
+        df = pd.DataFrame({"image": [str(img_a), str(img_b)]})
+        path = grid(df, media="image", show=False)
+        uuid = path.stem
+
+        # Verify common_media_path is the parent "test_images" dir
+        cfg = local_backend.load_json(uuid, "config.json")
+        assert cfg["common_media_path"].endswith("test_images")
+
+        # Load the view
+        resp = client.get(f"/api/views/{uuid}")
+        assert resp.status_code == 200
+
+        # Images should be accessible via /media/<class>/<file>
+        resp = client.get("/media/classA/dog.jpg")
+        assert resp.status_code == 200, f"Expected 200, got {resp.status_code}"
+        assert len(resp.content) == 104
+
+        resp = client.get("/media/classB/cat.jpg")
+        assert resp.status_code == 200
+        assert len(resp.content) == 54
+
+
 class TestConfigCaching:
     def test_config_cache_returns_same_object(self, local_backend):
 

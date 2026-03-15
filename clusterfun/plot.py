@@ -183,6 +183,9 @@ class Plot:
                 df[cfg.media].astype(str).str.replace(str(common_media_path), "/media")
             )
             APP.mount("/media", StaticFiles(directory=common_media_path), name="media")
+            # Also register for the catch-all media handler
+            from clusterfun.main import register_media_directory
+            register_media_directory(common_media_path)
         LocalStorer().save(uuid, df, cfg)
 
         # If this view belongs to a project, register it and write id-to-path mapping
