@@ -42,6 +42,7 @@ export default function ReviewMode({ onLabelToggle, onExit }: ReviewModeProps) {
   // Review tracking
   const [acceptedCount, setAcceptedCount] = useState(0);
   const [rejectedCount, setRejectedCount] = useState(0);
+  const [labelRejects, setLabelRejects] = useState(true);
 
   const startTimeRef = useRef(Date.now());
 
@@ -203,9 +204,15 @@ export default function ReviewMode({ onLabelToggle, onExit }: ReviewModeProps) {
   }, [media, currentPrediction, onLabelToggle, advance]);
 
   const handleReject = useCallback(() => {
+    if (labelRejects && media) {
+      onLabelToggle(media, "exclude");
+      const updated = { ...media, labels: [...(media.labels ?? []), "exclude"] };
+      setMedia(updated);
+      cacheRef.current.set(media.index, updated);
+    }
     setRejectedCount((c) => c + 1);
     advance();
-  }, [advance]);
+  }, [advance, labelRejects, media, onLabelToggle]);
 
   const handleAcceptAll = useCallback(async () => {
     if (!uuid || !alState) return;
@@ -287,6 +294,15 @@ export default function ReviewMode({ onLabelToggle, onExit }: ReviewModeProps) {
               className="w-16"
             />
             <span className="w-8 tabular-nums">{Math.round(confidenceThreshold * 100)}%</span>
+          </label>
+          <label className="flex items-center gap-1.5 text-[10px] text-gray-400" title="When enabled, rejected items are labeled 'exclude' so active learning deprioritizes them on refit">
+            <input
+              type="checkbox"
+              checked={labelRejects}
+              onChange={(e) => setLabelRejects(e.target.checked)}
+              className="h-3 w-3 rounded border-gray-300 accent-gray-700"
+            />
+            label rejects
           </label>
           {totalReviewed > 0 && (
             <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium ${acceptanceRate >= 0.8 ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>
