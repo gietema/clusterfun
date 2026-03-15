@@ -2,7 +2,7 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { faSquare } from "@fortawesome/free-regular-svg-icons";
-import { faBarChart, faTableCells, faFloppyDisk, faCrosshairs } from "@fortawesome/free-solid-svg-icons";
+import { faTableCells, faFloppyDisk, faCrosshairs } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   configAtom, gridValuesAtom, mediaAtom,
@@ -23,7 +23,6 @@ import Pagination from "./Pagination";
 import SortDropdown from "./SortDropdown";
 import ShowValueDropdown from "./ShowValueDropdown";
 import BoundingBoxCheckbox from "./BoundingBoxCheckbox";
-import MediaVisualization from "./MediaVisualization";
 import GridWorkspaceSidebar from "./GridWorkspaceSidebar";
 import FocusMode from "./FocusMode";
 import { useLabelUndo } from "@/app/lib/use-label-undo";
@@ -45,11 +44,10 @@ export default function GridView({ onBack }: GridViewProps) {
   const [gridValues, setGridValues] = useAtom(gridValuesAtom);
   const setUuid = useSetAtom(uuidAtom);
   const setShowPage = useSetAtom(showPageAtom);
-  const setFilters = useSetAtom(filtersAtom);
+  const [filters, setFilters] = useAtom(filtersAtom);
   const setSimilarityResults = useSetAtom(similarityResultsAtom);
   const { reset: resetBreadcrumbs, replaceTop } = useBreadcrumbNav();
   const [selectedMedia, setSelectedMedia] = useAtom(selectedMediaAtom);
-  const [showStats, setShowStats] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
   const lastClickedRef = useRef<number | null>(null);
 
@@ -95,10 +93,11 @@ export default function GridView({ onBack }: GridViewProps) {
       gridValues.page,
       sortCol ?? (gridValues.sortBy || undefined),
       asc ?? gridValues.asc,
+      filters.length > 0 ? filters : undefined,
     ).then(setMediaItems);
   };
 
-  useEffect(() => { loadMedia(); }, [effectiveIndices]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { loadMedia(); }, [effectiveIndices, filters]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -338,20 +337,8 @@ export default function GridView({ onBack }: GridViewProps) {
               <FontAwesomeIcon icon={faCrosshairs} />
             </button>
           )}
-          <button
-            onClick={() => setShowStats((s) => !s)}
-            className="rounded-md px-2 py-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900"
-          >
-            <FontAwesomeIcon icon={faBarChart} title="Show stats" />
-          </button>
         </div>
       </div>
-
-      {showStats && (
-        <div className="shrink-0 border-b border-gray-200">
-          <MediaVisualization mediaIndices={effectiveIndices} />
-        </div>
-      )}
 
       <div className="flex shrink-0 items-center gap-2 px-3 py-2">
         <FilterBar />

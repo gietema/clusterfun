@@ -7,12 +7,12 @@ import {
   showPageAtom, embeddingsCacheAtom,
   insightsColumnStatsAtom, insightsOutliersAtom,
   insightsDuplicatesAtom, insightsWeirdestAtom,
-  backgroundTasksAtom,
+  backgroundTasksAtom, filtersAtom, gridValuesAtom,
 } from "@/app/store/atoms";
 import {
   fetchColumns, fetchColumnStats, fetchMediaItems,
   fetchEmbeddings, fetchOutliers, fetchDuplicates,
-  fetchCentroidDistance, fetchFilteredPlotData,
+  fetchCentroidDistance,
 } from "@/app/lib/api";
 import type { InsightsTaskResponse } from "@/app/lib/api";
 import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
@@ -407,41 +407,30 @@ export default function InsightsPage() {
     [pushSelection],
   );
 
-  // Navigate to grid by filtering on a column value
+  // Navigate to grid by setting a filter — O(1), no ID transfer.
+  // The grid paginates server-side with the filter applied.
+  const setFilters = useSetAtom(filtersAtom);
+  const setGridValues = useSetAtom(gridValuesAtom);
+
   const viewByColumnValue = useCallback(
-    async (column: string, value: string) => {
-      try {
-        const traces = await fetchFilteredPlotData(uuid, [
-          { column, comparison: "=", values: [value] },
-        ]);
-        if (traces) {
-          const ids = traces.flatMap((t) => t.id ?? []);
-          if (ids.length > 0) viewInGrid(ids, `${column} = ${value}`);
-        }
-      } catch {
-        toast.error("Failed to filter data");
-      }
+    (column: string, value: string) => {
+      setFilters([{ column, comparison: "=", values: [value] }]);
+      setGridValues((prev) => ({ ...prev, page: 0 }));
+      setShowPage("grid");
     },
-    [uuid, viewInGrid],
+    [setFilters, setGridValues, setShowPage],
   );
 
-  // Navigate to grid by filtering on a numeric range
   const viewByNumericRange = useCallback(
-    async (column: string, low: number, high: number) => {
-      try {
-        const traces = await fetchFilteredPlotData(uuid, [
-          { column, comparison: ">=", values: [low.toString()] },
-          { column, comparison: "<=", values: [high.toString()] },
-        ]);
-        if (traces) {
-          const ids = traces.flatMap((t) => t.id ?? []);
-          if (ids.length > 0) viewInGrid(ids, `${column}: ${low.toFixed(1)}\u2013${high.toFixed(1)}`);
-        }
-      } catch {
-        toast.error("Failed to filter data");
-      }
+    (column: string, low: number, high: number) => {
+      setFilters([
+        { column, comparison: ">=", values: [low.toString()] },
+        { column, comparison: "<=", values: [high.toString()] },
+      ]);
+      setGridValues((prev) => ({ ...prev, page: 0 }));
+      setShowPage("grid");
     },
-    [uuid, viewInGrid],
+    [setFilters, setGridValues, setShowPage],
   );
 
   // ── Embedding helpers ──

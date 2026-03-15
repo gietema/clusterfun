@@ -146,24 +146,16 @@ def get_grid_data(
     List[Dict[str, Any]]
         Data for the grid
     """
+    query = "SELECT COUNT(*) FROM database"
     params: List = []
-
     if query_addition:
-        # Filtering: return matching IDs so insights/click-to-view works
-        query = "SELECT id FROM database"
         query += f" WHERE {query_addition}"
         if query_params:
             params.extend(query_params)
-        if params:
-            res = con.execute(query, params).fetchall()
-        else:
-            res = con.execute(query).fetchall()
-        ids = [r[0] for r in res]
-        return [{"id": ids, "count": len(ids)}]
-
-    # No filter: just return count
-    query = "SELECT COUNT(*) FROM database"
-    res = con.execute(query).fetchone()
+    if params:
+        res = con.execute(query, params).fetchone()
+    else:
+        res = con.execute(query).fetchone()
     count = res[0] if res else 0
     return [{"count": count}]
 
