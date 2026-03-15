@@ -60,6 +60,7 @@ export interface GridValues {
   numberOfColumns: number;
   showColumnValues: string[];
   showBboxLabel: boolean;
+  subsample: number; // 0 = all, otherwise percentage (1, 5, 10, 25, 50)
 }
 
 // ── Dimension ──

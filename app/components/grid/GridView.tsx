@@ -1,6 +1,6 @@
 "use client";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { faSquare } from "@fortawesome/free-regular-svg-icons";
 import { faBarChart, faTableCells, faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -55,18 +55,34 @@ export default function GridView({ onBack }: GridViewProps) {
 
   const canGoBack = onBack && mediaIndicesStack.length > 1;
 
+  // Subsample media indices client-side with a stable shuffle
+  const effectiveIndices = useMemo(() => {
+    if (gridValues.subsample <= 0 || mediaIndices.length === 0) return mediaIndices;
+    const count = Math.max(1, Math.round(mediaIndices.length * gridValues.subsample / 100));
+    if (count >= mediaIndices.length) return mediaIndices;
+    // Seeded shuffle (Fisher-Yates with simple LCG)
+    const arr = [...mediaIndices];
+    let seed = 42;
+    const lcg = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 0x100000000; };
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(lcg() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr.slice(0, count);
+  }, [mediaIndices, gridValues.subsample]);
+
   const loadMedia = (sortCol?: string, asc?: boolean) => {
     if (!uuid) return;
     fetchMediaItems(
       uuid,
-      mediaIndices,
+      effectiveIndices,
       gridValues.page,
       sortCol ?? (gridValues.sortBy || undefined),
       asc ?? gridValues.asc,
     ).then(setMediaItems);
   };
 
-  useEffect(() => { loadMedia(); }, [mediaIndices]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { loadMedia(); }, [effectiveIndices]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -105,7 +121,7 @@ export default function GridView({ onBack }: GridViewProps) {
 
   const handlePageChange = (newPage: number) => {
     setGridValues((prev) => ({ ...prev, page: newPage }));
-    fetchMediaItems(uuid, mediaIndices, newPage, gridValues.sortBy || undefined, gridValues.asc)
+    fetchMediaItems(uuid, effectiveIndices, newPage, gridValues.sortBy || undefined, gridValues.asc)
       .then(setMediaItems);
   };
 
@@ -161,7 +177,26 @@ export default function GridView({ onBack }: GridViewProps) {
       {config.title && <div className="mb-2 shrink-0 px-3 pt-2 text-sm font-medium text-gray-900">{config.title}</div>}
       {/* Toolbar */}
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-gray-200 px-3 py-2">
-        <span className="text-xs text-gray-500">{mediaIndices.length} items</span>
+        <span className="text-xs text-gray-500">
+          {gridValues.subsample > 0
+            ? `${effectiveIndices.length.toLocaleString()} of ${mediaIndices.length.toLocaleString()}`
+            : mediaIndices.length.toLocaleString()}{" "}
+          items
+        </span>
+        <select
+          value={gridValues.subsample}
+          onChange={(e) => {
+            setGridValues((prev) => ({ ...prev, subsample: parseInt(e.target.value), page: 0 }));
+          }}
+          className="rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
+        >
+          <option value={0}>All data</option>
+          <option value={1}>1% sample</option>
+          <option value={5}>5% sample</option>
+          <option value={10}>10% sample</option>
+          <option value={25}>25% sample</option>
+          <option value={50}>50% sample</option>
+        </select>
         <SortDropdown
           columns={config.columns}
           gridValues={gridValues}
@@ -193,7 +228,7 @@ export default function GridView({ onBack }: GridViewProps) {
         <div className="ml-auto flex items-center gap-2">
           <Pagination
             page={gridValues.page}
-            maxPage={Math.max(0, Math.ceil(mediaIndices.length / 50) - 1)}
+            maxPage={Math.max(0, Math.ceil(effectiveIndices.length / 50) - 1)}
             onPageChange={handlePageChange}
           />
           <button
@@ -207,7 +242,7 @@ export default function GridView({ onBack }: GridViewProps) {
 
       {showStats && (
         <div className="shrink-0 border-b border-gray-200">
-          <MediaVisualization mediaIndices={mediaIndices} />
+          <MediaVisualization mediaIndices={effectiveIndices} />
         </div>
       )}
 
@@ -248,7 +283,7 @@ export default function GridView({ onBack }: GridViewProps) {
                 const { uuid: newUuid } = await saveView(uuid, mediaIndices, saveTitle.trim() || undefined);
                 // Navigate to the new view
                 setMediaIndicesStack([]);
-                setGridValues({ sortBy: "", asc: true, page: 0, numberOfColumns: 5, showColumnValues: [], showBboxLabel: false });
+                setGridValues({ sortBy: "", asc: true, page: 0, numberOfColumns: 5, showColumnValues: [], showBboxLabel: false, subsample: 0 });
                 setMediaItems([]);
                 setFilters([]);
                 setLabelFilter(null);

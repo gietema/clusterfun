@@ -1,5 +1,7 @@
 """Media routes for retrieving media items and metadata."""
 
+import base64
+from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from io import BytesIO
 from typing import Any, Dict, List, Optional
@@ -7,6 +9,7 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter
 from fastapi.responses import Response
 from PIL import Image
+from pydantic import BaseModel
 
 from clusterfun.models.media_indices import MediaIndices
 from clusterfun.models.media_item import MediaItem
@@ -18,21 +21,30 @@ from clusterfun.storage.client import get_storage_client
 
 router = APIRouter()
 
+_thumb_pool = ThreadPoolExecutor(max_workers=8)
+
+
+@lru_cache(maxsize=32)
+def _get_view_media_config(view_uuid: str) -> tuple[str, Optional[str]]:
+    """Cache media column name and common_media_path for a view."""
+    loader = get_loader(view_uuid)
+    config = loader.load_config()
+    return config.media, config.common_media_path
+
 
 def _get_media_path(view_uuid: str, media_id: int) -> tuple[str, Optional[str]]:
     """Look up the raw media path and common_media_path for a media id."""
-    loader = get_loader(view_uuid)
-    config = loader.load_config()
+    media_col, common_media_path = _get_view_media_config(view_uuid)
     backend = get_backend()
     rows = run_query(
         view_uuid,
         backend,
-        f'SELECT "{config.media}" FROM database WHERE id = ?',
+        f'SELECT "{media_col}" FROM database WHERE id = ?',
         params=[media_id],
     )
     if not rows:
-        return "", config.common_media_path
-    return rows[0][0], config.common_media_path
+        return "", common_media_path
+    return rows[0][0], common_media_path
 
 
 @lru_cache(maxsize=4096)
@@ -89,17 +101,25 @@ def read_media_metadata(
     return get_loader(view_uuid).get_rows_metadata(media_ids)
 
 
-@router.post("/api/views/{view_uuid}/media-srcs")
-def get_media_srcs(
-    view_uuid: str, req: MediaIndices
+class ThumbnailBatchRequest(BaseModel):
+    media_ids: List[int]
+    max_size: int = 64
+
+
+@router.post("/api/views/{view_uuid}/media-thumbnails")
+def get_media_thumbnails(
+    view_uuid: str, req: ThumbnailBatchRequest
 ) -> List[Dict[str, Any]]:
-    """Return {id, src} pairs as base64 data URIs for embedding map thumbnails."""
+    """Return {id, src} pairs as small JPEG base64 data URIs. Batch endpoint."""
     if not req.media_ids:
         return []
     loader = get_loader(view_uuid)
     config = loader.load_config()
     backend = get_backend()
     media_col = config.media
+    max_size = req.max_size
+    common_media_path = config.common_media_path
+
     placeholders = ",".join("?" for _ in req.media_ids)
     rows = run_query(
         view_uuid,
@@ -107,13 +127,13 @@ def get_media_srcs(
         f'SELECT id, "{media_col}" FROM database WHERE id IN ({placeholders})',
         params=list(req.media_ids),
     )
-    results = []
-    for row in rows:
-        try:
-            src, _, _ = load_media(
-                row[1], as_base64=True, common_media_path=config.common_media_path
-            )
-        except Exception:
-            continue
-        results.append({"id": row[0], "src": src})
-    return results
+
+    def process_row(row: tuple) -> Optional[Dict[str, Any]]:
+        data = _generate_thumbnail_bytes(row[1], common_media_path, max_size)
+        if data is None:
+            return None
+        src = f"data:image/jpeg;base64,{base64.b64encode(data).decode('ascii')}"
+        return {"id": row[0], "src": src}
+
+    results = list(_thumb_pool.map(process_row, rows))
+    return [r for r in results if r is not None]

@@ -72,6 +72,18 @@ export async function fetchMediaSrcs(
   return data;
 }
 
+export async function fetchMediaThumbnails(
+  uuid: string,
+  mediaIds: number[],
+  maxSize = 64,
+): Promise<{ id: number; src: string }[]> {
+  const { data } = await axios.post(`${API_URL}/views/${uuid}/media-thumbnails`, {
+    media_ids: mediaIds,
+    max_size: maxSize,
+  });
+  return data;
+}
+
 // ── Columns ──
 
 export async function fetchColumns(uuid: string): Promise<ColumnInfo[]> {
@@ -233,8 +245,9 @@ export interface PlotBuilderRequest {
 export async function fetchDynamicPlotData(
   uuid: string,
   req: PlotBuilderRequest,
+  signal?: AbortSignal,
 ): Promise<{ config: PlotConfig; data: PlotTrace[] }> {
-  const { data } = await axios.post(`${API_URL}/views/${uuid}/plot-data`, req);
+  const { data } = await axios.post(`${API_URL}/views/${uuid}/plot-data`, req, { signal });
   return { config: data.config as PlotConfig, data: data.data };
 }
 
@@ -302,4 +315,24 @@ export async function deleteProjectView(projectName: string, viewUuid: string): 
 
 export async function renameProjectView(projectName: string, viewUuid: string, title: string): Promise<void> {
   await axios.patch(`${API_URL}/projects/${encodeURIComponent(projectName)}/views/${viewUuid}`, { title });
+}
+
+// ── Image Statistics ──
+
+export interface ImageStatsStatus {
+  status: "idle" | "computing" | "done" | "already_computed";
+  progress: number;
+  total: number;
+  done: number;
+  columns: string[];
+}
+
+export async function computeImageStats(uuid: string): Promise<ImageStatsStatus> {
+  const { data } = await axios.post<ImageStatsStatus>(`${API_URL}/views/${uuid}/image-stats/compute`);
+  return data;
+}
+
+export async function fetchImageStatsStatus(uuid: string): Promise<ImageStatsStatus> {
+  const { data } = await axios.get<ImageStatsStatus>(`${API_URL}/views/${uuid}/image-stats/status`);
+  return data;
 }

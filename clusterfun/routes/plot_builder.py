@@ -7,6 +7,7 @@ the underlying Parquet data.
 
 import dataclasses
 import threading
+from collections import defaultdict
 from typing import Any, Dict, List, Optional
 
 import duckdb
@@ -18,6 +19,7 @@ from pydantic import BaseModel
 from fastapi import HTTPException
 
 from clusterfun.config import Config
+from clusterfun.constants import COLORS
 from clusterfun.plot_types.histogram import get_x_and_y
 from clusterfun.plot_types.violin import get_violin_x_single
 from clusterfun.storage.backends import get_backend
@@ -26,6 +28,9 @@ from clusterfun.storage.local.data import get_data_dict
 from clusterfun.storage.query import ensure_embeddings_table, get_connection
 
 router = APIRouter()
+
+# Cache color-column categoricity: (view_uuid, color_col) -> is_categorical
+_color_cat_cache: Dict[tuple, bool] = {}
 
 
 class PlotBuilderRequest(BaseModel):
@@ -48,13 +53,18 @@ def _safe_col(name: str) -> str:
 
 
 def _detect_color_is_categorical(
-    con: duckdb.DuckDBPyConnection, color: str
+    con: duckdb.DuckDBPyConnection, color: str, view_uuid: str
 ) -> bool:
-    """Sample the color column and return True if all values are strings."""
+    """Sample the color column and return True if all values are strings. Cached."""
+    cache_key = (view_uuid, color)
+    if cache_key in _color_cat_cache:
+        return _color_cat_cache[cache_key]
     sample = con.execute(
         f"SELECT DISTINCT {_safe_col(color)} FROM database LIMIT 50"
     ).fetchall()
-    return all(isinstance(row[0], str) or row[0] is None for row in sample)
+    result = all(isinstance(row[0], str) or row[0] is None for row in sample)
+    _color_cat_cache[cache_key] = result
+    return result
 
 
 def _build_scatter_data(
@@ -63,6 +73,50 @@ def _build_scatter_data(
     """Generate scatter trace data by delegating to get_data_dict."""
     data, colors = get_data_dict(con, cfg)
     return data, colors
+
+
+def _build_traces_from_rows(
+    rows: list,
+    x_col_idx: int,
+    y_col_idx: int,
+    color_col_idx: Optional[int],
+    is_categorical_color: bool,
+    opacity: float = 1.0,
+) -> tuple:
+    """Build Plotly trace dicts directly from fetched rows — no pandas/DuckDB roundtrip."""
+    if color_col_idx is not None and is_categorical_color:
+        grouped: Dict[Any, list] = defaultdict(list)
+        for r in rows:
+            grouped[r[color_col_idx]].append(r)
+        data = []
+        colors_out = []
+        for idx, (color_val, group_rows) in enumerate(grouped.items()):
+            colors_out.append(color_val)
+            data.append({
+                "id": [r[0] for r in group_rows],
+                "x": [r[x_col_idx] for r in group_rows],
+                "y": [r[y_col_idx] for r in group_rows],
+                "mode": "markers",
+                "type": "scattergl",
+                "name": color_val,
+                "marker": {"color": COLORS[idx % len(COLORS)], "opacity": opacity},
+            })
+        return data, colors_out
+    else:
+        trace = {
+            "id": [r[0] for r in rows],
+            "x": [r[x_col_idx] for r in rows],
+            "y": [r[y_col_idx] for r in rows],
+            "mode": "markers",
+            "type": "scattergl",
+        }
+        if color_col_idx is not None and not is_categorical_color:
+            trace["marker"] = {
+                "color": [r[color_col_idx] for r in rows],
+                "colorscale": "Viridis",
+                "showscale": True,
+            }
+        return [trace], None
 
 
 def _build_histogram_data(
@@ -75,47 +129,52 @@ def _build_histogram_data(
     x_col = cfg.x
 
     if cat_color is not None:
-        # Fetch id, x, and color columns
         rows = con.execute(
             f"SELECT id, {_safe_col(x_col)}, {_safe_col(cat_color)} FROM database"
         ).fetchall()
-        df = pd.DataFrame(rows, columns=["id", x_col, cat_color])
 
-        # Compute _x and _y per color group
-        dfs = []
-        for color_val in df[cat_color].unique():
-            mask = df[cat_color] == color_val
-            subset = df.loc[mask, x_col].tolist()
-            dots = get_x_and_y(subset, bins)
-            sub_df = df.loc[mask].copy()
-            sub_df["_x"] = [d[0] for d in dots]
-            sub_df["_y"] = [d[1] for d in dots]
-            dfs.append(sub_df)
-        df = pd.concat(dfs)
+        grouped: Dict[Any, list] = defaultdict(list)
+        for r in rows:
+            grouped[r[2]].append(r)
+
+        data = []
+        colors_out = []
+        for idx, (color_val, group_rows) in enumerate(grouped.items()):
+            colors_out.append(color_val)
+            x_values = [r[1] for r in group_rows]
+            dots = get_x_and_y(x_values, bins)
+            data.append({
+                "id": [r[0] for r in group_rows],
+                "x": [d[0] for d in dots],
+                "y": [d[1] for d in dots],
+                "mode": "markers",
+                "type": "scattergl",
+                "name": color_val,
+                "marker": {"color": COLORS[idx % len(COLORS)], "opacity": 0.5},
+            })
+        return data, colors_out
     else:
-        # Fetch id, x, and optionally a non-categorical color column
         select_cols = f"id, {_safe_col(x_col)}"
-        df_cols = ["id", x_col]
-        if cfg.color and not cfg.color_is_categorical and cfg.color != x_col:
+        has_color = cfg.color and not cfg.color_is_categorical and cfg.color != x_col
+        if has_color:
             select_cols += f", {_safe_col(cfg.color)}"
-            df_cols.append(cfg.color)
         rows = con.execute(f"SELECT {select_cols} FROM database").fetchall()
-        df = pd.DataFrame(rows, columns=df_cols)
-        dots = get_x_and_y(df[x_col].tolist(), bins)
-        df["_x"] = [d[0] for d in dots]
-        df["_y"] = [d[1] for d in dots]
-
-    # Register the transformed data in a temporary DuckDB connection
-    tmp_con = duckdb.connect()
-    try:
-        tmp_con.register("df_view", df)
-        tmp_con.execute("CREATE VIEW database AS SELECT * FROM df_view")
-
-        hist_cfg = dataclasses.replace(cfg, x="_x", y="_y")
-        data, colors_out = get_data_dict(tmp_con, hist_cfg)
-    finally:
-        tmp_con.close()
-    return data, colors_out
+        x_values = [r[1] for r in rows]
+        dots = get_x_and_y(x_values, bins)
+        trace = {
+            "id": [r[0] for r in rows],
+            "x": [d[0] for d in dots],
+            "y": [d[1] for d in dots],
+            "mode": "markers",
+            "type": "scattergl",
+        }
+        if has_color:
+            trace["marker"] = {
+                "color": [r[2] for r in rows],
+                "colorscale": "Viridis",
+                "showscale": True,
+            }
+        return [trace], None
 
 
 def _build_violin_data(
@@ -126,48 +185,55 @@ def _build_violin_data(
 
     y_col = cfg.y
     cat_color = cfg.color if cfg.color and cfg.color_is_categorical else None
-    colors_out: Optional[List[str]] = None
 
     if cat_color is not None:
         rows = con.execute(
             f"SELECT id, {_safe_col(y_col)}, {_safe_col(cat_color)} FROM database"
         ).fetchall()
-        df = pd.DataFrame(rows, columns=["id", y_col, cat_color])
 
-        x_items = np.zeros(len(df))
-        unique_colors = df[cat_color].unique().tolist()
-        colors_out = unique_colors
-        for idx, color_val in enumerate(unique_colors):
-            mask = df[cat_color] == color_val
-            indices = df.index[mask]
-            y_vals = df.loc[mask, y_col].tolist()
-            x_items[indices] = get_violin_x_single(y_vals) + (idx * 2)
-        df["_x"] = x_items
+        grouped: Dict[Any, list] = defaultdict(list)
+        for r in rows:
+            grouped[r[2]].append(r)
+
+        data = []
+        colors_out = []
+        for idx, (color_val, group_rows) in enumerate(grouped.items()):
+            colors_out.append(color_val)
+            y_vals = [r[1] for r in group_rows]
+            x_jitter = get_violin_x_single(y_vals)
+            x_offset = [v + (idx * 2) for v in x_jitter]
+            data.append({
+                "id": [r[0] for r in group_rows],
+                "x": x_offset,
+                "y": y_vals,
+                "mode": "markers",
+                "type": "scattergl",
+                "name": color_val,
+                "marker": {"color": COLORS[idx % len(COLORS)], "opacity": 1.0},
+            })
+        return data, colors_out
     else:
         select_cols = f"id, {_safe_col(y_col)}"
-        df_cols = ["id", y_col]
-        if cfg.color and not cfg.color_is_categorical and cfg.color != y_col:
+        has_color = cfg.color and not cfg.color_is_categorical and cfg.color != y_col
+        if has_color:
             select_cols += f", {_safe_col(cfg.color)}"
-            df_cols.append(cfg.color)
         rows = con.execute(f"SELECT {select_cols} FROM database").fetchall()
-        df = pd.DataFrame(rows, columns=df_cols)
-        df["_x"] = get_violin_x_single(df[y_col].tolist())
-
-    # Register the transformed data in a temporary DuckDB connection
-    tmp_con = duckdb.connect()
-    try:
-        tmp_con.register("df_view", df)
-        tmp_con.execute("CREATE VIEW database AS SELECT * FROM df_view")
-
-        violin_cfg = dataclasses.replace(cfg, x="_x")
-        data, colors_data = get_data_dict(tmp_con, violin_cfg)
-    finally:
-        tmp_con.close()
-
-    if colors_out is None and colors_data is not None:
-        colors_out = colors_data
-
-    return data, colors_out
+        y_vals = [r[1] for r in rows]
+        x_jitter = get_violin_x_single(y_vals)
+        trace = {
+            "id": [r[0] for r in rows],
+            "x": x_jitter,
+            "y": y_vals,
+            "mode": "markers",
+            "type": "scattergl",
+        }
+        if has_color:
+            trace["marker"] = {
+                "color": [r[2] for r in rows],
+                "colorscale": "Viridis",
+                "showscale": True,
+            }
+        return [trace], None
 
 
 def _build_bar_chart_data(
@@ -179,58 +245,70 @@ def _build_bar_chart_data(
     x_col = cfg.x
     cat_color = cfg.color if cfg.color and cfg.color_is_categorical else None
 
+    has_nc_color = False
     if cat_color is not None:
         rows = con.execute(
             f"SELECT id, {_safe_col(x_col)}, {_safe_col(cat_color)} FROM database"
         ).fetchall()
-        df = pd.DataFrame(rows, columns=["id", x_col, cat_color])
     else:
         select_cols = f"id, {_safe_col(x_col)}"
-        df_cols = ["id", x_col]
-        if cfg.color and not cfg.color_is_categorical and cfg.color != x_col:
+        has_nc_color = bool(cfg.color and not cfg.color_is_categorical and cfg.color != x_col)
+        if has_nc_color:
             select_cols += f", {_safe_col(cfg.color)}"
-            df_cols.append(cfg.color)
         rows = con.execute(f"SELECT {select_cols} FROM database").fetchall()
-        df = pd.DataFrame(rows, columns=df_cols)
 
-    df["_x"] = 0.0
-    df["_y"] = 0.0
+    # Compute value counts for x
+    from collections import Counter
+    x_counts = Counter(r[1] for r in rows)
+    x_order = [val for val, _ in x_counts.most_common()]
+    x_index_map = {val: idx for idx, val in enumerate(x_order)}
+
+    # Build per-row _x, _y arrays
+    ids = [r[0] for r in rows]
+    x_out = [0.0] * len(rows)
+    y_out = [0.0] * len(rows)
 
     if cat_color is None or not cfg.color_is_categorical:
-        for index, (value, count) in enumerate(df[x_col].value_counts().items()):
-            mask = df[x_col] == value
-            df.loc[mask, "_x"] = np.random.uniform(
-                low=index, high=0.7 + index, size=count
-            )
-            df.loc[mask, "_y"] = np.random.uniform(low=0, high=count, size=count)
+        # Group by x value
+        x_groups: Dict[Any, list] = defaultdict(list)
+        for i, r in enumerate(rows):
+            x_groups[r[1]].append(i)
+        for x_val, indices in x_groups.items():
+            xi = x_index_map[x_val]
+            count = len(indices)
+            rx = np.random.uniform(low=xi, high=0.7 + xi, size=count)
+            ry = np.random.uniform(low=0, high=count, size=count)
+            for j, idx in enumerate(indices):
+                x_out[idx] = float(rx[j])
+                y_out[idx] = float(ry[j])
     else:
-        for x_index, (x_value, _) in enumerate(df[x_col].value_counts().items()):
-            data_x = df[df[x_col] == x_value]
-            stacked_y_ref = 0
-            for y_value, y_count in data_x[cat_color].value_counts().items():
-                mask = (df[x_col] == x_value) & (df[cat_color] == y_value)
-                df.loc[mask, "_x"] = np.random.uniform(
-                    low=x_index, high=0.7 + x_index, size=y_count
-                )
-                df.loc[mask, "_y"] = np.random.uniform(
-                    low=stacked_y_ref, high=y_count + stacked_y_ref, size=y_count
-                )
-                stacked_y_ref += y_count
+        for x_val in x_order:
+            xi = x_index_map[x_val]
+            x_rows_idx = [i for i, r in enumerate(rows) if r[1] == x_val]
+            color_counts = Counter(rows[i][2] for i in x_rows_idx)
+            stacked_y = 0
+            for color_val, y_count in color_counts.most_common():
+                color_idx = [i for i in x_rows_idx if rows[i][2] == color_val]
+                rx = np.random.uniform(low=xi, high=0.7 + xi, size=y_count)
+                ry = np.random.uniform(low=stacked_y, high=y_count + stacked_y, size=y_count)
+                for j, idx in enumerate(color_idx):
+                    x_out[idx] = float(rx[j])
+                    y_out[idx] = float(ry[j])
+                stacked_y += y_count
 
-    x_names = df[x_col].value_counts().keys().tolist()
+    # Build trace rows with computed positions
+    has_color_col = cat_color is not None or has_nc_color
+    trace_rows = []
+    for i, r in enumerate(rows):
+        if has_color_col:
+            trace_rows.append((ids[i], x_out[i], y_out[i], r[2]))
+        else:
+            trace_rows.append((ids[i], x_out[i], y_out[i]))
 
-    # Register the transformed data in a temporary DuckDB connection
-    tmp_con = duckdb.connect()
-    try:
-        tmp_con.register("df_view", df)
-        tmp_con.execute("CREATE VIEW database AS SELECT * FROM df_view")
-
-        bar_cfg = dataclasses.replace(cfg, x="_x", y="_y")
-        data, colors_out = get_data_dict(tmp_con, bar_cfg)
-    finally:
-        tmp_con.close()
-
-    return data, colors_out, x_names
+    color_idx = 3 if has_color_col else None
+    is_cat = cat_color is not None
+    data, colors_out = _build_traces_from_rows(trace_rows, 1, 2, color_idx, is_cat)
+    return data, colors_out, x_order
 
 
 # Cache for 2D projections so color changes are instant.
@@ -328,26 +406,26 @@ def _build_embedding_map_data(
         media_col=cfg.media,
     )
 
-    rows = emb_con.execute(
-        f'SELECT id, "{emb_col}" FROM embeddings'
-    ).fetchall()
-
-    if not rows:
+    # Count total and subsample in SQL to avoid loading all embeddings
+    count_row = emb_con.execute("SELECT COUNT(*) FROM embeddings").fetchone()
+    n = count_row[0] if count_row else 0
+    if n == 0:
         return [], None
 
-    all_ids = np.array([r[0] for r in rows])
-    all_embeddings = np.array([r[1] for r in rows], dtype=np.float32)
-
-    n = len(all_ids)
     actual_sample = min(n, sample_size)
     if n > sample_size:
-        rng = np.random.RandomState(42)
-        idx = np.sort(rng.choice(n, sample_size, replace=False))
-        sample_ids = all_ids[idx]
-        sample_emb = all_embeddings[idx]
+        rows = emb_con.execute(
+            f'SELECT id, "{emb_col}" FROM embeddings '
+            f"ORDER BY hash(id + 42) LIMIT {sample_size}"
+        ).fetchall()
     else:
-        sample_ids = all_ids
-        sample_emb = all_embeddings
+        rows = emb_con.execute(
+            f'SELECT id, "{emb_col}" FROM embeddings'
+        ).fetchall()
+
+    sample_ids = np.array([r[0] for r in rows])
+    sample_emb = np.array([r[1] for r in rows], dtype=np.float32)
+    actual_sample = len(sample_ids)
 
     cache_key = f"{view_uuid}:{method}:{actual_sample}:{n_neighbors}"
     if cache_key in _embedding_projection_cache:
@@ -363,25 +441,27 @@ def _build_embedding_map_data(
                 )
                 _embedding_projection_cache[cache_key] = proj_df
 
-    # Join with color column if needed
+    # Build traces directly — join with color column if needed
+    proj_ids = proj_df["id"].tolist()
+    proj_x = proj_df["_x"].tolist()
+    proj_y = proj_df["_y"].tolist()
+
     if cfg.color:
         col_safe = _safe_col(cfg.color)
         color_rows = con.execute(
             f"SELECT id, {col_safe} FROM database"
         ).fetchall()
-        color_df = pd.DataFrame(color_rows, columns=["id", cfg.color])
-        df = proj_df.merge(color_df, on="id", how="left")
+        color_map = {r[0]: r[1] for r in color_rows}
+        trace_rows = [
+            (pid, px, py, color_map.get(pid))
+            for pid, px, py in zip(proj_ids, proj_x, proj_y)
+        ]
+        data, colors_out = _build_traces_from_rows(
+            trace_rows, 1, 2, 3, cfg.color_is_categorical
+        )
     else:
-        df = proj_df.copy()
-
-    tmp_con = duckdb.connect()
-    try:
-        tmp_con.register("df_view", df)
-        tmp_con.execute("CREATE VIEW database AS SELECT * FROM df_view")
-        map_cfg = dataclasses.replace(cfg, x="_x", y="_y", type="scatter")
-        data, colors_out = get_data_dict(tmp_con, map_cfg)
-    finally:
-        tmp_con.close()
+        trace_rows = list(zip(proj_ids, proj_x, proj_y))
+        data, colors_out = _build_traces_from_rows(trace_rows, 1, 2, None, False)
 
     return data, colors_out
 
@@ -396,10 +476,10 @@ def build_plot_data(
     backend = get_backend()
     con = get_connection(view_uuid, backend)
 
-    # Detect whether the color column is categorical
+    # Detect whether the color column is categorical (cached)
     color_is_categorical = req.color_is_categorical
     if req.color is not None:
-        color_is_categorical = _detect_color_is_categorical(con, req.color)
+        color_is_categorical = _detect_color_is_categorical(con, req.color, view_uuid)
 
     # Build a modified config from the base, overriding plot parameters
     cfg = dataclasses.replace(

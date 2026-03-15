@@ -12,6 +12,7 @@ from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 
 
 class CacheControlMiddleware(BaseHTTPMiddleware):
@@ -34,6 +35,7 @@ class ClusterfunApp(FastAPI):
 
 
 APP = ClusterfunApp(docs_url=None, redoc_url=None)
+APP.add_middleware(GZipMiddleware, minimum_size=1000)
 APP.add_middleware(CacheControlMiddleware)
 APP.add_middleware(
     CORSMiddleware,

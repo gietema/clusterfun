@@ -27,6 +27,8 @@ interface PlotlyChartProps {
   overrideConfig?: PlotConfig;
   /** Thumbnail images to overlay on the plot (embedding maps) */
   thumbnails?: Thumbnail[];
+  /** Current viewport for sizing thumbnails relative to zoom level */
+  thumbnailViewport?: ViewportRange | null;
   /** Called (debounced) when the user zooms/pans, with the visible axis range */
   onViewportChange?: (range: ViewportRange | null) => void;
 }
@@ -85,6 +87,7 @@ export default function PlotlyChart({
   overrideData,
   overrideConfig,
   thumbnails,
+  thumbnailViewport,
   onViewportChange,
 }: PlotlyChartProps) {
   const globalConfig = useAtomValue(configAtom);
@@ -110,48 +113,13 @@ export default function PlotlyChart({
     };
   }, []);
 
-  // Build layout when config/data/revision/thumbnails change
+  // Build base layout when config/data/revision change — sets axes with autorange
   useEffect(() => {
     if (!config) return;
     const shapes = [
       ...(typeof config.hline === "number" ? [createReferenceLine(config.hline, "h")] : []),
       ...(typeof config.vline === "number" ? [createReferenceLine(config.vline, "v")] : []),
     ];
-
-    // Compute thumbnail overlay images for embedding maps
-    let images: Record<string, any>[] | undefined;
-    if (thumbnails?.length && data) {
-      // Compute data extent for sizing thumbnails
-      let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
-      for (const trace of data) {
-        if (!trace.x || !trace.y) continue;
-        for (let i = 0; i < trace.x.length; i++) {
-          const x = trace.x[i] as number;
-          const y = trace.y[i] as number;
-          if (x < xMin) xMin = x;
-          if (x > xMax) xMax = x;
-          if (y < yMin) yMin = y;
-          if (y > yMax) yMax = y;
-        }
-      }
-      const xRange = xMax - xMin || 1;
-      const yRange = yMax - yMin || 1;
-      const thumbSize = Math.min(xRange, yRange) * 0.06;
-      images = thumbnails.map((t) => ({
-        source: t.src,
-        x: t.x,
-        y: t.y,
-        xref: "x",
-        yref: "y",
-        sizex: thumbSize,
-        sizey: thumbSize,
-        xanchor: "center",
-        yanchor: "middle",
-        layer: "above",
-        sizing: "contain",
-        opacity: 0.7,
-      }));
-    }
 
     setLayout({
       uirevision: revision,
@@ -171,13 +139,60 @@ export default function PlotlyChart({
       autosize: true,
       margin: { l: 40, r: 0, b: 40, t: 0, pad: 0 },
       shapes,
-      ...(images ? { images } : {}),
       legend: {
         traceorder: "normal",
         ...(config.color ? { title: { text: config.color } } : {}),
       },
     });
-  }, [config, revision, data, thumbnails]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [config, revision, data]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Update only thumbnail images — never touches axis config so zoom is preserved
+  useEffect(() => {
+    if (!thumbnails?.length || !data) {
+      setLayout((prev) => {
+        if (!prev.images) return prev;
+        const { images: _, ...rest } = prev;
+        return rest;
+      });
+      return;
+    }
+    // Use viewport extent if zoomed, otherwise compute from data
+    let xMin: number, xMax: number, yMin: number, yMax: number;
+    if (thumbnailViewport) {
+      ({ xMin, xMax, yMin, yMax } = thumbnailViewport);
+    } else {
+      xMin = Infinity; xMax = -Infinity; yMin = Infinity; yMax = -Infinity;
+      for (const trace of data) {
+        if (!trace.x || !trace.y) continue;
+        for (let i = 0; i < trace.x.length; i++) {
+          const x = trace.x[i] as number;
+          const y = trace.y[i] as number;
+          if (x < xMin) xMin = x;
+          if (x > xMax) xMax = x;
+          if (y < yMin) yMin = y;
+          if (y > yMax) yMax = y;
+        }
+      }
+    }
+    const xRange = xMax - xMin || 1;
+    const yRange = yMax - yMin || 1;
+    const thumbSize = Math.min(xRange, yRange) * 0.06;
+    const images = thumbnails.map((t) => ({
+      source: t.src,
+      x: t.x,
+      y: t.y,
+      xref: "x",
+      yref: "y",
+      sizex: thumbSize,
+      sizey: thumbSize,
+      xanchor: "center",
+      yanchor: "middle",
+      layer: "above",
+      sizing: "contain",
+      opacity: 0.7,
+    }));
+    setLayout((prev) => ({ ...prev, images }));
+  }, [thumbnails, thumbnailViewport, data]);
 
   // Update only dragmode without resetting zoom
   useEffect(() => {
@@ -226,20 +241,24 @@ export default function PlotlyChart({
     }
   }, []);
 
-  // Apply linked brushing: compute selectedpoints per trace
-  const displayData = useMemo(() => {
+  // Sort traces once when data changes
+  const sortedData = useMemo(() => {
     if (!data) return [];
-    const sorted = [...data].sort((a: PlotTrace, b: PlotTrace) =>
+    return [...data].sort((a: PlotTrace, b: PlotTrace) =>
       ((a.name ?? "") > (b.name ?? "") ? 1 : -1),
     );
-    if (highlightedIds.size === 0) return sorted;
-    return sorted.map((trace) => ({
+  }, [data]);
+
+  // Apply linked brushing only when highlights change
+  const displayData = useMemo(() => {
+    if (highlightedIds.size === 0) return sortedData;
+    return sortedData.map((trace) => ({
       ...trace,
       selectedpoints: trace.id
         .map((id, idx) => (highlightedIds.has(id) ? idx : -1))
         .filter((idx) => idx >= 0),
     }));
-  }, [data, highlightedIds]);
+  }, [sortedData, highlightedIds]);
 
   if (!config || !data) return null;
 

@@ -1,6 +1,7 @@
 """Backend-agnostic data loader."""
 
 import dataclasses
+import time
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
@@ -18,6 +19,8 @@ from clusterfun.storage.query import get_connection, run_query
 from clusterfun.storage.storer import load_media
 
 _config_cache: Dict[str, Config] = {}
+_label_cache: Dict[str, tuple] = {}  # uuid -> (labels_dict, timestamp)
+_LABEL_TTL = 2.0  # seconds
 
 
 class DataLoader:
@@ -56,7 +59,7 @@ class DataLoader:
 
     def _load_base_config(self) -> Config:
         """Load the base config from JSON, with caching."""
-        cache_key = f"{id(self.backend)}:{self.uuid}"
+        cache_key = f"{type(self.backend).__name__}:{self.uuid}"
         if cache_key not in _config_cache:
             _config_cache[cache_key] = Config(
                 **self.backend.load_json(self.uuid, "config.json")
@@ -64,10 +67,16 @@ class DataLoader:
         return _config_cache[cache_key]
 
     def load_config(self) -> Config:
-        """Load config with fresh labels."""
+        """Load config with labels (cached for short TTL)."""
         base = self._load_base_config()
         config = dataclasses.replace(base)
-        labels = self.label_manager.read_labels()
+        now = time.monotonic()
+        cached = _label_cache.get(self.uuid)
+        if cached and (now - cached[1]) < _LABEL_TTL:
+            labels = cached[0]
+        else:
+            labels = self.label_manager.read_labels()
+            _label_cache[self.uuid] = (labels, now)
         config.labels = list(
             {label for label_list in labels.values() for label in label_list}
         )

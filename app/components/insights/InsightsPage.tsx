@@ -320,6 +320,8 @@ export default function InsightsPage() {
   const [loadingStats, setLoadingStats] = useState<Set<string>>(new Set());
   const [expandedCol, setExpandedCol] = useState<string | null>(null);
 
+  const [showAllDupGroups, setShowAllDupGroups] = useState(false);
+
   // Loading states (local — not worth persisting)
   const [outlierLoading, setOutlierLoading] = useState(false);
   const [duplicateLoading, setDuplicateLoading] = useState(false);
@@ -350,7 +352,7 @@ export default function InsightsPage() {
     fetchColumns(uuid).then(setColumns).catch(() => {});
   }, [uuid, setColumns, columns.length]);
 
-  // Load stats for all visible columns
+  // Load stats for all visible columns in parallel, batch state updates
   useEffect(() => {
     if (!uuid || allMediaIds.length === 0 || visibleColumns.length === 0) return;
     const toFetch = visibleColumns.filter(
@@ -365,19 +367,23 @@ export default function InsightsPage() {
     });
 
     const ids = allMediaIds.slice(0, 50000);
-    toFetch.forEach((col) => {
-      fetchColumnStats(uuid, ids, col.name)
-        .then((stats) => {
-          setColumnStats((prev) => ({ ...prev, [col.name]: stats }));
-        })
-        .catch(() => {})
-        .finally(() => {
-          setLoadingStats((prev) => {
-            const next = new Set(prev);
-            next.delete(col.name);
-            return next;
-          });
-        });
+    Promise.all(
+      toFetch.map((col) =>
+        fetchColumnStats(uuid, ids, col.name)
+          .then((stats) => ({ name: col.name, stats }))
+          .catch(() => ({ name: col.name, stats: null as ColumnStats | null }))
+      )
+    ).then((results) => {
+      const newStats: Record<string, ColumnStats> = {};
+      for (const r of results) {
+        if (r.stats) newStats[r.name] = r.stats;
+      }
+      setColumnStats((prev) => ({ ...prev, ...newStats }));
+      setLoadingStats((prev) => {
+        const next = new Set(prev);
+        for (const r of results) next.delete(r.name);
+        return next;
+      });
     });
   }, [uuid, allMediaIds, visibleColumns]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -813,7 +819,7 @@ export default function InsightsPage() {
                       </button>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
-                      {duplicateState.groups.slice(0, 10).map((group, i) => (
+                      {(showAllDupGroups ? duplicateState.groups : duplicateState.groups.slice(0, 10)).map((group, i) => (
                         <button
                           key={i}
                           onClick={() => viewInGrid(group)}
@@ -823,7 +829,12 @@ export default function InsightsPage() {
                         </button>
                       ))}
                       {duplicateState.groups.length > 10 && (
-                        <span className="px-1 py-1 text-xs text-gray-400">+{duplicateState.groups.length - 10} more</span>
+                        <button
+                          onClick={() => setShowAllDupGroups((v) => !v)}
+                          className="px-1 py-1 text-xs text-gray-500 underline decoration-gray-300 hover:text-gray-700"
+                        >
+                          {showAllDupGroups ? "Show less" : `+${duplicateState.groups.length - 10} more`}
+                        </button>
                       )}
                     </div>
                     {duplicateState.media.length > 0 && (

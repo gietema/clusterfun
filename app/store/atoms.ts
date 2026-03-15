@@ -19,6 +19,7 @@ export const gridValuesAtom = atom<GridValues>({
   numberOfColumns: 5,
   showColumnValues: [],
   showBboxLabel: false,
+  subsample: 0,
 });
 export const mediaIndexAtom = atom<number | undefined>(undefined);
 export const showPageAtom = atom<string>("plot");
@@ -83,3 +84,18 @@ export const insightsWeirdestAtom = atom<{
   ids: number[];
   media: import("@/app/types").Media[];
 }>({ ids: [], media: [] });
+
+// Background task queue — persists across page switches
+export interface BackgroundTask {
+  id: string;
+  type: "image_stats";
+  viewUuid: string;
+  label: string;
+  status: "running" | "done" | "error";
+  progress: number;
+  done: number;
+  total: number;
+  startedAt: number;
+  completedAt?: number;
+}
+export const backgroundTasksAtom = atom<BackgroundTask[]>([]);

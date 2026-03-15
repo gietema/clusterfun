@@ -8,6 +8,7 @@ import {
 } from "@/app/store/atoms";
 import { fetchSimilarVector } from "@/app/lib/api";
 import { encodeText } from "@/app/lib/clip";
+import TaskQueueIndicator from "./TaskQueueIndicator";
 
 function ProgressRing({ progress }: { progress: number }) {
   const r = 7;
@@ -142,6 +143,9 @@ export default function TabNavigation() {
 
       {/* Spacer */}
       <div className="flex-1" />
+
+      {/* Background tasks */}
+      <TaskQueueIndicator />
 
       {/* Text search */}
       {hasEmbeddingsModel && (

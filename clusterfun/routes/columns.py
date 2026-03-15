@@ -30,10 +30,14 @@ def filter_view(view_uuid: str, filters: List[Filter]) -> List[Dict[str, Any]]:
 @router.get("/api/views/{view_uuid}/columns", response_model=List[ColumnInfo])
 def columns(view_uuid: str) -> List[ColumnInfo]:
     """Get the columns of the view."""
-    df = get_loader(view_uuid).get_dataframe()
+    backend = get_backend()
+    con = get_connection(view_uuid, backend)
+    col_info = con.execute("SELECT column_name, column_type FROM (DESCRIBE database)").fetchall()
     column_info = []
-    for col in df.columns:
-        column_info.append(ColumnInfo(name=col, dtype=str(df[col].dtype), n_unique=int(df[col].nunique())))
+    for col_name, col_type in col_info:
+        row = con.execute(f'SELECT approx_count_distinct("{col_name}") FROM database').fetchone()
+        n_unique = int(row[0]) if row else 0
+        column_info.append(ColumnInfo(name=col_name, dtype=col_type, n_unique=n_unique))
     return column_info
 
 
@@ -47,12 +51,24 @@ def column_values(
     media_indices: MediaIndices,
 ) -> List[Dict[str, Union[str, int]]]:
     """Get the columns of the view."""
-    loader = get_loader(view_uuid)
-    df = loader.get_dataframe(
-        media_indices=media_indices if len(media_indices.media_ids) > 0 else None
-    )
-    value_counts = df[column].sort_values().astype(str).value_counts()
-    return [{"label": value, "count": count} for value, count in value_counts.items()]
+    backend = get_backend()
+    con = get_connection(view_uuid, backend)
+    col = f'"{column}"'
+    if len(media_indices.media_ids) > 0:
+        placeholders = ",".join("?" for _ in media_indices.media_ids)
+        query = (
+            f"SELECT CAST({col} AS VARCHAR) as label, COUNT(*) as count "
+            f"FROM database WHERE id IN ({placeholders}) "
+            f"GROUP BY {col} ORDER BY count DESC"
+        )
+        rows = con.execute(query, list(media_indices.media_ids)).fetchall()
+    else:
+        query = (
+            f"SELECT CAST({col} AS VARCHAR) as label, COUNT(*) as count "
+            f"FROM database GROUP BY {col} ORDER BY count DESC"
+        )
+        rows = con.execute(query).fetchall()
+    return [{"label": r[0], "count": r[1]} for r in rows]
 
 
 @router.post("/api/views/{view_uuid}/column-stats")
