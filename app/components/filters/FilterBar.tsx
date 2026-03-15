@@ -21,12 +21,16 @@ export default function FilterBar() {
       .then((data) => {
         if (!data) return;
         setPlotData(data);
-        const indices = data.flatMap((d) => d.id ?? []);
-        if (mediaIndices.length > 0) {
+        // Only push filtered indices when there are actual filters.
+        // Without this guard, mounting with empty filters pushes ALL
+        // indices onto the stack, overwriting any existing selection
+        // (e.g. from a plot drag-select).
+        if (filters.length > 0 && mediaIndices.length > 0) {
+          const indices = data.flatMap((d) => d.id ?? []);
           const filtered = indices.filter((i: number) => mediaIndices[0].includes(i));
           setMediaIndices((prev) => [...prev, filtered]);
+          setGridValues((prev) => ({ ...prev, page: 0 }));
         }
-        setGridValues((prev) => ({ ...prev, page: 0 }));
       })
       .catch(console.error);
   }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps

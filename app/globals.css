@@ -7,9 +7,9 @@
   src: url("../public/fonts/Oliver-Regular-400.woff");
 }
 
-/* set the body background to tailwind's bg-gray-900 */
-body {
-  min-height: 100vh;
+html, body {
+  height: 100%;
+  overflow: hidden;
 }
 
 code {

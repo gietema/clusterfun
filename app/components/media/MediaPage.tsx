@@ -7,6 +7,7 @@ import { getNextMedia, getPreviousMedia, parseBoundingBoxes, rotateImage } from 
 import { useMediaPreview } from "@/app/lib/use-media-preview";
 import type { BoundingBox } from "@/app/types";
 import HeaderControls from "./HeaderControls";
+import ImageAdjustments, { DEFAULT_ADJUSTMENTS, adjustmentsToFilter } from "./ImageAdjustments";
 import PlotlyImagePlot from "../plot/PlotlyImagePlot";
 import SideBar from "../shared/SideBar";
 import ResizableLayout from "../shared/ResizableLayout";
@@ -24,6 +25,8 @@ export default function MediaPage({ mediaIndex, onBack }: MediaPageProps) {
   const [shapes, setShapes] = useState<Record<string, any>[]>([]);
   const [boundingBoxes, setBoundingBoxes] = useState<BoundingBox[]>([]);
   const [rotatedSrc, setRotatedSrc] = useState<string | null>(null);
+  const [adjustments, setAdjustments] = useState(DEFAULT_ADJUSTMENTS);
+  const [showAdjustments, setShowAdjustments] = useState(false);
   const { navigateToMedia } = useMediaPreview();
 
   useEffect(() => { setRotatedSrc(null); }, [mediaIndex]);
@@ -90,10 +93,20 @@ export default function MediaPage({ mediaIndex, onBack }: MediaPageProps) {
         onRotateClockwise={() => handleRotate(90)}
         onRotateCounterclockwise={() => handleRotate(-90)}
         onBack={onBack ?? (() => {})}
+        showAdjustments={showAdjustments}
+        onToggleAdjustments={() => setShowAdjustments((s) => !s)}
       />
+      {showAdjustments && (
+        <ImageAdjustments values={adjustments} onChange={setAdjustments} />
+      )}
       <div className="p-2">
         {media && (
-          <div style={{ height: "calc(100vh - 80px)" }}>
+          <div
+            style={{
+              height: `calc(100vh - ${showAdjustments ? "120px" : "80px"})`,
+              filter: adjustmentsToFilter(adjustments),
+            }}
+          >
             <PlotlyImagePlot
               media={{ ...media, src: rotatedSrc || media.src }}
               scaleFactor={1}

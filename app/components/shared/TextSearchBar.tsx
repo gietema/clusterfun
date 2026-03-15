@@ -80,7 +80,10 @@ export default function TextSearchBar() {
         scores[r.media_id] = r.similarity;
       }
       setSimilarityResults(scores);
-      setMediaIndicesStack((prev) => [...prev, ids]);
+      // Replace the top selection level rather than stacking searches
+      setMediaIndicesStack((prev) =>
+        prev.length > 1 ? [...prev.slice(0, -1), ids] : [...prev, ids],
+      );
       setGridValues((prev) => ({ ...prev, page: 0 }));
       setShowPage("grid");
     } catch (err: unknown) {

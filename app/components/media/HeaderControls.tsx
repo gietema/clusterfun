@@ -1,4 +1,4 @@
-import { faArrowLeft, faArrowRight, faRedo, faUndo } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faArrowRight, faRedo, faSliders, faUndo } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { Media } from "@/app/types";
 import { getNextMedia, getPreviousMedia } from "@/app/lib/media-utils";
@@ -12,11 +12,14 @@ interface HeaderControlsProps {
   onRotateClockwise: () => void;
   onRotateCounterclockwise: () => void;
   onBack: () => void;
+  showAdjustments?: boolean;
+  onToggleAdjustments?: () => void;
 }
 
 export default function HeaderControls({
   mediaIndex, mediaItems, onPrevious, onNext,
   onRotateClockwise, onRotateCounterclockwise, onBack,
+  showAdjustments, onToggleAdjustments,
 }: HeaderControlsProps) {
   const hasPrev = mediaIndex != null && getPreviousMedia(mediaItems, mediaIndex) !== null;
   const hasNext = mediaIndex != null && getNextMedia(mediaItems, mediaIndex) !== null;
@@ -32,6 +35,19 @@ export default function HeaderControls({
           <button className="rounded-md px-2 py-1.5 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={onRotateClockwise}>
             <FontAwesomeIcon icon={faRedo} />
           </button>
+          {onToggleAdjustments && (
+            <button
+              className={`rounded-md px-2 py-1.5 transition-colors ${
+                showAdjustments
+                  ? "bg-gray-200 text-gray-900"
+                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              }`}
+              onClick={onToggleAdjustments}
+              title="Image adjustments"
+            >
+              <FontAwesomeIcon icon={faSliders} />
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-1.5">
           {hasPrev && (

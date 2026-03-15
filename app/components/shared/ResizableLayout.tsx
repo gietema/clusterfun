@@ -32,7 +32,7 @@ export default function ResizableLayout({ sidebar, children }: ResizableLayoutPr
   }, [sidebarWidth, setSidebarWidth]);
 
   const applyWidth = useCallback((w: number) => {
-    if (mainRef.current) mainRef.current.style.width = `calc(100% - ${w}px)`;
+    if (mainRef.current) mainRef.current.style.width = `calc(100% - ${w}px - 6px)`;
     if (sidebarRef.current) sidebarRef.current.style.width = `${w}px`;
     currentWidth.current = w;
   }, []);
@@ -74,8 +74,8 @@ export default function ResizableLayout({ sidebar, children }: ResizableLayoutPr
   const sw = sidebarWidth ?? 300;
 
   return (
-    <div ref={containerRef} className="flex h-full w-full">
-      <div ref={mainRef} style={{ width: `calc(100% - ${sw}px)` }} className="h-full min-w-0 flex-shrink-0">
+    <div ref={containerRef} className="flex h-full w-full overflow-hidden">
+      <div ref={mainRef} style={{ width: `calc(100% - ${sw}px - 6px)` }} className="h-full min-w-0 flex-shrink-0 overflow-hidden">
         {children}
       </div>
       <div
@@ -84,7 +84,7 @@ export default function ResizableLayout({ sidebar, children }: ResizableLayoutPr
       >
         <div className="h-8 w-0.5 rounded-full bg-gray-300" />
       </div>
-      <div ref={sidebarRef} style={{ width: `${sw}px` }} className="min-w-0 flex-shrink-0 overflow-hidden">
+      <div ref={sidebarRef} style={{ width: `${sw}px` }} className="h-full min-w-0 flex-shrink-0 overflow-hidden">
         {sidebar}
       </div>
     </div>

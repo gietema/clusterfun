@@ -144,9 +144,10 @@ export default function GridView({ onBack }: GridViewProps) {
 
   return (
     <ResizableLayout sidebar={<GridWorkspaceSidebar />}>
-      {config.title && <div className="mb-2 px-3 pt-2 text-sm font-medium text-gray-900">{config.title}</div>}
+      <div className="flex h-full flex-col">
+      {config.title && <div className="mb-2 shrink-0 px-3 pt-2 text-sm font-medium text-gray-900">{config.title}</div>}
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 px-3 py-2">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-gray-200 px-3 py-2">
         {canGoBack ? (
           <button onClick={onBack!} className="text-xs text-gray-500 hover:text-gray-700">
             ← {mediaIndices.length} selected
@@ -198,38 +199,41 @@ export default function GridView({ onBack }: GridViewProps) {
       </div>
 
       {showStats && (
-        <div className="border-b border-gray-200">
+        <div className="shrink-0 border-b border-gray-200">
           <MediaVisualization mediaIndices={mediaIndices} />
         </div>
       )}
 
-      <div className="px-3 pt-2"><FilterBar /></div>
+      <div className="shrink-0 px-3 pt-2"><FilterBar /></div>
 
       {/* Media grid */}
       <div
-        className="grid items-end gap-3 p-3"
-        style={{
-          maxHeight: "calc(100vh - 80px)",
-          overflowY: "scroll",
-          gridTemplateColumns: `repeat(${gridValues.numberOfColumns}, minmax(0, 1fr))`,
-        }}
+        className="min-h-0 flex-1 overflow-y-auto p-3"
       >
-        {mediaItems.map((media) => (
-          <div key={media.index} style={{ contentVisibility: "auto" }}>
-            <MediaGridItem
-              media={media}
-              columns={gridValues.numberOfColumns}
-              showColumns={gridValues.showColumnValues}
-              boundingBoxColumn={config.bounding_box}
-              showBboxLabel={gridValues.showBboxLabel}
-              display={config.display}
-              onClick={() => handleClick(media.index)}
-              onHover={() => handleHover(media.index)}
-              onLabelToggle={(label) => handleLabelToggle(media, label)}
-              onExclude={isActive ? () => handleExclude(media) : undefined}
-            />
-          </div>
-        ))}
+        <div
+          className="grid items-end gap-3"
+          style={{
+            gridTemplateColumns: `repeat(${gridValues.numberOfColumns}, minmax(0, 1fr))`,
+          }}
+        >
+          {mediaItems.map((media) => (
+            <div key={media.index} style={{ contentVisibility: "auto" }}>
+              <MediaGridItem
+                media={media}
+                columns={gridValues.numberOfColumns}
+                showColumns={gridValues.showColumnValues}
+                boundingBoxColumn={config.bounding_box}
+                showBboxLabel={gridValues.showBboxLabel}
+                display={config.display}
+                onClick={() => handleClick(media.index)}
+                onHover={() => handleHover(media.index)}
+                onLabelToggle={(label) => handleLabelToggle(media, label)}
+                onExclude={isActive ? () => handleExclude(media) : undefined}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
       </div>
     </ResizableLayout>
   );

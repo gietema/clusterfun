@@ -138,7 +138,9 @@ export default function GridWorkspaceSidebar() {
       const scores: Record<number, number> = {};
       for (const r of results) scores[r.media_id] = r.similarity;
       setSimilarityResults(scores);
-      setMediaIndicesStack((prev) => [...prev, ids]);
+      setMediaIndicesStack((prev) =>
+        prev.length > 1 ? [...prev.slice(0, -1), ids] : [...prev, ids],
+      );
       setGridValues((prev) => ({ ...prev, page: 0 }));
       setShowPage("grid");
     } finally {

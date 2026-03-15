@@ -80,7 +80,15 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
   }, [showPage, mediaIndices.length, data, filters, uuid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleMediaIndices = (newIndices: number[]) => {
-    setMediaIndices((prev) => [...prev, newIndices]);
+    setMediaIndices((prev) => {
+      if (prev.length === 0 && data) {
+        // Ensure a base level of all items exists so the user can go back
+        const allIndices = data.flatMap((d) => d.id ?? []);
+        return [allIndices, newIndices];
+      }
+      return [...prev, newIndices];
+    });
+    setGridValues((prev) => ({ ...prev, page: 0 }));
     setShowPage("grid");
   };
 
@@ -108,9 +116,9 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
   }
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-screen flex-col overflow-hidden">
       <TabNavigation />
-      <div className="min-h-0 flex-1">
+      <div className="min-h-0 flex-1 overflow-hidden">
         {showPage === "grid" ? (
           <GridView onBack={handleGridBack} />
         ) : (
