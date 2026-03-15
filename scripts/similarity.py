@@ -30,9 +30,9 @@ def load_image(url: str) -> Image.Image | None:
 
 
 def compute_clip_embeddings(
-    image_urls: list[str], batch_size: int = 32
+    image_urls: list[str], batch_size: int = 32, local: bool = False,
 ) -> tuple[list[list[float]], list[int]]:
-    """Compute CLIP embeddings for a list of image URLs."""
+    """Compute CLIP embeddings for a list of image URLs or local paths."""
     device = (
         "mps"
         if torch.backends.mps.is_available()
@@ -54,11 +54,17 @@ def compute_clip_embeddings(
         batch_valid = []
 
         for i, url in enumerate(batch_urls):
-            img = load_image(url)
-            if img is not None:
-                batch_images.append(img)
-                batch_valid.append(start + i)
-            else:
+            try:
+                if local:
+                    img = Image.open(url).convert("RGB")
+                else:
+                    img = load_image(url)
+                if img is not None:
+                    batch_images.append(img)
+                    batch_valid.append(start + i)
+                else:
+                    failed_indices.append(start + i)
+            except Exception:
                 failed_indices.append(start + i)
 
         if not batch_images:
