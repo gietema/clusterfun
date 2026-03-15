@@ -11,25 +11,58 @@ interface Section {
   icon: string;
 }
 
-const SECTIONS: Section[] = [
-  { id: "getting-started", title: "Getting Started", icon: "rocket" },
-  { id: "plot-types", title: "Plot Types", icon: "chart" },
-  { id: "grid-view", title: "Grid View", icon: "grid" },
-  { id: "multi-plot", title: "Multi-Plot Dashboard", icon: "panels" },
-  { id: "selection", title: "Selection Tools", icon: "lasso" },
-  { id: "labels", title: "Labels & Labeling", icon: "tag" },
-  { id: "focus-mode", title: "Focus Mode", icon: "focus" },
-  { id: "projects", title: "Projects", icon: "folder" },
-  { id: "filtering", title: "Filtering", icon: "filter" },
-  { id: "insights", title: "Insights & ML", icon: "brain" },
-  { id: "active-learning", title: "Active Learning", icon: "sparkle" },
-  { id: "similarity", title: "Similarity Search", icon: "search" },
-  { id: "text-search", title: "Text Search", icon: "text" },
-  { id: "export", title: "Export & Download", icon: "download" },
-  { id: "media-viewer", title: "Media Viewer", icon: "image" },
-  { id: "shortcuts", title: "Keyboard Shortcuts", icon: "keyboard" },
-  { id: "python-api", title: "Python API", icon: "code" },
+interface SectionGroup {
+  label: string;
+  sections: Section[];
+}
+
+const SECTION_GROUPS: SectionGroup[] = [
+  {
+    label: "Getting Started",
+    sections: [
+      { id: "getting-started", title: "Getting Started", icon: "rocket" },
+      { id: "python-api", title: "Python API", icon: "code" },
+    ],
+  },
+  {
+    label: "Visualization",
+    sections: [
+      { id: "plot-types", title: "Plot Types", icon: "chart" },
+      { id: "grid-view", title: "Grid View", icon: "grid" },
+      { id: "multi-plot", title: "Multi-Plot Dashboard", icon: "panels" },
+      { id: "media-viewer", title: "Media Viewer", icon: "image" },
+    ],
+  },
+  {
+    label: "Data Management",
+    sections: [
+      { id: "selection", title: "Selection Tools", icon: "lasso" },
+      { id: "filtering", title: "Filtering", icon: "filter" },
+      { id: "labels", title: "Labels & Labeling", icon: "tag" },
+      { id: "focus-mode", title: "Focus Mode", icon: "focus" },
+      { id: "projects", title: "Projects", icon: "folder" },
+      { id: "export", title: "Export & Download", icon: "download" },
+    ],
+  },
+  {
+    label: "Analysis",
+    sections: [
+      { id: "similarity", title: "Similarity Search", icon: "search" },
+      { id: "text-search", title: "Text Search", icon: "text" },
+      { id: "insights", title: "Insights & ML", icon: "brain" },
+      { id: "active-learning", title: "Active Learning", icon: "sparkle" },
+    ],
+  },
+  {
+    label: "Reference",
+    sections: [
+      { id: "shortcuts", title: "Keyboard Shortcuts", icon: "keyboard" },
+    ],
+  },
 ];
+
+// Flat list for scroll-spy iteration
+const SECTIONS: Section[] = SECTION_GROUPS.flatMap((g) => g.sections);
 
 // ---------------------------------------------------------------------------
 // Icons (inline SVG to avoid extra dependencies)
@@ -461,23 +494,32 @@ export default function DocsPage() {
             Documentation
           </h2>
         </div>
-        <ul className="space-y-0.5">
-          {SECTIONS.map((section) => (
-            <li key={section.id}>
-              <button
-                onClick={() => scrollTo(section.id)}
-                className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors ${
-                  activeSection === section.id
-                    ? "bg-gray-100 font-medium text-gray-900"
-                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-                }`}
-              >
-                <SectionIcon type={section.icon} />
-                {section.title}
-              </button>
-            </li>
+        <div className="space-y-4">
+          {SECTION_GROUPS.map((group) => (
+            <div key={group.label}>
+              <div className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                {group.label}
+              </div>
+              <ul className="space-y-0.5">
+                {group.sections.map((section) => (
+                  <li key={section.id}>
+                    <button
+                      onClick={() => scrollTo(section.id)}
+                      className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors ${
+                        activeSection === section.id
+                          ? "bg-gray-100 font-medium text-gray-900"
+                          : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                      }`}
+                    >
+                      <SectionIcon type={section.icon} />
+                      {section.title}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-        </ul>
+        </div>
       </nav>
 
       {/* Main content */}
