@@ -74,6 +74,29 @@ def column_values(
     return [{"label": r[0], "count": r[1]} for r in rows]
 
 
+class CountRequest(BaseModel):
+    filters: List[Filter] = []
+
+
+@router.post("/api/views/{view_uuid}/count")
+def filtered_count(view_uuid: str, req: CountRequest) -> Dict[str, int]:
+    """Return the number of items matching the given filters."""
+    backend = get_backend()
+    con = get_connection(view_uuid, backend)
+    if req.filters:
+        loader = get_loader(view_uuid)
+        config = loader.load_config()
+        from clusterfun.storage.local.helpers import get_filter_query
+        where, params = get_filter_query(con, config, req.filters)
+        if where:
+            row = con.execute(f"SELECT COUNT(*) FROM database WHERE {where}", params).fetchone()
+        else:
+            row = con.execute("SELECT COUNT(*) FROM database").fetchone()
+    else:
+        row = con.execute("SELECT COUNT(*) FROM database").fetchone()
+    return {"count": row[0] if row else 0}
+
+
 @router.post("/api/views/{view_uuid}/column-stats")
 def column_stats(view_uuid: str, req: ColumnStatsRequest) -> Dict[str, Any]:
     """Compute column statistics server-side, returning aggregated data for histograms/bar charts."""

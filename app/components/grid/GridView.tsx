@@ -11,7 +11,7 @@ import {
   filtersAtom, similarityResultsAtom, showPageAtom,
   selectedMediaAtom,
 } from "@/app/store/atoms";
-import { fetchMediaItems, saveLabel, deleteLabel, saveView, fetchSimilar } from "@/app/lib/api";
+import { fetchMediaItems, fetchFilteredCount, saveLabel, deleteLabel, saveView, fetchSimilar } from "@/app/lib/api";
 import type { Media } from "@/app/types";
 import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
 import BreadcrumbTrail from "../shared/BreadcrumbTrail";
@@ -50,6 +50,7 @@ export default function GridView({ onBack }: GridViewProps) {
   const [selectedMedia, setSelectedMedia] = useAtom(selectedMediaAtom);
   const [focusMode, setFocusMode] = useState(false);
   const lastClickedRef = useRef<number | null>(null);
+  const [filteredCount, setFilteredCount] = useState<number | null>(null);
 
   const [showSaveForm, setShowSaveForm] = useState(false);
   const [saveTitle, setSaveTitle] = useState("");
@@ -98,6 +99,12 @@ export default function GridView({ onBack }: GridViewProps) {
   };
 
   useEffect(() => { loadMedia(); }, [effectiveIndices, filters]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch filtered count when filters change
+  useEffect(() => {
+    if (!uuid || filters.length === 0) { setFilteredCount(null); return; }
+    fetchFilteredCount(uuid, filters).then(setFilteredCount).catch(() => setFilteredCount(null));
+  }, [uuid, filters]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -277,7 +284,7 @@ export default function GridView({ onBack }: GridViewProps) {
         <span className="text-xs text-gray-500">
           {gridValues.subsample > 0
             ? `${effectiveIndices.length.toLocaleString()} of ${mediaIndices.length.toLocaleString()}`
-            : (mediaIndices.length > 0 ? mediaIndices.length : (config.total_count ?? 0)).toLocaleString()}{" "}
+            : (filteredCount != null ? filteredCount : (mediaIndices.length > 0 ? mediaIndices.length : (config.total_count ?? 0))).toLocaleString()}{" "}
           items
         </span>
         <select
@@ -325,7 +332,7 @@ export default function GridView({ onBack }: GridViewProps) {
         <div className="ml-auto flex items-center gap-2">
           <Pagination
             page={gridValues.page}
-            maxPage={Math.max(0, Math.ceil((effectiveIndices.length > 0 ? effectiveIndices.length : (config.total_count ?? 0)) / 50) - 1)}
+            maxPage={Math.max(0, Math.ceil((effectiveIndices.length > 0 ? effectiveIndices.length : (filteredCount ?? config.total_count ?? 0)) / 50) - 1)}
             onPageChange={handlePageChange}
           />
           {config.labels && config.labels.length > 0 && (

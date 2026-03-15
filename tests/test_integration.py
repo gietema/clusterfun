@@ -288,6 +288,25 @@ class TestSubsample:
         config = resp.json()
         assert config["total_count"] == 75
 
+    def test_filtered_count(self, local_backend, client):
+        """Filtered count endpoint returns correct count."""
+        uuid, _ = _save_scatter(local_backend, n=50)
+        # Filter to category = "cat"
+        resp = client.post(
+            f"/api/views/{uuid}/count",
+            json={"filters": [{"column": "category", "comparison": "=", "values": ["cat"]}]},
+        )
+        assert resp.status_code == 200
+        count = resp.json()["count"]
+        assert 0 < count < 50  # some items match, not all
+
+    def test_filtered_count_no_filters(self, local_backend, client):
+        """Count with no filters returns total count."""
+        uuid, _ = _save_scatter(local_backend, n=50)
+        resp = client.post(f"/api/views/{uuid}/count", json={"filters": []})
+        assert resp.status_code == 200
+        assert resp.json()["count"] == 50
+
 
 # ---------------------------------------------------------------------------
 # Filtering

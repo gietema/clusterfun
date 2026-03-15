@@ -103,6 +103,16 @@ export async function fetchColumnValues(
   return data;
 }
 
+// ── Filtered Count ──
+
+export async function fetchFilteredCount(
+  uuid: string,
+  filters: Filter[],
+): Promise<number> {
+  const { data } = await axios.post(`${API_URL}/views/${uuid}/count`, { filters });
+  return data.count;
+}
+
 // ── Column Stats ──
 
 export async function fetchColumnStats(
@@ -409,6 +419,25 @@ export async function exportAnnotations(uuid: string, mediaIds?: number[]): Prom
   const { data } = await axios.post(`${API_URL}/views/${uuid}/annotations/export`, {
     media_ids: mediaIds ?? null,
   });
+  return data;
+}
+
+// ── ML Export ──
+
+export type ExportFormat = "coco" | "yolo" | "huggingface" | "classification";
+
+export interface ExportRequest {
+  format: ExportFormat;
+  media_ids?: number[];
+  label_filter?: string;
+}
+
+export async function exportData(uuid: string, req: ExportRequest): Promise<Blob> {
+  const { data } = await axios.post(
+    `${API_URL}/views/${uuid}/export`,
+    req,
+    { responseType: "blob" },
+  );
   return data;
 }
 
