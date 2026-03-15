@@ -24,7 +24,6 @@ import BoundingBoxCheckbox from "./BoundingBoxCheckbox";
 import MediaVisualization from "./MediaVisualization";
 import GridWorkspaceSidebar from "./GridWorkspaceSidebar";
 import FocusMode from "./FocusMode";
-import ReviewMode from "./ReviewMode";
 import { useLabelUndo } from "@/app/lib/use-label-undo";
 import { useMediaPreview } from "@/app/lib/use-media-preview";
 import { useActiveLearning } from "@/app/lib/use-active-learning";
@@ -49,7 +48,7 @@ export default function GridView({ onBack }: GridViewProps) {
   const { reset: resetBreadcrumbs } = useBreadcrumbNav();
   const [showStats, setShowStats] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
-  const [reviewMode, setReviewMode] = useState(false);
+
   const [showSaveForm, setShowSaveForm] = useState(false);
   const [saveTitle, setSaveTitle] = useState("");
   const [saving, setSaving] = useState(false);
@@ -183,7 +182,7 @@ export default function GridView({ onBack }: GridViewProps) {
   if (!config) return null;
 
   return (
-    <ResizableLayout sidebar={<GridWorkspaceSidebar onReview={() => setReviewMode(true)} />}>
+    <ResizableLayout sidebar={<GridWorkspaceSidebar />}>
       <div className="flex h-full flex-col">
       {config.title && <div className="mb-2 shrink-0 px-3 pt-2 text-sm font-medium text-gray-900">{config.title}</div>}
       {/* Toolbar */}
@@ -382,15 +381,6 @@ export default function GridView({ onBack }: GridViewProps) {
           onLabelToggle={handleLabelToggle}
           onExit={() => {
             setFocusMode(false);
-            loadMedia();
-          }}
-        />
-      )}
-      {reviewMode && (
-        <ReviewMode
-          onLabelToggle={handleLabelToggle}
-          onExit={() => {
-            setReviewMode(false);
             loadMedia();
           }}
         />

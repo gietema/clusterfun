@@ -46,6 +46,9 @@ export default function FocusMode({ mediaIndices, onLabelToggle, onExit }: Focus
   const [sessionLabels, setSessionLabels] = useState<Record<string, number>>({});
   const [skippedCount, setSkippedCount] = useState(0);
   const [reviewedCount, setReviewedCount] = useState(0);
+  const [acceptedCount, setAcceptedCount] = useState(0);
+  const [rejectedCount, setRejectedCount] = useState(0);
+  const [labelRejects, setLabelRejects] = useState(true);
   const startTimeRef = useRef(Date.now());
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -234,6 +237,28 @@ export default function FocusMode({ mediaIndices, onLabelToggle, onExit }: Focus
     advance();
   }, [advance]);
 
+  // Accept/reject proposed label (Y/N keys when AL predictions are available)
+  const handleAcceptProposal = useCallback(() => {
+    if (!media || !alState) return;
+    const pred = alState.predictions.find((p) => p.media_id === media.index);
+    if (!pred) return;
+    handleLabel(pred.predicted_class);
+    setAcceptedCount((c) => c + 1);
+  }, [media, alState, handleLabel]);
+
+  const handleRejectProposal = useCallback(() => {
+    if (!media) return;
+    if (labelRejects) {
+      onLabelToggle(media, "exclude");
+      const updated = { ...media, labels: [...(media.labels ?? []), "exclude"] };
+      setMedia(updated);
+      cacheRef.current.set(media.index, updated);
+    }
+    setRejectedCount((c) => c + 1);
+    setReviewedCount((c) => c + 1);
+    advance();
+  }, [media, labelRejects, onLabelToggle, advance]);
+
   // ── Keyboard ──
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     const tag = (e.target as HTMLElement)?.tagName;
@@ -241,6 +266,8 @@ export default function FocusMode({ mediaIndices, onLabelToggle, onExit }: Focus
 
     if (e.key === "Escape") { e.preventDefault(); onExit(); return; }
     if (e.key === " ") { e.preventDefault(); handleSkip(); return; }
+    if ((e.key === "y" || e.key === "Y") && alState) { e.preventDefault(); handleAcceptProposal(); return; }
+    if ((e.key === "n" || e.key === "N") && alState) { e.preventDefault(); handleRejectProposal(); return; }
     if (e.key === "Backspace") { e.preventDefault(); goBack(); return; }
     if (e.key === "ArrowRight") { e.preventDefault(); advance(); return; }
     if (e.key === "ArrowLeft") { e.preventDefault(); goBack(); return; }
@@ -258,7 +285,7 @@ export default function FocusMode({ mediaIndices, onLabelToggle, onExit }: Focus
       e.preventDefault();
       handleLabel(labels[key - 1]);
     }
-  }, [onExit, advance, goBack, handleLabel, handleSkip, labels, media, position, total]);
+  }, [onExit, advance, goBack, handleLabel, handleSkip, handleAcceptProposal, handleRejectProposal, labels, media, position, total, alState]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -337,7 +364,27 @@ export default function FocusMode({ mediaIndices, onLabelToggle, onExit }: Focus
             className={`rounded px-2 py-1 text-[10px] transition-colors ${showStats ? "bg-gray-800 text-white" : "text-gray-400 hover:text-gray-600"}`}
           >Stats</button>
           {reviewedCount > 0 && <span className="text-[10px] tabular-nums text-gray-400">{itemsPerMin.toFixed(1)}/min</span>}
+          {alState && (
+            <>
+              <label className="flex items-center gap-1.5 text-[10px] text-gray-400" title="Label rejected items as 'exclude' so active learning deprioritizes them">
+                <input type="checkbox" checked={labelRejects} onChange={(e) => setLabelRejects(e.target.checked)} className="h-3 w-3 rounded border-gray-300 accent-gray-700" />
+                label rejects
+              </label>
+              {(acceptedCount > 0 || rejectedCount > 0) && (
+                <div className="flex items-center gap-2 text-[10px]">
+                  <span className="text-emerald-600">{acceptedCount} accepted</span>
+                  <span className="text-red-500">{rejectedCount} rejected</span>
+                </div>
+              )}
+            </>
+          )}
           <div className="flex items-center gap-2 text-[10px] text-gray-400">
+            {alState && (
+              <>
+                <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5">Y</kbd><span>accept</span>
+                <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5">N</kbd><span>reject</span>
+              </>
+            )}
             <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5">Space</kbd><span>skip</span>
             <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5">Esc</kbd><span>exit</span>
           </div>

@@ -10,11 +10,7 @@ import { useActiveLearning } from "@/app/lib/use-active-learning";
 import { AL_METHODS } from "@/app/lib/active-learning";
 import Section from "../shared/Section";
 
-interface ActiveLearningSectionProps {
-  onReview?: () => void;
-}
-
-export default function ActiveLearningSection({ onReview }: ActiveLearningSectionProps) {
+export default function ActiveLearningSection() {
   const config = useAtomValue(configAtom);
   const {
     isAvailable, isActive, alState, stop, refit,
@@ -144,17 +140,6 @@ export default function ActiveLearningSection({ onReview }: ActiveLearningSectio
             </span>
           )}
         </div>
-
-        {/* Review proposals button */}
-        {isActive && onReview && (
-          <button
-            onClick={onReview}
-            className="flex w-full items-center justify-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100"
-          >
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
-            Review proposals
-          </button>
-        )}
 
         {/* Results (when active) */}
         {isActive && (

@@ -17,11 +17,7 @@ import Section from "../shared/Section";
 import LabelsSection from "./LabelsSection";
 import ActiveLearningSection from "./ActiveLearningSection";
 
-interface GridWorkspaceSidebarProps {
-  onReview?: () => void;
-}
-
-export default function GridWorkspaceSidebar({ onReview }: GridWorkspaceSidebarProps = {}) {
+export default function GridWorkspaceSidebar() {
   const uuid = useAtomValue(uuidAtom);
   const [config, setConfig] = useAtom(configAtom);
   const [media, setSideMedia] = useAtom(mediaAtom);
@@ -221,7 +217,7 @@ export default function GridWorkspaceSidebar({ onReview }: GridWorkspaceSidebarP
       </Section>
 
       <LabelsSection />
-      <ActiveLearningSection onReview={onReview} />
+      <ActiveLearningSection />
     </div>
   );
 }
