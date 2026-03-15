@@ -33,6 +33,7 @@ export interface PlotConfig {
   embeddings?: string;
   embeddings_model?: string;
   project?: string;
+  total_count?: number;
 }
 
 // ── Bounding Box ──

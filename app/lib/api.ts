@@ -43,7 +43,7 @@ export async function fetchMediaItems(
   filters?: Filter[],
 ): Promise<Media[]> {
   const { data } = await axios.post(`${API_URL}/views/${uuid}/media`, {
-    media_ids: mediaIds,
+    media_ids: mediaIds.length > 10_000 ? [] : mediaIds,
     page,
     sort_column: sortColumn ?? null,
     ascending: ascending ?? null,

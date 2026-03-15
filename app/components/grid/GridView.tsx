@@ -191,7 +191,7 @@ export default function GridView({ onBack }: GridViewProps) {
         <span className="text-xs text-gray-500">
           {gridValues.subsample > 0
             ? `${effectiveIndices.length.toLocaleString()} of ${mediaIndices.length.toLocaleString()}`
-            : mediaIndices.length.toLocaleString()}{" "}
+            : (mediaIndices.length > 0 ? mediaIndices.length : (config.total_count ?? 0)).toLocaleString()}{" "}
           items
         </span>
         <select
@@ -239,7 +239,7 @@ export default function GridView({ onBack }: GridViewProps) {
         <div className="ml-auto flex items-center gap-2">
           <Pagination
             page={gridValues.page}
-            maxPage={Math.max(0, Math.ceil(effectiveIndices.length / 50) - 1)}
+            maxPage={Math.max(0, Math.ceil((effectiveIndices.length > 0 ? effectiveIndices.length : (config.total_count ?? 0)) / 50) - 1)}
             onPageChange={handlePageChange}
           />
           {config.labels && config.labels.length > 0 && (

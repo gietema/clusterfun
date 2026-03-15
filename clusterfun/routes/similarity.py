@@ -2,9 +2,11 @@
 
 from typing import List
 
+import numpy as np
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+from clusterfun.faiss_index import get_or_load_index
 from clusterfun.storage.backends import get_backend
 from clusterfun.storage.data_loader import DataLoader
 from clusterfun.storage.query import ensure_embeddings_table
@@ -26,51 +28,35 @@ class SimilarityResult(BaseModel):
 
 
 def _search_by_vector(
-    con,
-    emb_col: str,
+    index,
+    ids: np.ndarray,
     query_emb: list,
     exclude_id: int | None = None,
+    limit: int = 1000,
 ) -> List[SimilarityResult]:
-    """Search embeddings by a query vector. Returns all results sorted by similarity."""
-    dim = len(query_emb)
+    """Search embeddings using FAISS. Returns top results sorted by similarity."""
+    query = np.array([query_emb], dtype=np.float32)
+    # L2-normalize for cosine similarity via inner product
+    norm = np.linalg.norm(query)
+    if norm > 0:
+        query /= norm
 
-    # Try HNSW-accelerated search (requires vss extension + FLOAT[N] arrays)
-    try:
-        exclude_clause = f"WHERE id != {exclude_id}" if exclude_id is not None else ""
-        rows = con.execute(
-            f"SELECT id, "
-            f'array_cosine_similarity("{emb_col}", ?::FLOAT[{dim}]) AS similarity '
-            f"FROM embeddings "
-            f"{exclude_clause} "
-            f'ORDER BY array_cosine_distance("{emb_col}", ?::FLOAT[{dim}])',
-            [list(query_emb), list(query_emb)],
-        ).fetchall()
-        return [
-            SimilarityResult(media_id=r[0], similarity=r[1])
-            for r in rows
-        ]
-    except Exception:
-        pass
+    # Search for extra results to account for excluding the query item
+    k = min(limit + (1 if exclude_id is not None else 0), index.ntotal)
+    sims, idx = index.search(query, k)
 
-    # Fallback: brute-force scan using list_cosine_similarity
-    if exclude_id is not None:
-        rows = con.execute(
-            f"WITH query_emb AS (SELECT ?::FLOAT[] AS emb) "
-            f'SELECT e.id, list_cosine_similarity(e."{emb_col}", q.emb) AS similarity '
-            f"FROM embeddings e, query_emb q "
-            f"WHERE e.id != ? "
-            f"ORDER BY similarity DESC",
-            [list(query_emb), exclude_id],
-        ).fetchall()
-    else:
-        rows = con.execute(
-            f"WITH query_emb AS (SELECT ?::FLOAT[] AS emb) "
-            f'SELECT e.id, list_cosine_similarity(e."{emb_col}", q.emb) AS similarity '
-            f"FROM embeddings e, query_emb q "
-            f"ORDER BY similarity DESC",
-            [list(query_emb)],
-        ).fetchall()
-    return [SimilarityResult(media_id=r[0], similarity=r[1]) for r in rows]
+    results = []
+    for sim, pos in zip(sims[0], idx[0]):
+        if pos < 0:
+            continue
+        media_id = int(ids[pos])
+        if media_id == exclude_id:
+            continue
+        results.append(SimilarityResult(media_id=media_id, similarity=float(sim)))
+        if len(results) >= limit:
+            break
+
+    return results
 
 
 @router.post("/api/views/{view_uuid}/similar")
@@ -83,21 +69,26 @@ def find_similar(view_uuid: str, request: SimilarityRequest) -> List[SimilarityR
         return []
 
     emb_col = config.embeddings
+
+    # Still need DuckDB embeddings table to look up the query vector by ID
     con = ensure_embeddings_table(
         view_uuid, backend, emb_col,
         embeddings_source=config.embeddings_source,
         media_col=config.media,
     )
 
-    # Fetch the query embedding from the database
     query_emb = con.execute(
         f'SELECT "{emb_col}" FROM embeddings WHERE id = ?',
         [request.media_id],
     ).fetchone()[0]
 
-    return _search_by_vector(
-        con, emb_col, query_emb, exclude_id=request.media_id
+    index, ids = get_or_load_index(
+        view_uuid, emb_col,
+        embeddings_source=config.embeddings_source,
+        media_col=config.media,
     )
+
+    return _search_by_vector(index, ids, list(query_emb), exclude_id=request.media_id)
 
 
 @router.post("/api/views/{view_uuid}/similar-vector")
@@ -113,10 +104,18 @@ def find_similar_vector(
         return []
 
     emb_col = config.embeddings
-    con = ensure_embeddings_table(
+
+    # Ensure embeddings are loaded (needed for FAISS index build)
+    ensure_embeddings_table(
         view_uuid, backend, emb_col,
         embeddings_source=config.embeddings_source,
         media_col=config.media,
     )
 
-    return _search_by_vector(con, emb_col, request.embedding)
+    index, ids = get_or_load_index(
+        view_uuid, emb_col,
+        embeddings_source=config.embeddings_source,
+        media_col=config.media,
+    )
+
+    return _search_by_vector(index, ids, request.embedding)

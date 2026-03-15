@@ -115,8 +115,8 @@ def get_media_query(
     """
     params: List = []
     if len(media_indices) == 0:
-        # Empty list: return a query that matches nothing
-        query = "SELECT * FROM database WHERE 1=0"
+        # Empty list: return all items (paginated by LIMIT/OFFSET)
+        query = "SELECT * FROM database"
     elif len(media_indices) == 1:
         query = "SELECT * FROM database WHERE id = ?"
         params.append(media_indices.media_ids[0])
@@ -125,6 +125,7 @@ def get_media_query(
         query = f"SELECT * FROM database WHERE id IN ({placeholders})"
         params.extend(media_indices.media_ids)
 
+    has_where = len(media_indices) > 0
     if media_indices.filters and len(media_indices.filters) > 0:
         assert con is not None and config is not None, (
             "If filters are provided, con and config must be provided"
@@ -133,7 +134,8 @@ def get_media_query(
             con, config=config, filters=media_indices.filters
         )
         if filter_query:
-            query += f" AND {filter_query}"
+            joiner = " AND " if has_where else " WHERE "
+            query += f"{joiner}{filter_query}"
             params.extend(filter_params)
 
     has_explicit_sort = (
@@ -156,7 +158,7 @@ def get_media_query(
         query += f" ORDER BY CASE id {positions} END"
         params.extend(media_indices.media_ids)
 
-    if len(media_indices.media_ids) > 50 and paginate:
+    if paginate and (len(media_indices.media_ids) > 50 or len(media_indices.media_ids) == 0):
         offset = media_indices.page * 50
         query += " LIMIT 50 OFFSET ?"
         params.append(offset)

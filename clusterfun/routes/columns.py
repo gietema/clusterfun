@@ -1,5 +1,7 @@
 """Column and filter routes for querying and downloading data."""
 
+import csv
+import io
 from typing import Any, Dict, List, Union
 
 from fastapi import APIRouter
@@ -11,6 +13,7 @@ from clusterfun.models.filter import Filter
 from clusterfun.models.media_indices import MediaIndices
 from clusterfun.storage.backends import get_backend
 from clusterfun.storage.factory import get_loader
+from clusterfun.storage.local.helpers import get_media_query
 from clusterfun.storage.query import get_connection
 
 router = APIRouter()
@@ -149,14 +152,39 @@ def column_stats(view_uuid: str, req: ColumnStatsRequest) -> Dict[str, Any]:
         }
 
 
+def _csv_generator(view_uuid: str, media_indices: MediaIndices):
+    """Stream CSV rows using DuckDB fetchmany to avoid loading all data into memory."""
+    backend = get_backend()
+    loader = get_loader(view_uuid)
+    config = loader.load_config()
+    con = get_connection(view_uuid, backend)
+    query, params = get_media_query(media_indices, paginate=False, config=config, con=con)
+    result = con.execute(query, params or [])
+    columns = [desc[0] for desc in result.description]
+
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(columns)
+    yield buf.getvalue()
+    buf.seek(0)
+    buf.truncate(0)
+
+    while True:
+        chunk = result.fetchmany(10_000)
+        if not chunk:
+            break
+        for row in chunk:
+            writer.writerow(row)
+        yield buf.getvalue()
+        buf.seek(0)
+        buf.truncate(0)
+
+
 @router.post("/api/views/{view_uuid}/download-grid")
 def download_grid(view_uuid: str, media_indices: MediaIndices) -> StreamingResponse:
     """Download the data selected in the grid"""
-    loader = get_loader(view_uuid)
-    df = loader.get_dataframe(media_indices=media_indices)
-    # TODO:: include labels
     return StreamingResponse(
-        iter([df.to_csv(index=False)]),
+        _csv_generator(view_uuid, media_indices),
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=data.csv"},
     )

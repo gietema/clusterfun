@@ -79,7 +79,7 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
       }
       if (ids.length > 0) {
         const allIndices = data.flatMap((d) => d.id ?? []);
-        setBaseAndSelection(allIndices, ids, `Label: ${labelFilter}`);
+        setBaseAndSelection(allIndices.length > 0 ? allIndices : [], ids, `Label: ${labelFilter}`);
         setShowPage("grid");
       }
     });
@@ -100,6 +100,9 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
       const indices = data.flatMap((d) => d.id ?? []);
       if (indices.length > 0) {
         initBase(indices);
+      } else {
+        // New count-only format from grid views — use empty array meaning "all items"
+        initBase([]);
       }
     }
   }, [showPage, mediaIndices.length, data, filters, uuid]); // eslint-disable-line react-hooks/exhaustive-deps

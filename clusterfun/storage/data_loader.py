@@ -88,6 +88,13 @@ class DataLoader:
         config.labels = list(
             {label for label_list in labels.values() for label in label_list}
         )
+        if config.total_count is None:
+            try:
+                con = get_connection(self.uuid, self.backend)
+                row = con.execute("SELECT COUNT(*) FROM database").fetchone()
+                config.total_count = row[0] if row else 0
+            except Exception:
+                config.total_count = 0
         return config
 
     def _build_info_dict(self, row: tuple) -> Dict[str, Any]:
@@ -122,10 +129,8 @@ class DataLoader:
 
     def get_rows(self, media_indices: MediaIndices) -> List[MediaItem]:
         """Get a paginated list of rows."""
-        if len(media_indices) == 0:
-            return []
         con, config = None, self.load_config()
-        if media_indices.filters:
+        if media_indices.filters or len(media_indices) == 0:
             con = get_connection(self.uuid, self.backend)
         query, params = get_media_query(media_indices, config=config, con=con)
         result = run_query(self.uuid, self.backend, query, params=params)
@@ -157,8 +162,6 @@ class DataLoader:
 
     def get_rows_metadata(self, media_indices: MediaIndices) -> List[Dict[str, Any]]:
         """Get metadata for a list of media items."""
-        if len(media_indices) == 0:
-            return []
         query, params = get_media_query(media_indices, paginate=False)
         result = run_query(self.uuid, self.backend, query, params=params)
         columns = self._load_base_config().columns

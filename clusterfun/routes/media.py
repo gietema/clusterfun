@@ -6,6 +6,10 @@ from functools import lru_cache
 from io import BytesIO
 from typing import Any, Dict, List, Optional
 
+import os
+import tempfile
+
+import duckdb
 import pyarrow as pa
 import pyarrow.parquet as pq
 from fastapi import APIRouter, HTTPException
@@ -191,20 +195,57 @@ def update_metadata(view_uuid: str, update: MetadataUpdate) -> Dict[str, str]:
     if update.column in ("id", config.columns[1]):
         raise HTTPException(status_code=400, detail=f"Cannot edit column '{update.column}'")
 
-    table = pq.read_table(backend.get_parquet_uri(view_uuid))
-    col_idx = table.column_names.index(update.column)
-    col_type = table.schema.field(col_idx).type
+    parquet_uri = backend.get_parquet_uri(view_uuid)
 
+    # Read schema to determine column type for coercion
+    schema = pq.read_schema(parquet_uri)
+    col_idx = schema.get_field_index(update.column)
+    col_type = schema.field(col_idx).type
     coerced = _coerce_value(update.value, col_type)
 
-    # Update via pandas for simplicity
-    df = table.to_pandas()
-    mask = df["id"].isin(update.media_ids)
-    df.loc[mask, update.column] = coerced
+    # Build column list: replace target column with CASE expression
+    col_name = update.column.replace('"', '""')
+    placeholders = ",".join("?" for _ in update.media_ids)
+    select_cols = []
+    for c in config.columns:
+        escaped = c.replace('"', '""')
+        if c == update.column:
+            select_cols.append(
+                f'CASE WHEN id IN ({placeholders}) THEN ? ELSE "{escaped}" END AS "{escaped}"'
+            )
+        else:
+            select_cols.append(f'"{escaped}"')
 
-    new_table = pa.Table.from_pandas(df, preserve_index=False)
-    new_table = new_table.replace_schema_metadata(None)
-    backend.save_parquet(view_uuid, new_table)
+    params: list = list(update.media_ids) + [coerced]
+
+    con = duckdb.connect()
+    try:
+        backend.configure_duckdb(con)
+        temp_dir = os.path.dirname(parquet_uri) if not parquet_uri.startswith(("s3://", "gs://")) else None
+        if temp_dir:
+            fd, temp_path = tempfile.mkstemp(suffix=".parquet", dir=temp_dir)
+            os.close(fd)
+        else:
+            fd, temp_path = tempfile.mkstemp(suffix=".parquet")
+            os.close(fd)
+
+        query = (
+            f"COPY (SELECT {', '.join(select_cols)} "
+            f"FROM read_parquet('{parquet_uri}')) "
+            f"TO '{temp_path}' (FORMAT PARQUET)"
+        )
+        con.execute(query, params)
+    finally:
+        con.close()
+
+    # Atomic rename (local only; for S3/GCS the backend.save_parquet path handles it)
+    if not parquet_uri.startswith(("s3://", "gs://")):
+        os.replace(temp_path, parquet_uri)
+    else:
+        # For remote backends, read the temp file and save through the backend
+        table = pq.read_table(temp_path)
+        backend.save_parquet(view_uuid, table)
+        os.unlink(temp_path)
 
     _clear_caches(view_uuid)
     return {"status": "ok"}
@@ -220,10 +261,35 @@ def add_column(view_uuid: str, req: AddColumnRequest) -> Dict[str, str]:
     if req.column in config.columns:
         raise HTTPException(status_code=400, detail=f"Column '{req.column}' already exists")
 
-    table = pq.read_table(backend.get_parquet_uri(view_uuid))
-    null_array = pa.array([None] * table.num_rows, type=pa.string())
-    table = table.append_column(req.column, null_array)
-    backend.save_parquet(view_uuid, table)
+    parquet_uri = backend.get_parquet_uri(view_uuid)
+    escaped = req.column.replace('"', '""')
+
+    con = duckdb.connect()
+    try:
+        backend.configure_duckdb(con)
+        temp_dir = os.path.dirname(parquet_uri) if not parquet_uri.startswith(("s3://", "gs://")) else None
+        if temp_dir:
+            fd, temp_path = tempfile.mkstemp(suffix=".parquet", dir=temp_dir)
+            os.close(fd)
+        else:
+            fd, temp_path = tempfile.mkstemp(suffix=".parquet")
+            os.close(fd)
+
+        query = (
+            f'COPY (SELECT *, NULL::VARCHAR AS "{escaped}" '
+            f"FROM read_parquet('{parquet_uri}')) "
+            f"TO '{temp_path}' (FORMAT PARQUET)"
+        )
+        con.execute(query)
+    finally:
+        con.close()
+
+    if not parquet_uri.startswith(("s3://", "gs://")):
+        os.replace(temp_path, parquet_uri)
+    else:
+        table = pq.read_table(temp_path)
+        backend.save_parquet(view_uuid, table)
+        os.unlink(temp_path)
 
     # Update config columns
     config_data = backend.load_json(view_uuid, "config.json")

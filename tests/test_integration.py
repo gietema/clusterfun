@@ -195,10 +195,11 @@ class TestGridBrowsing:
         assert "x_val" in item.information
 
     def test_empty_media_ids(self, local_backend):
+        """Empty media_ids means 'all items' (paginated)."""
         uuid, _ = _save_scatter(local_backend, n=10)
         loader = DataLoader(uuid, local_backend)
         items = loader.get_rows(MediaIndices(media_ids=[]))
-        assert items == []
+        assert len(items) == 10
 
     def test_get_rows_metadata(self, local_backend):
         uuid, _ = _save_scatter(local_backend, n=10)
@@ -582,13 +583,14 @@ class TestErrorHandling:
         assert len(all_ids) == 0
 
     def test_empty_media_ids_via_api(self, local_backend, client):
+        """Empty media_ids returns all items (paginated)."""
         uuid, _ = _save_scatter(local_backend, n=10)
         resp = client.post(
             f"/api/views/{uuid}/media",
             json={"media_ids": [], "page": 0},
         )
         assert resp.status_code == 200
-        assert resp.json() == []
+        assert len(resp.json()) == 10
 
 
 # ---------------------------------------------------------------------------
