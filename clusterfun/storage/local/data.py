@@ -123,9 +123,13 @@ def get_grid_data(
     con: Any,
     query_addition: Optional[str] = None,
     query_params: Optional[List] = None,
-) -> List[Dict[str, List[int]]]:
+) -> List[Dict[str, Any]]:
     """Get data for the grid. The grid is a special case as it does not have x and y values,
     so we can be more efficient here.
+
+    When filtering (query_addition is set), returns the matching IDs so the
+    frontend can navigate to those items. Without a filter, returns only the
+    count to avoid transferring large ID arrays.
 
     Parameters
     ----------
@@ -139,22 +143,29 @@ def get_grid_data(
 
     Returns
     -------
-    List[Dict[str, List[int]]]
+    List[Dict[str, Any]]
         Data for the grid
     """
-    query = "SELECT COUNT(*) FROM database"
     params: List = []
+
     if query_addition:
+        # Filtering: return matching IDs so insights/click-to-view works
+        query = "SELECT id FROM database"
         query += f" WHERE {query_addition}"
         if query_params:
             params.extend(query_params)
-    if params:
-        res = con.execute(query, params).fetchone()
-    else:
-        res = con.execute(query).fetchone()
+        if params:
+            res = con.execute(query, params).fetchall()
+        else:
+            res = con.execute(query).fetchall()
+        ids = [r[0] for r in res]
+        return [{"id": ids, "count": len(ids)}]
+
+    # No filter: just return count
+    query = "SELECT COUNT(*) FROM database"
+    res = con.execute(query).fetchone()
     count = res[0] if res else 0
-    data: List[Dict[str, Any]] = [{"count": count}]
-    return data
+    return [{"count": count}]
 
 
 def get_data_per_color(

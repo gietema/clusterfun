@@ -435,7 +435,7 @@ export default function InsightsPage() {
         ]);
         if (traces) {
           const ids = traces.flatMap((t) => t.id ?? []);
-          if (ids.length > 0) viewInGrid(ids, `${column}: ${low.toFixed(1)}–${high.toFixed(1)}`);
+          if (ids.length > 0) viewInGrid(ids, `${column}: ${low.toFixed(1)}\u2013${high.toFixed(1)}`);
         }
       } catch {
         toast.error("Failed to filter data");
