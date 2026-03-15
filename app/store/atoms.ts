@@ -43,6 +43,7 @@ export const activeLearningAtom = atom<{
 export const alMethodAtom = atom<string>("centroid");
 export const alClassFilterAtom = atom<string | null>(null);
 export const alSortByAtom = atom<"confidence" | "uncertainty">("confidence");
+export const alFocusLabelsAtom = atom<string[] | null>(null);
 
 export const mlpLayersAtom = atom<number>(1);
 
@@ -89,7 +90,7 @@ export const insightsWeirdestAtom = atom<{
 // Background task queue — persists across page switches
 export interface BackgroundTask {
   id: string;
-  type: "image_stats";
+  type: "image_stats" | "outliers" | "duplicates" | "centroid_distance";
   viewUuid: string;
   label: string;
   status: "running" | "done" | "error";
@@ -98,5 +99,7 @@ export interface BackgroundTask {
   total: number;
   startedAt: number;
   completedAt?: number;
+  taskId?: string;  // server-side task ID for insights tasks
+  phase?: string;   // current phase label (e.g. "Building index")
 }
 export const backgroundTasksAtom = atom<BackgroundTask[]>([]);

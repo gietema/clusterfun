@@ -8,8 +8,8 @@ import {
   configAtom, uuidAtom, currentMediaIndicesAtom,
   embeddingsCacheAtom,
 } from "@/app/store/atoms";
-import { fetchEmbeddings, fetchOutliers, fetchDuplicates } from "@/app/lib/api";
-import type { EmbeddingsResponse } from "@/app/lib/api";
+import { fetchEmbeddings, fetchOutliers, fetchDuplicates, fetchCentroidDistance } from "@/app/lib/api";
+import type { EmbeddingsResponse, InsightsTaskResponse } from "@/app/lib/api";
 import {
   computeOutlierScores, findDuplicates, computeDistanceFromCentroid,
 } from "@/app/lib/outlier-detection";
@@ -50,6 +50,9 @@ export default function InsightsPanel() {
     }
   };
 
+  const isTaskResponse = (data: any): data is InsightsTaskResponse =>
+    data && typeof data === "object" && "task_id" in data;
+
   const handleOutliers = async () => {
     setLoading("outliers");
     try {
@@ -63,8 +66,12 @@ export default function InsightsPanel() {
         const results = computeOutlierScores(emb, mediaIndices.slice(0, 5000), 15);
         ids = results.map((r) => r.mediaId);
       } else {
-        const results = await fetchOutliers(uuid, mediaIndices, 20, 200);
-        ids = results.map((r) => r.media_id);
+        const response = await fetchOutliers(uuid, mediaIndices, 20, 200);
+        if (isTaskResponse(response)) {
+          toast("Analysis running in background — check the Insights tab");
+          return;
+        }
+        ids = (response as import("@/app/types").OutlierResult[]).map((r) => r.media_id);
       }
       setOutlierResults({ ids, count: ids.length });
     } catch (e) {
@@ -88,8 +95,12 @@ export default function InsightsPanel() {
         const results = findDuplicates(emb, mediaIndices.slice(0, 5000), 0.95);
         groups = results.map((g) => g.mediaIds);
       } else {
-        const results = await fetchDuplicates(uuid, mediaIndices, 0.95, 100);
-        groups = results.map((g) => g.media_ids);
+        const response = await fetchDuplicates(uuid, mediaIndices, 0.95, 100);
+        if (isTaskResponse(response)) {
+          toast("Analysis running in background — check the Insights tab");
+          return;
+        }
+        groups = (response as import("@/app/types").DuplicateGroup[]).map((g) => g.media_ids);
       }
       setDuplicateResults({ groups, count: groups.length });
     } catch (e) {
@@ -113,8 +124,12 @@ export default function InsightsPanel() {
         const results = computeDistanceFromCentroid(emb, mediaIndices.slice(0, 5000));
         ids = results.map((r) => r.mediaId);
       } else {
-        const results = await fetchOutliers(uuid, mediaIndices, 20, 200);
-        ids = results.map((r) => r.media_id);
+        const response = await fetchCentroidDistance(uuid, mediaIndices, 200);
+        if (isTaskResponse(response)) {
+          toast("Analysis running in background — check the Insights tab");
+          return;
+        }
+        ids = (response as import("@/app/lib/api").CentroidDistanceResult[]).map((r) => r.media_id);
       }
       replaceTop(ids, "Weirdest");
     } catch (e) {

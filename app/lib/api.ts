@@ -186,10 +186,14 @@ export async function fitProbe(
   uuid: string,
   mediaIds: number[] = [],
   sortBy: ProbeSortBy = "confidence",
+  focusLabels?: string[],
+  limit = 5000,
 ): Promise<ProbeResponse> {
   const { data } = await axios.post(`${API_URL}/views/${uuid}/active-learning/probe`, {
     media_ids: mediaIds,
     sort_by: sortBy,
+    focus_labels: focusLabels ?? null,
+    limit,
   });
   return data;
 }
@@ -251,7 +255,25 @@ export async function fetchDynamicPlotData(
   return { config: data.config as PlotConfig, data: data.data };
 }
 
-// ── Insights (Outliers / Duplicates) ──
+// ── Insights (Outliers / Duplicates / Centroid Distance) ──
+
+export interface InsightsTaskResponse {
+  task_id: string;
+  status: string;
+}
+
+export interface InsightsStatusResponse {
+  status: "running" | "done" | "error";
+  progress: number;
+  phase: string;
+  results?: any;
+  error?: string;
+}
+
+export interface CentroidDistanceResult {
+  media_id: number;
+  distance: number;
+}
 
 export async function fetchOutliers(
   uuid: string,
@@ -259,7 +281,7 @@ export async function fetchOutliers(
   k = 20,
   threshold = 1.5,
   groupBy?: string,
-): Promise<OutlierResult[]> {
+): Promise<OutlierResult[] | InsightsTaskResponse> {
   const { data } = await axios.post(`${API_URL}/views/${uuid}/outliers`, {
     media_ids: mediaIds,
     k,
@@ -274,12 +296,34 @@ export async function fetchDuplicates(
   mediaIds: number[] = [],
   threshold = 0.95,
   limit = 100,
-): Promise<DuplicateGroup[]> {
+): Promise<DuplicateGroup[] | InsightsTaskResponse> {
   const { data } = await axios.post(`${API_URL}/views/${uuid}/duplicates`, {
     media_ids: mediaIds,
     threshold,
     limit,
   });
+  return data;
+}
+
+export async function fetchCentroidDistance(
+  uuid: string,
+  mediaIds: number[] = [],
+  limit = 200,
+): Promise<CentroidDistanceResult[] | InsightsTaskResponse> {
+  const { data } = await axios.post(`${API_URL}/views/${uuid}/centroid-distance`, {
+    media_ids: mediaIds,
+    limit,
+  });
+  return data;
+}
+
+export async function fetchInsightsStatus(
+  uuid: string,
+  taskId: string,
+): Promise<InsightsStatusResponse> {
+  const { data } = await axios.get<InsightsStatusResponse>(
+    `${API_URL}/views/${uuid}/insights/status/${taskId}`,
+  );
   return data;
 }
 

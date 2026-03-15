@@ -151,6 +151,17 @@ def run_query(
         return rows
 
 
+_invalidation_hooks: list = []
+
+
+def register_invalidation_hook(hook) -> None:
+    """Register a callback to run when cache is invalidated.
+
+    Used by FAISS index manager to clear its cache when embeddings change.
+    """
+    _invalidation_hooks.append(hook)
+
+
 def invalidate_cache(uuid: str = None) -> None:
     """Remove cached connections. If uuid is None, clear all for this thread
     and bump the global generation so other threads also refresh."""
@@ -169,3 +180,10 @@ def invalidate_cache(uuid: str = None) -> None:
         with _generation_lock:
             _generation += 1
         _local.generation = _generation
+
+    # Notify registered hooks (e.g. FAISS index cache)
+    for hook in _invalidation_hooks:
+        try:
+            hook(uuid)
+        except Exception:
+            pass

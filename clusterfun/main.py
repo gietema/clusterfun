@@ -4,7 +4,12 @@ from fastapi import Request
 from fastapi.responses import HTMLResponse
 
 from clusterfun.app import APP, FRONTEND_DIR
+from clusterfun.faiss_index import invalidate_index
 from clusterfun.routes import views, media, labels, columns, similarity, active_learning, embeddings, plot_builder, insights, projects, image_stats, annotations
+from clusterfun.storage.query import register_invalidation_hook
+
+# Clear FAISS index cache when DuckDB cache is invalidated
+register_invalidation_hook(invalidate_index)
 
 APP.include_router(views.router)
 APP.include_router(media.router)

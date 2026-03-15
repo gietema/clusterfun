@@ -7,12 +7,14 @@ import {
   showPageAtom, embeddingsCacheAtom,
   insightsColumnStatsAtom, insightsOutliersAtom,
   insightsDuplicatesAtom, insightsWeirdestAtom,
+  backgroundTasksAtom,
 } from "@/app/store/atoms";
 import {
   fetchColumns, fetchColumnStats, fetchMediaItems,
   fetchEmbeddings, fetchOutliers, fetchDuplicates,
-  fetchFilteredPlotData,
+  fetchCentroidDistance, fetchFilteredPlotData,
 } from "@/app/lib/api";
+import type { InsightsTaskResponse } from "@/app/lib/api";
 import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
 import type { ColumnInfo, ColumnStats, CategoricalStat, Media } from "@/app/types";
 import type { EmbeddingsResponse } from "@/app/lib/api";
@@ -316,6 +318,7 @@ export default function InsightsPage() {
   const [outlierState, setOutlierState] = useAtom(insightsOutliersAtom);
   const [duplicateState, setDuplicateState] = useAtom(insightsDuplicatesAtom);
   const [weirdState, setWeirdState] = useAtom(insightsWeirdestAtom);
+  const setBackgroundTasks = useSetAtom(backgroundTasksAtom);
 
   const [loadingStats, setLoadingStats] = useState<Set<string>>(new Set());
   const [expandedCol, setExpandedCol] = useState<string | null>(null);
@@ -438,6 +441,32 @@ export default function InsightsPage() {
 
   const USE_BROWSER = allMediaIds.length <= 5000 && embeddingsCache != null;
 
+  const isTaskResponse = (data: any): data is InsightsTaskResponse =>
+    data && typeof data === "object" && "task_id" in data;
+
+  const addBackgroundTask = (
+    taskId: string,
+    type: "outliers" | "duplicates" | "centroid_distance",
+    label: string,
+  ) => {
+    setBackgroundTasks((prev) => [
+      ...prev,
+      {
+        id: `insight-${taskId}`,
+        type,
+        viewUuid: uuid,
+        label,
+        status: "running" as const,
+        progress: 0,
+        done: 0,
+        total: 0,
+        startedAt: Date.now(),
+        taskId,
+        phase: "Starting",
+      },
+    ]);
+  };
+
   const ensureEmbeddings = async (): Promise<EmbeddingData | null> => {
     if (embeddingsCache) return embeddingsCache;
     try {
@@ -464,7 +493,13 @@ export default function InsightsPage() {
     try {
       if (outlierGroupBy) {
         // Grouped mode — always use server (it handles grouping internally)
-        const results = await fetchOutliers(uuid, allMediaIds, outlierK, outlierThreshold, outlierGroupBy);
+        const response = await fetchOutliers(uuid, allMediaIds, outlierK, outlierThreshold, outlierGroupBy);
+        if (isTaskResponse(response)) {
+          addBackgroundTask(response.task_id, "outliers", "Outlier detection");
+          toast("Outlier detection running in background");
+          return;
+        }
+        const results = response as import("@/app/types").OutlierResult[];
         // Group results by label
         const groupMap = new Map<string, number[]>();
         for (const r of results) {
@@ -492,7 +527,13 @@ export default function InsightsPage() {
             .filter((r) => r.score > outlierThreshold)
             .map((r) => r.mediaId);
         } else {
-          ids = (await fetchOutliers(uuid, allMediaIds, outlierK, outlierThreshold)).map((r) => r.media_id);
+          const response = await fetchOutliers(uuid, allMediaIds, outlierK, outlierThreshold);
+          if (isTaskResponse(response)) {
+            addBackgroundTask(response.task_id, "outliers", "Outlier detection");
+            toast("Outlier detection running in background");
+            return;
+          }
+          ids = (response as import("@/app/types").OutlierResult[]).map((r) => r.media_id);
         }
         const media = await loadPreviewMedia(ids);
         setOutlierState({ ids, media });
@@ -513,7 +554,13 @@ export default function InsightsPage() {
         if (!emb) { toast.error("Could not load embeddings"); return; }
         groups = findDuplicates(emb, allMediaIds.slice(0, 5000), dupThreshold).map((g) => g.mediaIds);
       } else {
-        groups = (await fetchDuplicates(uuid, allMediaIds, dupThreshold, 100)).map((g) => g.media_ids);
+        const response = await fetchDuplicates(uuid, allMediaIds, dupThreshold, 100);
+        if (isTaskResponse(response)) {
+          addBackgroundTask(response.task_id, "duplicates", "Duplicate detection");
+          toast("Duplicate detection running in background");
+          return;
+        }
+        groups = (response as import("@/app/types").DuplicateGroup[]).map((g) => g.media_ids);
       }
       const previewIds = groups.flatMap((g) => g.slice(0, 2)).slice(0, 12);
       const media = await loadPreviewMedia(previewIds);
@@ -534,7 +581,13 @@ export default function InsightsPage() {
         if (!emb) { toast.error("Could not load embeddings"); return; }
         ids = computeDistanceFromCentroid(emb, allMediaIds.slice(0, 5000)).map((r) => r.mediaId);
       } else {
-        ids = (await fetchOutliers(uuid, allMediaIds, 20, 1.5)).map((r) => r.media_id);
+        const response = await fetchCentroidDistance(uuid, allMediaIds, 200);
+        if (isTaskResponse(response)) {
+          addBackgroundTask(response.task_id, "centroid_distance", "Centroid distance");
+          toast("Centroid distance running in background");
+          return;
+        }
+        ids = (response as import("@/app/lib/api").CentroidDistanceResult[]).map((r) => r.media_id);
       }
       const media = await loadPreviewMedia(ids);
       setWeirdState({ ids, media });

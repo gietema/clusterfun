@@ -7,6 +7,7 @@ import {
   alMethodAtom,
   alClassFilterAtom,
   alSortByAtom,
+  alFocusLabelsAtom,
   mlpLayersAtom,
   configAtom,
   currentMediaIndicesAtom,
@@ -15,9 +16,12 @@ import {
   gridValuesAtom,
   uuidAtom,
 } from "@/app/store/atoms";
-import { fetchEmbeddings, fetchAllLabels } from "./api";
+import { fetchEmbeddings, fetchAllLabels, fitProbe } from "./api";
 import { getMethod } from "./active-learning";
 import type { EmbeddingData } from "./active-learning";
+
+/** Above this threshold, use server-side AL instead of downloading embeddings. */
+const SERVER_THRESHOLD = 50_000;
 
 /** Sort (and optionally filter) predictions for grid display. */
 function sortPredictions(
@@ -58,6 +62,7 @@ export function useActiveLearning() {
   const [embCache, setEmbCache] = useAtom(embeddingsCacheAtom);
   const [classFilter, setClassFilterAtom] = useAtom(alClassFilterAtom);
   const [sortBy, setSortByAtom] = useAtom(alSortByAtom);
+  const [focusLabels, setFocusLabels] = useAtom(alFocusLabelsAtom);
 
   const isAvailable = !!config?.embeddings;
   const isActive = alState !== null;
@@ -74,73 +79,99 @@ export function useActiveLearning() {
     [mediaIndices, setMediaIndicesStack, setGridValues],
   );
 
-  const refit = useCallback(
+  const refitServerSide = useCallback(
+    async () => {
+      if (!uuid) return;
+      const result = await fitProbe(
+        uuid,
+        mediaIndices,
+        sortBy,
+        focusLabels ?? undefined,
+      );
+
+      const validFilter =
+        classFilter && result.label_classes.includes(classFilter)
+          ? classFilter
+          : null;
+      if (validFilter !== classFilter) setClassFilterAtom(validFilter);
+
+      setAlState({
+        predictions: result.predictions,
+        labelClasses: result.label_classes,
+        nLabeled: result.n_labeled,
+      });
+
+      applyOrder(result.predictions, validFilter, sortBy);
+    },
+    [uuid, mediaIndices, sortBy, focusLabels, classFilter, setAlState, setClassFilterAtom, applyOrder],
+  );
+
+  const refitClientSide = useCallback(
     async () => {
       if (!uuid || !config?.embeddings) return;
 
-      try {
-        let embData: EmbeddingData;
-        if (embCache) {
-          embData = embCache;
-        } else {
-          const resp = await fetchEmbeddings(uuid);
-          const flat = new Float32Array(resp.media_ids.length * resp.dimension);
-          for (let i = 0; i < resp.embeddings.length; i++) {
-            flat.set(resp.embeddings[i], i * resp.dimension);
-          }
-          const idToIndex = new Map<number, number>();
-          for (let i = 0; i < resp.media_ids.length; i++) {
-            idToIndex.set(resp.media_ids[i], i);
-          }
-          embData = {
-            mediaIds: resp.media_ids,
-            embeddings: flat,
-            dimension: resp.dimension,
-            idToIndex,
-          };
-          setEmbCache(embData);
+      let embData: EmbeddingData;
+      if (embCache) {
+        embData = embCache;
+      } else {
+        const resp = await fetchEmbeddings(uuid);
+        const flat = new Float32Array(resp.media_ids.length * resp.dimension);
+        for (let i = 0; i < resp.embeddings.length; i++) {
+          flat.set(resp.embeddings[i], i * resp.dimension);
         }
-
-        const labelsRaw = await fetchAllLabels(uuid);
-        const labelsMap = new Map<number, string>();
-        for (const [idStr, labelList] of Object.entries(labelsRaw)) {
-          if (labelList.length > 0) {
-            labelsMap.set(parseInt(idStr), labelList[0]);
-          }
+        const idToIndex = new Map<number, number>();
+        for (let i = 0; i < resp.media_ids.length; i++) {
+          idToIndex.set(resp.media_ids[i], i);
         }
-
-        if (labelsMap.size === 0) return;
-
-        const method = getMethod(methodId);
-        const nClasses = new Set(labelsMap.values()).size;
-        const effectiveMethod =
-          nClasses < method.minClasses ? getMethod("centroid") : method;
-
-        const result = effectiveMethod.fit({
-          embeddings: embData,
-          labels: labelsMap,
-          scopeIds: mediaIndices,
-          sortBy,
-          options: { mlpLayers },
-        });
-
-        // Reset class filter if the selected class no longer exists
-        const validFilter =
-          classFilter && result.label_classes.includes(classFilter)
-            ? classFilter
-            : null;
-        if (validFilter !== classFilter) setClassFilterAtom(validFilter);
-
-        setAlState({
-          predictions: result.predictions,
-          labelClasses: result.label_classes,
-          nLabeled: result.n_labeled,
-        });
-
-        applyOrder(result.predictions, validFilter, sortBy);
-      } catch {
-        // Silently handle errors (e.g. not enough labels yet)
+        embData = {
+          mediaIds: resp.media_ids,
+          embeddings: flat,
+          dimension: resp.dimension,
+          idToIndex,
+        };
+        setEmbCache(embData);
       }
+
+      const labelsRaw = await fetchAllLabels(uuid);
+      const labelsMap = new Map<number, string>();
+      const focusSet = focusLabels ? new Set(focusLabels) : null;
+      for (const [idStr, labelList] of Object.entries(labelsRaw)) {
+        if (labelList.length > 0) {
+          const label = labelList[0];
+          if (!focusSet || focusSet.has(label)) {
+            labelsMap.set(parseInt(idStr), label);
+          }
+        }
+      }
+
+      if (labelsMap.size === 0) return;
+
+      const method = getMethod(methodId);
+      const nClasses = new Set(labelsMap.values()).size;
+      const effectiveMethod =
+        nClasses < method.minClasses ? getMethod("centroid") : method;
+
+      const result = effectiveMethod.fit({
+        embeddings: embData,
+        labels: labelsMap,
+        scopeIds: mediaIndices,
+        sortBy,
+        options: { mlpLayers },
+      });
+
+      const validFilter =
+        classFilter && result.label_classes.includes(classFilter)
+          ? classFilter
+          : null;
+      if (validFilter !== classFilter) setClassFilterAtom(validFilter);
+
+      setAlState({
+        predictions: result.predictions,
+        labelClasses: result.label_classes,
+        nLabeled: result.n_labeled,
+      });
+
+      applyOrder(result.predictions, validFilter, sortBy);
     },
     [
       uuid,
@@ -151,11 +182,30 @@ export function useActiveLearning() {
       embCache,
       sortBy,
       classFilter,
+      focusLabels,
       setAlState,
       setEmbCache,
       setClassFilterAtom,
       applyOrder,
     ],
+  );
+
+  const refit = useCallback(
+    async () => {
+      if (!uuid || !config?.embeddings) return;
+      try {
+        // Use server-side for large datasets (avoids downloading all embeddings)
+        const useServer = !embCache && mediaIndices.length > SERVER_THRESHOLD;
+        if (useServer) {
+          await refitServerSide();
+        } else {
+          await refitClientSide();
+        }
+      } catch {
+        // Silently handle errors (e.g. not enough labels yet)
+      }
+    },
+    [uuid, config?.embeddings, embCache, mediaIndices.length, refitServerSide, refitClientSide],
   );
 
   const setClassFilter = useCallback(
@@ -197,5 +247,7 @@ export function useActiveLearning() {
     setClassFilter,
     sortBy,
     setSortBy,
+    focusLabels,
+    setFocusLabels,
   };
 }

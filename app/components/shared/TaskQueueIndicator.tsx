@@ -5,10 +5,13 @@ import {
   backgroundTasksAtom,
   columnsAtom,
   insightsColumnStatsAtom,
+  insightsOutliersAtom,
+  insightsDuplicatesAtom,
+  insightsWeirdestAtom,
   uuidAtom,
 } from "@/app/store/atoms";
 import type { BackgroundTask } from "@/app/store/atoms";
-import { fetchImageStatsStatus, fetchColumns } from "@/app/lib/api";
+import { fetchImageStatsStatus, fetchColumns, fetchInsightsStatus, fetchMediaItems } from "@/app/lib/api";
 
 function MiniProgressRing({ progress }: { progress: number }) {
   const r = 6;
@@ -33,6 +36,9 @@ export default function TaskQueueIndicator() {
   const [tasks, setTasks] = useAtom(backgroundTasksAtom);
   const setColumns = useSetAtom(columnsAtom);
   const setColumnStats = useSetAtom(insightsColumnStatsAtom);
+  const setOutlierState = useSetAtom(insightsOutliersAtom);
+  const setDuplicateState = useSetAtom(insightsDuplicatesAtom);
+  const setWeirdState = useSetAtom(insightsWeirdestAtom);
   const [open, setOpen] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval>>();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -63,6 +69,60 @@ export default function TaskQueueIndicator() {
                     return { ...t, status: "done" as const, progress: 100, done: s.total, total: s.total, completedAt: Date.now() };
                   }
                   return { ...t, progress: s.progress, done: s.done, total: s.total };
+                }),
+              );
+            })
+            .catch(() => {});
+        } else if (task.taskId && (task.type === "outliers" || task.type === "duplicates" || task.type === "centroid_distance")) {
+          fetchInsightsStatus(task.viewUuid, task.taskId)
+            .then((s) => {
+              setTasks((prev) =>
+                prev.map((t) => {
+                  if (t.id !== task.id) return t;
+                  if (s.status === "done") {
+                    // Store results in the appropriate atom
+                    if (task.type === "outliers" && s.results) {
+                      const ids = s.results.map((r: any) => r.media_id);
+                      // Check if grouped
+                      const hasGroups = s.results.some((r: any) => r.group);
+                      if (hasGroups) {
+                        const groupMap = new Map<string, number[]>();
+                        for (const r of s.results) {
+                          const label = r.group ?? "(unknown)";
+                          const arr = groupMap.get(label) ?? [];
+                          arr.push(r.media_id);
+                          groupMap.set(label, arr);
+                        }
+                        const groups = Array.from(groupMap.entries()).map(([label, gids]) => ({
+                          label, ids: gids, media: [],
+                        }));
+                        groups.sort((a, b) => a.label.localeCompare(b.label));
+                        fetchMediaItems(task.viewUuid, ids.slice(0, 12), 0)
+                          .then((media) => setOutlierState({ ids, media, groups }))
+                          .catch(() => setOutlierState({ ids, media: [], groups }));
+                      } else {
+                        fetchMediaItems(task.viewUuid, ids.slice(0, 12), 0)
+                          .then((media) => setOutlierState({ ids, media }))
+                          .catch(() => setOutlierState({ ids, media: [] }));
+                      }
+                    } else if (task.type === "duplicates" && s.results) {
+                      const groups = s.results.map((g: any) => g.media_ids);
+                      const previewIds = groups.flatMap((g: number[]) => g.slice(0, 2)).slice(0, 12);
+                      fetchMediaItems(task.viewUuid, previewIds, 0)
+                        .then((media) => setDuplicateState({ groups, media }))
+                        .catch(() => setDuplicateState({ groups, media: [] }));
+                    } else if (task.type === "centroid_distance" && s.results) {
+                      const ids = s.results.map((r: any) => r.media_id);
+                      fetchMediaItems(task.viewUuid, ids.slice(0, 12), 0)
+                        .then((media) => setWeirdState({ ids, media }))
+                        .catch(() => setWeirdState({ ids, media: [] }));
+                    }
+                    return { ...t, status: "done" as const, progress: 100, completedAt: Date.now(), phase: "Done" };
+                  }
+                  if (s.status === "error") {
+                    return { ...t, status: "error" as const, phase: s.error ?? "Failed" };
+                  }
+                  return { ...t, progress: s.progress, phase: s.phase };
                 }),
               );
             })
@@ -158,19 +218,26 @@ export default function TaskQueueIndicator() {
                   )}
                 </div>
                 {task.status === "running" && (
-                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-gray-100">
-                    <div
-                      className="h-full rounded-full bg-gray-700 transition-all duration-300"
-                      style={{ width: `${task.progress}%` }}
-                    />
-                  </div>
+                  <>
+                    {task.phase && (
+                      <div className="mt-1 text-[10px] text-gray-400">{task.phase}</div>
+                    )}
+                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-gray-100">
+                      <div
+                        className="h-full rounded-full bg-gray-700 transition-all duration-300"
+                        style={{ width: `${task.progress}%` }}
+                      />
+                    </div>
+                  </>
                 )}
                 {task.status === "done" && (
                   <div className="mt-1 flex items-center gap-1 text-[10px] text-emerald-600">
                     <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="M20 6 9 17l-5-5" />
                     </svg>
-                    Complete — columns available in plots and filters
+                    {task.type === "image_stats"
+                      ? "Complete \u2014 columns available in plots and filters"
+                      : "Complete \u2014 results ready in Insights"}
                   </div>
                 )}
                 {task.status === "error" && (

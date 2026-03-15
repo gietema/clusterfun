@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
+import { useAtomValue } from "jotai";
 import {
   faBolt, faStop, faArrowsRotate,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { configAtom } from "@/app/store/atoms";
 import { useActiveLearning } from "@/app/lib/use-active-learning";
 import { AL_METHODS } from "@/app/lib/active-learning";
 import Section from "../shared/Section";
@@ -13,10 +15,12 @@ interface ActiveLearningSectionProps {
 }
 
 export default function ActiveLearningSection({ onReview }: ActiveLearningSectionProps) {
+  const config = useAtomValue(configAtom);
   const {
     isAvailable, isActive, alState, stop, refit,
     methodId, setMethodId, mlpLayers, setMlpLayers,
     classFilter, setClassFilter, sortBy, setSortBy,
+    focusLabels, setFocusLabels,
   } = useActiveLearning();
 
   const [loading, setLoading] = useState(false);
@@ -32,6 +36,52 @@ export default function ActiveLearningSection({ onReview }: ActiveLearningSectio
   return (
     <Section title="Active learning" defaultOpen>
       <div className="space-y-2">
+        {/* Focus labels — which labels to train on */}
+        {config && config.labels.length > 1 && (
+          <div>
+            <div className="mb-1 text-xs text-gray-500">Train on</div>
+            <div className="flex flex-wrap gap-1">
+              <button
+                onClick={() => setFocusLabels(null)}
+                className={`rounded-full px-2 py-0.5 text-xs transition-colors ${
+                  focusLabels === null
+                    ? "bg-gray-800 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                All
+              </button>
+              {config.labels.map((label) => {
+                const isOn = focusLabels === null || focusLabels.includes(label);
+                return (
+                  <button
+                    key={label}
+                    onClick={() => {
+                      if (focusLabels === null) {
+                        // Switching from "all" → deselect this one
+                        setFocusLabels(config.labels.filter((l) => l !== label));
+                      } else if (isOn) {
+                        const next = focusLabels.filter((l) => l !== label);
+                        setFocusLabels(next.length === 0 ? null : next);
+                      } else {
+                        const next = [...focusLabels, label];
+                        setFocusLabels(next.length === config.labels.length ? null : next);
+                      }
+                    }}
+                    className={`rounded-full px-2 py-0.5 text-xs transition-colors ${
+                      isOn
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Method selection */}
         <div>
           <div className="mb-1 text-xs text-gray-500">Method</div>

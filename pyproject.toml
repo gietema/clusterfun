@@ -17,6 +17,7 @@ dependencies = [
     "pillow",
     "urllib3<2",
     "umap-learn>=0.5.11",
+    "faiss-cpu>=1.7.4",
 ]
 
 [project.optional-dependencies]
