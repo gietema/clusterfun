@@ -14,11 +14,15 @@ from clusterfun.storage.query import invalidate_cache
 
 
 @pytest.fixture()
-def backend(tmp_path):
+def backend(tmp_path, monkeypatch):
+    monkeypatch.setenv("CLUSTERFUN_CACHE_DIR", str(tmp_path))
+    from clusterfun.storage.label_db import reset as reset_label_db
+    reset_label_db()
     backend = LocalBackend(cache_dir=tmp_path)
     backends_module._backend = backend
     yield backend
     invalidate_cache()
+    reset_label_db()
     backends_module._backend = None
 
 

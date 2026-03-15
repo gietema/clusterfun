@@ -10,6 +10,7 @@ from typing import Dict, List, Optional
 import pandas as pd
 
 from clusterfun.storage.backends import get_backend
+from clusterfun.storage.label_db import migrate_project_labels, read_project_labels
 
 
 def list_projects() -> List[str]:
@@ -31,9 +32,8 @@ def get_labels(project: str) -> Dict[str, List[str]]:
         A mapping from media path to list of label strings.
     """
     backend = get_backend()
-    if not backend.project_json_exists(project, "labels.json"):
-        return {}
-    return backend.load_project_json(project, "labels.json")
+    migrate_project_labels(project, backend)
+    return read_project_labels(project)
 
 
 def get_labels_df(project: str, label: Optional[str] = None) -> pd.DataFrame:

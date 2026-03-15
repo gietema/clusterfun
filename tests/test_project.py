@@ -101,9 +101,9 @@ class TestProjectLabelManager:
         lm = loader.label_manager
         lm.save_label("cat", [3])
 
-        # Check project-level storage is keyed by path
-        backend = get_backend()
-        project_labels = backend.load_project_json("path-key-test", "labels.json")
+        # Check project-level storage is keyed by path (via SQLite)
+        from clusterfun.storage.label_db import read_project_labels
+        project_labels = read_project_labels("path-key-test")
         paths = list(project_labels.keys())
         assert len(paths) == 1
         assert "img_3" in paths[0]  # original media path

@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from clusterfun.storage.backends import get_backend
+from clusterfun.storage.label_db import migrate_project_labels, read_project_labels
 
 router = APIRouter()
 
@@ -26,10 +27,9 @@ def list_projects() -> List[Dict[str, Any]]:
     results = []
     for name in names:
         manifest = backend.load_project_json(name, "project.json")
-        label_count = 0
-        if backend.project_json_exists(name, "labels.json"):
-            labels = backend.load_project_json(name, "labels.json")
-            label_count = len(labels)
+        migrate_project_labels(name, backend)
+        labels = read_project_labels(name)
+        label_count = len(labels)
         results.append({
             "name": manifest["name"],
             "created_at": manifest.get("created_at", ""),
@@ -50,15 +50,13 @@ def get_project(name: str) -> Dict[str, Any]:
 
     manifest = backend.load_project_json(name, "project.json")
 
-    label_count = 0
-    label_names: List[str] = []
-    if backend.project_json_exists(name, "labels.json"):
-        labels = backend.load_project_json(name, "labels.json")
-        label_count = len(labels)
-        all_labels = set()
-        for label_list in labels.values():
-            all_labels.update(label_list)
-        label_names = sorted(all_labels)
+    migrate_project_labels(name, backend)
+    labels = read_project_labels(name)
+    label_count = len(labels)
+    all_labels = set()
+    for label_list in labels.values():
+        all_labels.update(label_list)
+    label_names = sorted(all_labels)
 
     views = []
     for view in manifest.get("views", []):
