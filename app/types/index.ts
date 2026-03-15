@@ -207,6 +207,7 @@ export interface OutlierResult {
   media_id: number;
   score: number;
   group?: string | null;
+  group_total?: number | null;
 }
 
 export interface DuplicateGroup {

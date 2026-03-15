@@ -87,14 +87,16 @@ export default function TaskQueueIndicator() {
                       const hasGroups = s.results.some((r: any) => r.group);
                       if (hasGroups) {
                         const groupMap = new Map<string, number[]>();
+                        const groupTotals = new Map<string, number>();
                         for (const r of s.results) {
                           const label = r.group ?? "(unknown)";
                           const arr = groupMap.get(label) ?? [];
                           arr.push(r.media_id);
                           groupMap.set(label, arr);
+                          if (r.group_total && !groupTotals.has(label)) groupTotals.set(label, r.group_total);
                         }
                         const groups = Array.from(groupMap.entries()).map(([label, gids]) => ({
-                          label, ids: gids, media: [],
+                          label, ids: gids, media: [], total: groupTotals.get(label) ?? gids.length,
                         }));
                         groups.sort((a, b) => a.label.localeCompare(b.label));
                         fetchMediaItems(task.viewUuid, ids.slice(0, 12), 0)

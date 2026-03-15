@@ -43,6 +43,7 @@ class OutlierResult(BaseModel):
     media_id: int
     score: float
     group: str | None = None
+    group_total: int | None = None  # total items in the group (when group_by is used)
 
 
 class DuplicateRequest(BaseModel):
@@ -303,7 +304,9 @@ def _run_outlier_detection(
     )
 
     if request.group_by:
-        # Grouped LOF: post-filter k-NN to same-group neighbors
+        # Grouped LOF: run per-group k-NN search for accurate within-group LOF.
+        # Post-filtering global k-NN fails when groups are small relative to
+        # the dataset because most global neighbors belong to other groups.
         group_labels = _load_group_labels(view_uuid, query_ids, request.group_by)
         id_to_pos = {int(mid): i for i, mid in enumerate(query_ids)}
 
@@ -312,41 +315,42 @@ def _run_outlier_detection(
             group_positions = [id_to_pos[mid] for mid in group_media_ids if mid in id_to_pos]
             if len(group_positions) < 2:
                 continue
-            group_pos_set = set(group_positions)
 
-            # Filter k-NN for this group: keep only same-group neighbors
             g_positions = np.array(group_positions)
-            g_sims = knn_sims[g_positions]
-            g_idx = knn_idx[g_positions]
-
-            # Remap to local indices within group
-            pos_to_local = {p: i for i, p in enumerate(group_positions)}
+            g_vecs = query_vectors[g_positions]
             g_k = min(k, len(group_positions) - 1)
-            local_sims = np.zeros((len(group_positions), g_k), dtype=np.float32)
-            local_idx = np.zeros((len(group_positions), g_k), dtype=np.int64)
 
-            for li, gp in enumerate(group_positions):
-                # Filter neighbors to same group
-                row_sims = g_sims[li]
-                row_idx = g_idx[li]
-                same_group_mask = np.array([int(idx) in group_pos_set for idx in row_idx])
-                filtered_sims = row_sims[same_group_mask][:g_k]
-                filtered_idx_raw = row_idx[same_group_mask][:g_k]
-                # Map to local indices
-                filtered_local = np.array([pos_to_local.get(int(idx), 0) for idx in filtered_idx_raw])
-                actual = len(filtered_sims)
-                if actual > 0:
-                    local_sims[li, :actual] = filtered_sims[:actual]
-                    local_idx[li, :actual] = filtered_local[:actual]
+            # Build a small per-group FAISS index for accurate within-group k-NN
+            import faiss
+            dim = g_vecs.shape[1]
+            g_index = faiss.IndexFlatIP(dim)
+            g_index.add(g_vecs)
+
+            g_sims, g_idx = g_index.search(g_vecs, g_k + 1)
+            # Strip self (position 0 in results)
+            local_sims = np.empty((len(group_positions), g_k), dtype=np.float32)
+            local_idx = np.empty((len(group_positions), g_k), dtype=np.int64)
+            for li in range(len(group_positions)):
+                mask = g_idx[li] != li
+                fsims = g_sims[li][mask][:g_k]
+                fidx = g_idx[li][mask][:g_k]
+                actual = len(fsims)
+                if actual < g_k:
+                    fsims = np.pad(fsims, (0, g_k - actual), constant_values=0)
+                    fidx = np.pad(fidx, (0, g_k - actual), constant_values=0)
+                local_sims[li] = fsims
+                local_idx[li] = fidx
 
             lof_scores = _compute_lof_from_knn(local_sims, local_idx, g_k)
 
+            group_size = len(group_positions)
             for li, gp in enumerate(group_positions):
                 if lof_scores[li] > request.threshold:
                     results.append({
                         "media_id": int(query_ids[gp]),
                         "score": float(lof_scores[li]),
                         "group": label,
+                        "group_total": group_size,
                     })
 
         results.sort(key=lambda r: r["score"], reverse=True)

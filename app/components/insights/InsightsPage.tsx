@@ -509,10 +509,16 @@ export default function InsightsPage() {
           groupMap.set(label, arr);
         }
         const allIds = results.map((r) => r.media_id);
-        const groups: { label: string; ids: number[]; media: Media[] }[] = [];
+        // Extract group totals from results
+        const groupTotals = new Map<string, number>();
+        for (const r of results) {
+          const label = r.group ?? "(unknown)";
+          if (r.group_total && !groupTotals.has(label)) groupTotals.set(label, r.group_total);
+        }
+        const groups: { label: string; ids: number[]; media: Media[]; total: number }[] = [];
         for (const entry of Array.from(groupMap.entries())) {
           const gMedia = await loadPreviewMedia(entry[1]);
-          groups.push({ label: entry[0], ids: entry[1], media: gMedia });
+          groups.push({ label: entry[0], ids: entry[1], media: gMedia, total: groupTotals.get(entry[0]) ?? entry[1].length });
         }
         groups.sort((a, b) => a.label.localeCompare(b.label));
         const media = await loadPreviewMedia(allIds);
@@ -794,12 +800,42 @@ export default function InsightsPage() {
                     </div>
                     {outlierState.groups.map((g) => (
                       <div key={g.label} className="rounded border border-gray-100 p-2">
-                        <ThumbnailStrip
-                          mediaItems={g.media}
-                          loading={false}
-                          label={`${g.label} — ${g.ids.length} outliers`}
-                          onViewAll={() => viewInGrid(g.ids, `Outliers: ${g.label}`)}
-                        />
+                        <div className="mb-1.5 flex items-center justify-between">
+                          <span className="text-xs font-medium text-gray-700">
+                            {g.label} — {g.ids.length} outlier{g.ids.length !== 1 ? "s" : ""} of {g.total} items
+                          </span>
+                          <div className="flex gap-1.5">
+                            {outlierGroupBy && (
+                              <button
+                                onClick={() => viewByColumnValue(outlierGroupBy, g.label)}
+                                className="rounded border border-gray-200 px-2 py-0.5 text-[11px] text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700"
+                              >
+                                View entire group
+                              </button>
+                            )}
+                            <button
+                              onClick={() => viewInGrid(g.ids, `Outliers: ${g.label}`)}
+                              className="rounded-md bg-gray-800 px-2 py-0.5 text-[11px] font-medium text-white transition-colors hover:bg-gray-700"
+                            >
+                              View outliers
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex gap-1.5 overflow-x-auto pb-1">
+                          {g.media.slice(0, 12).map((m) => (
+                            <img
+                              key={m.index}
+                              src={m.src}
+                              alt={`Item ${m.index}`}
+                              className="h-16 w-16 shrink-0 rounded object-cover"
+                            />
+                          ))}
+                          {g.ids.length > 12 && (
+                            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded bg-gray-100 text-xs text-gray-500">
+                              +{g.ids.length - 12}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

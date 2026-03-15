@@ -74,7 +74,7 @@ export const insightsColumnStatsAtom = atom<Record<string, import("@/app/types")
 export const insightsOutliersAtom = atom<{
   ids: number[];
   media: import("@/app/types").Media[];
-  groups?: { label: string; ids: number[]; media: import("@/app/types").Media[] }[];
+  groups?: { label: string; ids: number[]; media: import("@/app/types").Media[]; total: number }[];
 }>({ ids: [], media: [] });
 
 export const insightsDuplicatesAtom = atom<{
