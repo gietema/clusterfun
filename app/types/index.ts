@@ -174,6 +174,9 @@ export interface PlotPanelConfig {
   color?: string;
   colorIsCategorical?: boolean;
   bins?: number;
+  sampleSize?: number;
+  method?: string;
+  nNeighbors?: number;
 }
 
 // ── Outlier / Duplicate Detection ──

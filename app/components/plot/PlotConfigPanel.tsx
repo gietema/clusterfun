@@ -1,6 +1,6 @@
 "use client";
 import { useAtomValue } from "jotai";
-import { columnsAtom } from "@/app/store/atoms";
+import { columnsAtom, configAtom } from "@/app/store/atoms";
 import type { PlotPanelConfig } from "@/app/types";
 
 interface PlotConfigPanelProps {
@@ -9,7 +9,7 @@ interface PlotConfigPanelProps {
   onRemove?: () => void;
 }
 
-const PLOT_TYPES = [
+const BASE_PLOT_TYPES = [
   { value: "scatter", label: "Scatter" },
   { value: "histogram", label: "Histogram" },
   { value: "bar_chart", label: "Bar chart" },
@@ -22,16 +22,23 @@ function isNumericDtype(dtype: string): boolean {
 
 export default function PlotConfigPanel({ panel, onChange, onRemove }: PlotConfigPanelProps) {
   const columns = useAtomValue(columnsAtom);
+  const config = useAtomValue(configAtom);
+  const hasEmbeddings = !!config?.embeddings;
+
+  const PLOT_TYPES = hasEmbeddings
+    ? [...BASE_PLOT_TYPES, { value: "embedding_map", label: "Embedding map" }]
+    : BASE_PLOT_TYPES;
 
   const MAX_COLOR_UNIQUE = 50;
   const numericCols = columns.filter((c) => isNumericDtype(c.dtype));
   const allCols = columns.filter((c) => c.name !== "id" && !c.name.startsWith("_"));
   const colorCols = allCols.filter((c) => c.n_unique <= MAX_COLOR_UNIQUE);
 
+  const isEmbeddingMap = panel.type === "embedding_map";
   const needsY = panel.type === "scatter";
   const xLabel = panel.type === "histogram" ? "Column" : panel.type === "violin" ? "Group by" : "X";
   const yLabel = panel.type === "violin" ? "Value" : "Y";
-  const showX = panel.type !== "violin" || allCols.length > 0;
+  const showX = !isEmbeddingMap && (panel.type !== "violin" || allCols.length > 0);
 
   return (
     <div className="flex flex-wrap items-center gap-1.5 text-xs">
@@ -91,6 +98,52 @@ export default function PlotConfigPanel({ panel, onChange, onRemove }: PlotConfi
             }}
             className="w-16 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
           />
+        </>
+      )}
+
+      {isEmbeddingMap && (
+        <>
+          <span className="text-gray-400">Method</span>
+          <select
+            value={panel.method ?? "umap"}
+            onChange={(e) => onChange({ ...panel, method: e.target.value })}
+            className="rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
+          >
+            <option value="umap">UMAP</option>
+            <option value="tsne">t-SNE</option>
+            <option value="pca">PCA</option>
+          </select>
+
+          <span className="text-gray-400">Sample</span>
+          <input
+            type="number"
+            min={100}
+            max={100000}
+            step={1000}
+            value={panel.sampleSize ?? 10000}
+            onChange={(e) => {
+              const v = parseInt(e.target.value);
+              if (!isNaN(v) && v >= 100) onChange({ ...panel, sampleSize: v });
+            }}
+            className="w-20 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
+          />
+
+          {(panel.method ?? "umap") === "umap" && (
+            <>
+              <span className="text-gray-400">Neighbors</span>
+              <input
+                type="number"
+                min={2}
+                max={200}
+                value={panel.nNeighbors ?? 15}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value);
+                  if (!isNaN(v) && v >= 2) onChange({ ...panel, nNeighbors: v });
+                }}
+                className="w-16 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
+              />
+            </>
+          )}
         </>
       )}
 

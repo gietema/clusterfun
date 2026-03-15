@@ -14,13 +14,15 @@ import pandas as pd
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+from fastapi import HTTPException
+
 from clusterfun.config import Config
 from clusterfun.plot_types.histogram import get_x_and_y
 from clusterfun.plot_types.violin import get_violin_x_single
 from clusterfun.storage.backends import get_backend
 from clusterfun.storage.factory import get_loader
 from clusterfun.storage.local.data import get_data_dict
-from clusterfun.storage.query import get_connection
+from clusterfun.storage.query import ensure_embeddings_table, get_connection
 
 router = APIRouter()
 
@@ -28,12 +30,15 @@ router = APIRouter()
 class PlotBuilderRequest(BaseModel):
     """Request body for dynamic plot data generation."""
 
-    type: str  # "scatter", "histogram", "bar_chart", "violin"
+    type: str  # "scatter", "histogram", "bar_chart", "violin", "embedding_map"
     x: Optional[str] = None
     y: Optional[str] = None
     color: Optional[str] = None
     color_is_categorical: bool = True
     bins: int = 20  # for histogram
+    sample_size: int = 10000  # for embedding_map
+    method: str = "umap"  # "umap", "tsne", "pca"
+    n_neighbors: int = 15  # for UMAP
 
 
 def _safe_col(name: str) -> str:
@@ -227,6 +232,114 @@ def _build_bar_chart_data(
     return data, colors_out, x_names
 
 
+# Cache for 2D projections so color changes are instant.
+_embedding_projection_cache: Dict[str, pd.DataFrame] = {}
+
+
+def _build_embedding_map_data(
+    con: duckdb.DuckDBPyConnection,
+    cfg: Config,
+    view_uuid: str,
+    sample_size: int = 10000,
+    method: str = "umap",
+    n_neighbors: int = 15,
+) -> tuple:
+    """Generate 2D embedding map using UMAP, t-SNE, or PCA."""
+    backend = get_backend()
+    emb_col = cfg.embeddings
+
+    emb_con = ensure_embeddings_table(
+        view_uuid,
+        backend,
+        emb_col,
+        embeddings_source=cfg.embeddings_source,
+        media_col=cfg.media,
+    )
+
+    rows = emb_con.execute(
+        f'SELECT id, "{emb_col}" FROM embeddings'
+    ).fetchall()
+
+    if not rows:
+        return [], None
+
+    all_ids = np.array([r[0] for r in rows])
+    all_embeddings = np.array([list(r[1]) for r in rows], dtype=np.float32)
+
+    n = len(all_ids)
+    actual_sample = min(n, sample_size)
+    if n > sample_size:
+        rng = np.random.RandomState(42)
+        idx = np.sort(rng.choice(n, sample_size, replace=False))
+        sample_ids = all_ids[idx]
+        sample_emb = all_embeddings[idx]
+    else:
+        sample_ids = all_ids
+        sample_emb = all_embeddings
+
+    cache_key = f"{view_uuid}:{method}:{actual_sample}:{n_neighbors}"
+    if cache_key in _embedding_projection_cache:
+        proj_df = _embedding_projection_cache[cache_key]
+    else:
+        if method == "umap":
+            import umap as umap_lib
+
+            reducer = umap_lib.UMAP(
+                n_neighbors=min(n_neighbors, actual_sample - 1),
+                n_components=2,
+                metric="cosine",
+                random_state=42,
+            )
+            coords = reducer.fit_transform(sample_emb)
+        elif method == "tsne":
+            from sklearn.manifold import TSNE
+
+            reducer = TSNE(
+                n_components=2,
+                perplexity=min(30, actual_sample - 1),
+                random_state=42,
+            )
+            coords = reducer.fit_transform(sample_emb)
+        elif method == "pca":
+            from sklearn.decomposition import PCA
+
+            reducer = PCA(n_components=2, random_state=42)
+            coords = reducer.fit_transform(sample_emb)
+        else:
+            raise ValueError(f"Unknown method: {method}")
+
+        proj_df = pd.DataFrame(
+            {
+                "id": sample_ids,
+                "_x": coords[:, 0].astype(float),
+                "_y": coords[:, 1].astype(float),
+            }
+        )
+        _embedding_projection_cache[cache_key] = proj_df
+
+    # Join with color column if needed
+    if cfg.color:
+        col_safe = _safe_col(cfg.color)
+        color_rows = con.execute(
+            f"SELECT id, {col_safe} FROM database"
+        ).fetchall()
+        color_df = pd.DataFrame(color_rows, columns=["id", cfg.color])
+        df = proj_df.merge(color_df, on="id", how="left")
+    else:
+        df = proj_df.copy()
+
+    tmp_con = duckdb.connect()
+    try:
+        tmp_con.register("df_view", df)
+        tmp_con.execute("CREATE VIEW database AS SELECT * FROM df_view")
+        map_cfg = dataclasses.replace(cfg, x="_x", y="_y", type="scatter")
+        data, colors_out = get_data_dict(tmp_con, map_cfg)
+    finally:
+        tmp_con.close()
+
+    return data, colors_out
+
+
 @router.post("/api/views/{view_uuid}/plot-data")
 def build_plot_data(
     view_uuid: str, req: PlotBuilderRequest
@@ -287,12 +400,27 @@ def build_plot_data(
             )
         else:
             data, colors, x_names = _build_bar_chart_data(con, cfg)
+    elif cfg.type == "embedding_map":
+        if not base_config.embeddings:
+            raise HTTPException(
+                status_code=400, detail="No embeddings configured for this view"
+            )
+        data, colors = _build_embedding_map_data(
+            con, cfg, view_uuid, req.sample_size, req.method, req.n_neighbors
+        )
     else:
         # Unknown type: fall back to scatter
         data, colors = _build_scatter_data(con, cfg)
 
     # Update config with computed values
-    cfg = dataclasses.replace(cfg, colors=colors, x_names=x_names)
+    if req.type == "embedding_map":
+        method_label = req.method.upper() if req.method != "tsne" else "t-SNE"
+        cfg = dataclasses.replace(
+            cfg, colors=colors, x_names=x_names,
+            x=f"{method_label} 1", y=f"{method_label} 2",
+        )
+    else:
+        cfg = dataclasses.replace(cfg, colors=colors, x_names=x_names)
 
     return {
         "config": dataclasses.asdict(cfg),

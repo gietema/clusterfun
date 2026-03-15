@@ -87,8 +87,8 @@ export default function PlotPage({ onMediaSelect }: PlotPageProps) {
       ) {
         return;
       }
-      // Need at least x or y to make a meaningful plot
-      if (!panel.x && !panel.y) return;
+      // Need at least x or y to make a meaningful plot (except embedding_map)
+      if (!panel.x && !panel.y && panel.type !== "embedding_map") return;
 
       setPanelLoading((prev) => ({ ...prev, [panel.id]: true }));
       fetchDynamicPlotData(uuid, {
@@ -97,6 +97,9 @@ export default function PlotPage({ onMediaSelect }: PlotPageProps) {
         y: panel.y,
         color: panel.color,
         bins: panel.type === "histogram" ? (panel.bins ?? 20) : undefined,
+        sample_size: panel.type === "embedding_map" ? (panel.sampleSize ?? 10000) : undefined,
+        method: panel.type === "embedding_map" ? (panel.method ?? "umap") : undefined,
+        n_neighbors: panel.type === "embedding_map" ? (panel.nNeighbors ?? 15) : undefined,
       })
         .then(({ data: newData, config: newConfig }) => {
           setPanelData((prev) => ({ ...prev, [panel.id]: newData }));

@@ -215,6 +215,9 @@ export interface PlotBuilderRequest {
   color?: string;
   color_is_categorical?: boolean;
   bins?: number;
+  sample_size?: number;
+  method?: string;
+  n_neighbors?: number;
 }
 
 export async function fetchDynamicPlotData(
