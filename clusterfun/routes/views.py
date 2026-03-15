@@ -1,32 +1,16 @@
 """View and plot data routes."""
 
 import dataclasses
-import os
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from clusterfun.app import APP
 from clusterfun.plot import Plot
 from clusterfun.models.media_indices import MediaIndices
 from clusterfun.storage.factory import get_loader
 
 router = APIRouter()
-
-# Track whether /media has been mounted to avoid duplicate mounts.
-_media_mounted = False
-
-
-def _ensure_media_mount(common_media_path: Optional[str]) -> None:
-    """Mount /media static files route if not already mounted."""
-    global _media_mounted
-    if _media_mounted or not common_media_path:
-        return
-    if os.path.isdir(common_media_path):
-        APP.mount("/media", StaticFiles(directory=common_media_path), name="media")
-        _media_mounted = True
 
 
 class SaveViewRequest(BaseModel):
@@ -37,9 +21,7 @@ class SaveViewRequest(BaseModel):
 @router.get("/api/views/{view_uuid}")
 def read_view(view_uuid: str) -> Dict[str, Any]:
     """Retrieve plot data for its UUID."""
-    plot = Plot.load(view_uuid)
-    _ensure_media_mount(plot.cfg.common_media_path)
-    return plot.as_json()
+    return Plot.load(view_uuid).as_json()
 
 
 @router.get("/api/uuid")
@@ -51,9 +33,7 @@ def get_recent_uuid() -> str:
 @router.get("/api/views/{view_uuid}/config")
 def read_config(view_uuid: str) -> Dict[str, Any]:
     """Retrieve the configuration for a specific plot by its UUID."""
-    config = get_loader(view_uuid).load_config()
-    _ensure_media_mount(config.common_media_path)
-    return dataclasses.asdict(config)
+    return dataclasses.asdict(get_loader(view_uuid).load_config())
 
 
 @router.post("/api/views/{view_uuid}/save-view")
