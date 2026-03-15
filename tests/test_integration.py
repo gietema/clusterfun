@@ -224,6 +224,71 @@ class TestGridBrowsing:
         assert x_vals == sorted(x_vals)
 
 
+class TestSubsample:
+    """Test that grid sampling (via subsample of IDs) works correctly."""
+
+    def test_subsample_returns_subset(self, local_backend, client):
+        """Fetching a random subset of IDs returns only those items."""
+        uuid, _ = _save_scatter(local_backend, n=200)
+        # Simulate a 5% subsample: pick 10 random IDs
+        import random
+        random.seed(42)
+        subset = sorted(random.sample(range(200), 10))
+
+        resp = client.post(
+            f"/api/views/{uuid}/media",
+            json={"media_ids": subset, "page": 0},
+        )
+        assert resp.status_code == 200
+        items = resp.json()
+        assert len(items) == 10
+        returned_ids = {item["index"] for item in items}
+        assert returned_ids == set(subset)
+
+    def test_subsample_preserves_order(self, local_backend, client):
+        """Subsampled IDs should be returned in the requested order."""
+        uuid, _ = _save_scatter(local_backend, n=100)
+        subset = [50, 10, 90, 30, 70]
+
+        resp = client.post(
+            f"/api/views/{uuid}/media",
+            json={"media_ids": subset, "page": 0},
+        )
+        assert resp.status_code == 200
+        items = resp.json()
+        returned_ids = [item["index"] for item in items]
+        assert returned_ids == subset
+
+    def test_subsample_with_pagination(self, local_backend, client):
+        """Large subsamples should be paginated correctly."""
+        uuid, _ = _save_scatter(local_backend, n=200)
+        subset = list(range(0, 200, 2))  # 100 even IDs
+
+        page0 = client.post(
+            f"/api/views/{uuid}/media",
+            json={"media_ids": subset, "page": 0},
+        ).json()
+        page1 = client.post(
+            f"/api/views/{uuid}/media",
+            json={"media_ids": subset, "page": 1},
+        ).json()
+
+        assert len(page0) == 50
+        assert len(page1) == 50
+        page0_ids = {item["index"] for item in page0}
+        page1_ids = {item["index"] for item in page1}
+        assert page0_ids.isdisjoint(page1_ids)
+        assert page0_ids | page1_ids == set(subset)
+
+    def test_grid_total_count_in_config(self, local_backend, client):
+        """Grid views should include total_count in config."""
+        uuid, _ = _save_scatter(local_backend, n=75)
+        resp = client.get(f"/api/views/{uuid}/config")
+        assert resp.status_code == 200
+        config = resp.json()
+        assert config["total_count"] == 75
+
+
 # ---------------------------------------------------------------------------
 # Filtering
 # ---------------------------------------------------------------------------

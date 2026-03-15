@@ -1,6 +1,6 @@
 "use client";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { faSquare } from "@fortawesome/free-regular-svg-icons";
 import { faBarChart, faTableCells, faFloppyDisk, faCrosshairs } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -9,14 +9,16 @@ import {
   currentMediaIndicesAtom, mediaItemsAtom, uuidAtom,
   mediaIndicesStackAtom,
   filtersAtom, similarityResultsAtom, showPageAtom,
+  selectedMediaAtom,
 } from "@/app/store/atoms";
-import { fetchMediaItems, saveLabel, deleteLabel, saveView } from "@/app/lib/api";
+import { fetchMediaItems, saveLabel, deleteLabel, saveView, fetchSimilar } from "@/app/lib/api";
 import type { Media } from "@/app/types";
 import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
 import BreadcrumbTrail from "../shared/BreadcrumbTrail";
 import ResizableLayout from "../shared/ResizableLayout";
 import FilterBar from "../filters/FilterBar";
 import MediaGridItem, { EXCLUDE_LABEL } from "./MediaGridItem";
+import SelectionActionBar from "./SelectionActionBar";
 import Pagination from "./Pagination";
 import SortDropdown from "./SortDropdown";
 import ShowValueDropdown from "./ShowValueDropdown";
@@ -45,9 +47,11 @@ export default function GridView({ onBack }: GridViewProps) {
   const setShowPage = useSetAtom(showPageAtom);
   const setFilters = useSetAtom(filtersAtom);
   const setSimilarityResults = useSetAtom(similarityResultsAtom);
-  const { reset: resetBreadcrumbs } = useBreadcrumbNav();
+  const { reset: resetBreadcrumbs, replaceTop } = useBreadcrumbNav();
+  const [selectedMedia, setSelectedMedia] = useAtom(selectedMediaAtom);
   const [showStats, setShowStats] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
+  const lastClickedRef = useRef<number | null>(null);
 
   const [showSaveForm, setShowSaveForm] = useState(false);
   const [saveTitle, setSaveTitle] = useState("");
@@ -61,11 +65,19 @@ export default function GridView({ onBack }: GridViewProps) {
 
   // Subsample media indices client-side with a stable shuffle
   const effectiveIndices = useMemo(() => {
-    if (gridValues.subsample <= 0 || mediaIndices.length === 0) return mediaIndices;
-    const count = Math.max(1, Math.round(mediaIndices.length * gridValues.subsample / 100));
-    if (count >= mediaIndices.length) return mediaIndices;
+    if (gridValues.subsample <= 0) return mediaIndices;
+
+    // When no explicit selection, generate the full ID list from total_count
+    const sourceIds = mediaIndices.length > 0
+      ? mediaIndices
+      : Array.from({ length: config?.total_count ?? 0 }, (_, i) => i);
+
+    if (sourceIds.length === 0) return mediaIndices;
+
+    const count = Math.max(1, Math.round(sourceIds.length * gridValues.subsample / 100));
+    if (count >= sourceIds.length) return sourceIds;
     // Seeded shuffle (Fisher-Yates with simple LCG)
-    const arr = [...mediaIndices];
+    const arr = [...sourceIds];
     let seed = 42;
     const lcg = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 0x100000000; };
     for (let i = arr.length - 1; i > 0; i--) {
@@ -73,7 +85,7 @@ export default function GridView({ onBack }: GridViewProps) {
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr.slice(0, count);
-  }, [mediaIndices, gridValues.subsample]);
+  }, [mediaIndices, gridValues.subsample, config?.total_count]);
 
   const loadMedia = (sortCol?: string, asc?: boolean) => {
     if (!uuid) return;
@@ -96,6 +108,8 @@ export default function GridView({ onBack }: GridViewProps) {
       } else if ((e.metaKey || e.ctrlKey) && e.key === "z") {
         e.preventDefault();
         undo();
+      } else if (e.key === "Escape" && selectedMedia.size > 0) {
+        setSelectedMedia(new Set());
       } else if (e.key === "Escape" && canGoBack) {
         onBack!();
       } else if (e.key === "f" && !e.metaKey && !e.ctrlKey && config?.labels && config.labels.length > 0) {
@@ -106,7 +120,7 @@ export default function GridView({ onBack }: GridViewProps) {
         setFocusMode(true);
       }
     },
-    [undo, redo, canGoBack, onBack, config?.labels],
+    [undo, redo, canGoBack, onBack, config?.labels, selectedMedia.size, setSelectedMedia],
   );
 
   useEffect(() => {
@@ -114,8 +128,40 @@ export default function GridView({ onBack }: GridViewProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-  const handleClick = (index: number) => {
+  const handleClick = (index: number, e: React.MouseEvent) => {
+    // Cmd/Ctrl+click or click while items are selected → toggle selection
+    if (e.metaKey || e.ctrlKey) {
+      handleSelect(index, e);
+      return;
+    }
+    if (selectedMedia.size > 0) {
+      setSelectedMedia(new Set());
+    }
     openMedia(index);
+  };
+
+  const handleSelect = (index: number, e: React.MouseEvent) => {
+    setSelectedMedia((prev) => {
+      const next = new Set(prev);
+      if (e.shiftKey && lastClickedRef.current != null) {
+        // Shift+click: range select between last clicked and current
+        const pageIndices = mediaItems.map((m) => m.index);
+        const from = pageIndices.indexOf(lastClickedRef.current);
+        const to = pageIndices.indexOf(index);
+        if (from !== -1 && to !== -1) {
+          const [start, end] = from < to ? [from, to] : [to, from];
+          for (let i = start; i <= end; i++) {
+            next.add(pageIndices[i]);
+          }
+        }
+      } else {
+        // Toggle single item
+        if (next.has(index)) next.delete(index);
+        else next.add(index);
+      }
+      return next;
+    });
+    lastClickedRef.current = index;
   };
 
   const handleHover = (index: number) => {
@@ -131,6 +177,7 @@ export default function GridView({ onBack }: GridViewProps) {
 
   const handlePageChange = (newPage: number) => {
     setGridValues((prev) => ({ ...prev, page: newPage }));
+    setSelectedMedia(new Set());
     fetchMediaItems(uuid, effectiveIndices, newPage, gridValues.sortBy || undefined, gridValues.asc)
       .then(setMediaItems);
   };
@@ -177,6 +224,47 @@ export default function GridView({ onBack }: GridViewProps) {
         return { ...m, labels };
       }),
     );
+  };
+
+  // ── Selection action handlers ──
+  const handleSelectionLabel = (label: string) => {
+    const ids = [...selectedMedia];
+    saveLabel(uuid, ids, label).catch(console.error);
+    pushAction({ type: "add", label, mediaIds: ids });
+    setMediaItems((items) =>
+      items.map((m) => {
+        if (!selectedMedia.has(m.index)) return m;
+        const labels = m.labels ? [...m.labels] : [];
+        if (!labels.includes(label)) labels.push(label);
+        return { ...m, labels };
+      }),
+    );
+    setSelectedMedia(new Set());
+  };
+
+  const handleSelectionRemoveLabel = (label: string) => {
+    const ids = [...selectedMedia];
+    deleteLabel(uuid, ids, label).catch(console.error);
+    pushAction({ type: "remove", label, mediaIds: ids });
+    setMediaItems((items) =>
+      items.map((m) => {
+        if (!selectedMedia.has(m.index)) return m;
+        return { ...m, labels: (m.labels ?? []).filter((l) => l !== label) };
+      }),
+    );
+    setSelectedMedia(new Set());
+  };
+
+  const handleSelectionFindSimilar = async () => {
+    if (!config?.embeddings || selectedMedia.size === 0) return;
+    const firstId = [...selectedMedia][0];
+    const results = await fetchSimilar(uuid, firstId);
+    const ids = results.map((r) => r.media_id);
+    const scores: Record<number, number> = {};
+    for (const r of results) scores[r.media_id] = r.similarity;
+    setSimilarityResults(scores);
+    replaceTop(ids, `Similar to #${firstId}`);
+    setSelectedMedia(new Set());
   };
 
   if (!config) return null;
@@ -271,7 +359,7 @@ export default function GridView({ onBack }: GridViewProps) {
         {mediaIndicesStack.length > 1 && !showSaveForm && (
           <button
             onClick={() => setShowSaveForm(true)}
-            className="flex shrink-0 items-center gap-1 rounded-full border border-gray-200 px-2 py-0.5 text-[11px] text-gray-600 transition-colors hover:border-gray-400 hover:text-gray-900"
+            className="flex shrink-0 items-center gap-1 rounded-md border border-gray-200 px-2 py-1 text-[11px] text-gray-600 transition-colors hover:border-gray-400 hover:text-gray-900"
             title="Save selection as new view"
           >
             <FontAwesomeIcon icon={faFloppyDisk} className="h-3 w-3" />
@@ -297,20 +385,20 @@ export default function GridView({ onBack }: GridViewProps) {
               value={saveTitle}
               onChange={(e) => setSaveTitle(e.target.value)}
               placeholder="View name..."
-              className="w-40 rounded border border-gray-300 px-2 py-0.5 text-[11px] text-gray-700 focus:border-gray-500 focus:outline-none"
+              className="w-40 rounded-md border border-gray-200 px-2 py-1 text-[11px] text-gray-700 focus:border-gray-400 focus:outline-none"
               onKeyDown={(e) => { if (e.key === "Escape") { setShowSaveForm(false); setSaveTitle(""); } }}
             />
             <button
               type="submit"
               disabled={saving}
-              className="rounded-full border border-gray-300 bg-gray-900 px-2 py-0.5 text-[11px] font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
+              className="rounded-md bg-gray-800 px-2 py-1 text-[11px] font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
             >
               {saving ? "Saving..." : "Save"}
             </button>
             <button
               type="button"
               onClick={() => { setShowSaveForm(false); setSaveTitle(""); }}
-              className="text-[11px] text-gray-400 hover:text-gray-700"
+              className="rounded-md px-2 py-1 text-[11px] text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
             >
               Cancel
             </button>
@@ -332,13 +420,13 @@ export default function GridView({ onBack }: GridViewProps) {
                 setSaveTitle("");
                 setSavedViewUuid(null);
               }}
-              className="text-[11px] text-blue-600 underline decoration-blue-300 hover:text-blue-800"
+              className="rounded-md px-2 py-1 text-[11px] text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-800"
             >
               Open view
             </button>
             <button
               onClick={() => { setShowSaveForm(false); setSaveTitle(""); setSavedViewUuid(null); }}
-              className="text-[11px] text-gray-400 hover:text-gray-700"
+              className="rounded-md px-2 py-1 text-[11px] text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
             >
               Dismiss
             </button>
@@ -365,16 +453,26 @@ export default function GridView({ onBack }: GridViewProps) {
                 boundingBoxColumn={config.bounding_box}
                 showBboxLabel={gridValues.showBboxLabel}
                 display={config.display}
-                onClick={() => handleClick(media.index)}
+                onClick={(e) => handleClick(media.index, e)}
                 onHover={() => handleHover(media.index)}
                 onLabelToggle={(label) => handleLabelToggle(media, label)}
                 onExclude={isActive ? () => handleExclude(media) : undefined}
+                selected={selectedMedia.has(media.index)}
+                anySelected={selectedMedia.size > 0}
+                onSelect={(e) => handleSelect(media.index, e)}
               />
             </div>
           ))}
         </div>
       </div>
       </div>
+      <SelectionActionBar
+        count={selectedMedia.size}
+        onClear={() => setSelectedMedia(new Set())}
+        onLabel={handleSelectionLabel}
+        onRemoveLabel={handleSelectionRemoveLabel}
+        onFindSimilar={config.embeddings ? handleSelectionFindSimilar : undefined}
+      />
       {focusMode && (
         <FocusMode
           mediaIndices={effectiveIndices}

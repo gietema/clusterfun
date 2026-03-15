@@ -339,9 +339,16 @@ export default function InsightsPage() {
   // Derived
   const allMediaIds = useMemo(() => {
     if (mediaIndices.length > 0) return mediaIndices;
-    if (!data) return [];
-    return data.flatMap((d) => d.id ?? []);
-  }, [mediaIndices, data]);
+    if (data) {
+      const ids = data.flatMap((d) => d.id ?? []);
+      if (ids.length > 0) return ids;
+    }
+    // Grid views don't have IDs in data — generate from total_count
+    if (config?.total_count) {
+      return Array.from({ length: config.total_count }, (_, i) => i);
+    }
+    return [];
+  }, [mediaIndices, data, config?.total_count]);
 
   const visibleColumns = useMemo(
     () => columns.filter((c) => c.name !== "id" && !c.name.startsWith("_")),
