@@ -5,6 +5,7 @@ import {
   breadcrumbsAtom,
   mediaIndicesStackAtom,
   uuidAtom,
+  configAtom,
 } from "@/app/store/atoms";
 import { fetchMediaThumbnails } from "@/app/lib/api";
 import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
@@ -13,6 +14,7 @@ export default function BreadcrumbTrail() {
   const crumbs = useAtomValue(breadcrumbsAtom);
   const stack = useAtomValue(mediaIndicesStackAtom);
   const uuid = useAtomValue(uuidAtom);
+  const config = useAtomValue(configAtom);
   const { jumpTo } = useBreadcrumbNav();
   const [thumbs, setThumbs] = useState<Record<number, string>>({});
 
@@ -40,7 +42,8 @@ export default function BreadcrumbTrail() {
   return (
     <div className="flex items-center gap-0.5 overflow-x-auto">
       {crumbs.map((crumb, i) => {
-        const count = crumb.filterCount ?? stack[i]?.length ?? 0;
+        const stackLen = stack[i]?.length ?? 0;
+        const count = crumb.filterCount ?? (stackLen > 0 ? stackLen : (i === 0 ? (config?.total_count ?? 0) : null));
         const isLast = i === crumbs.length - 1;
         const thumb = crumb.thumbnailId != null ? thumbs[crumb.thumbnailId] : null;
 
@@ -67,9 +70,11 @@ export default function BreadcrumbTrail() {
                 />
               )}
               <span className="max-w-[120px] truncate">{crumb.label}</span>
-              <span className={`tabular-nums ${isLast ? "text-blue-500" : "text-gray-400"}`}>
-                ({count.toLocaleString()})
-              </span>
+              {count != null && count > 0 && (
+                <span className={`tabular-nums ${isLast ? "text-blue-500" : "text-gray-400"}`}>
+                  ({count.toLocaleString()})
+                </span>
+              )}
             </button>
           </div>
         );
