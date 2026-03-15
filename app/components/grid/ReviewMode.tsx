@@ -14,7 +14,6 @@ import { useLabelUndo } from "@/app/lib/use-label-undo";
 const PREFETCH_AHEAD = 5;
 const FILMSTRIP_COUNT = 5;
 const DEFAULT_CONFIDENCE_THRESHOLD = 0.7;
-const ACCEPTANCE_WARN_THRESHOLD = 0.85;
 
 interface ReviewModeProps {
   /** Called after accepting: applies the label via GridView's handler. */
@@ -43,7 +42,7 @@ export default function ReviewMode({ onLabelToggle, onExit }: ReviewModeProps) {
   // Review tracking
   const [acceptedCount, setAcceptedCount] = useState(0);
   const [rejectedCount, setRejectedCount] = useState(0);
-  const [paused, setPaused] = useState(false);
+
   const startTimeRef = useRef(Date.now());
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -233,12 +232,11 @@ export default function ReviewMode({ onLabelToggle, onExit }: ReviewModeProps) {
     if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
 
     if (e.key === "Escape") { e.preventDefault(); onExit(); return; }
-    if (paused) return;
     if (e.key === "y" || e.key === "Y") { e.preventDefault(); handleAccept(); return; }
     if (e.key === "n" || e.key === "N") { e.preventDefault(); handleReject(); return; }
     if (e.key === "Backspace" || e.key === "ArrowLeft") { e.preventDefault(); goBack(); return; }
     if (e.key === "ArrowRight") { e.preventDefault(); advance(); return; }
-  }, [onExit, handleAccept, handleReject, goBack, advance, paused]);
+  }, [onExit, handleAccept, handleReject, goBack, advance]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -260,12 +258,6 @@ export default function ReviewMode({ onLabelToggle, onExit }: ReviewModeProps) {
     return () => clearInterval(id);
   }, []);
 
-  // Auto-pause when acceptance rate drops
-  useEffect(() => {
-    if (totalReviewed >= 10 && acceptanceRate < ACCEPTANCE_WARN_THRESHOLD && !paused) {
-      setPaused(true);
-    }
-  }, [totalReviewed, acceptanceRate, paused]);
 
   if (!config || !alState) return null;
 
@@ -297,7 +289,7 @@ export default function ReviewMode({ onLabelToggle, onExit }: ReviewModeProps) {
             <span className="w-8 tabular-nums">{Math.round(confidenceThreshold * 100)}%</span>
           </label>
           {totalReviewed > 0 && (
-            <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium ${acceptanceRate >= 0.9 ? "bg-emerald-50 text-emerald-700" : acceptanceRate >= ACCEPTANCE_WARN_THRESHOLD ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-700"}`}>
+            <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium ${acceptanceRate >= 0.8 ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>
               {(acceptanceRate * 100).toFixed(0)}% accepted
             </span>
           )}
@@ -318,28 +310,6 @@ export default function ReviewMode({ onLabelToggle, onExit }: ReviewModeProps) {
       <div className="h-1 shrink-0 bg-gray-100">
         <div className="h-full bg-gray-800 transition-all duration-200" style={{ width: `${progressPercent}%` }} />
       </div>
-
-      {/* Pause warning */}
-      {paused && (
-        <div className="shrink-0 border-b border-amber-200 bg-amber-50 px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-medium text-amber-800">Acceptance rate dropped below {Math.round(ACCEPTANCE_WARN_THRESHOLD * 100)}%</div>
-              <div className="text-xs text-amber-600">
-                The model&apos;s proposals may not be reliable enough. Consider labeling more items manually and refitting active learning before continuing.
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button onClick={() => setPaused(false)} className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700">
-                Continue anyway
-              </button>
-              <button onClick={onExit} className="rounded-md border border-amber-300 px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100">
-                Exit to label manually
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Image adjustments */}
       {showAdjustments && <ImageAdjustments values={adjustments} onChange={setAdjustments} />}
@@ -405,7 +375,7 @@ export default function ReviewMode({ onLabelToggle, onExit }: ReviewModeProps) {
       </div>
 
       {/* Action buttons */}
-      {media && currentPrediction && !paused && (
+      {media && currentPrediction && (
         <div className="flex shrink-0 items-center justify-center gap-4 border-t border-gray-200 px-4 py-3">
           <button onClick={handleReject} className="flex items-center gap-2 rounded-lg border-2 border-red-200 bg-white px-6 py-2.5 text-sm font-medium text-red-600 transition-all hover:border-red-400 hover:shadow-md">
             <kbd className="flex h-5 w-5 items-center justify-center rounded bg-red-100 text-[10px] font-bold text-red-600">N</kbd>
@@ -458,7 +428,7 @@ export default function ReviewMode({ onLabelToggle, onExit }: ReviewModeProps) {
           <svg className="h-5 w-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 19l-7-7 7-7" /></svg>
         </button>
       )}
-      {position < total - 1 && !paused && (
+      {position < total - 1 && (
         <button onClick={advance} className="fixed right-4 top-1/2 -translate-y-1/2 rounded-full bg-white p-2 shadow-lg transition-colors hover:bg-gray-50" title="Next">
           <svg className="h-5 w-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 5l7 7-7 7" /></svg>
         </button>
