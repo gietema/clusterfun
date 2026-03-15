@@ -65,7 +65,7 @@ pie = "python scripts/pie.py"
 violin = "python scripts/violin.py"
 grid = "python scripts/grid.py"
 audio = "python scripts/audio.py"
-imagenette = "python scripts/imagenette.py"
+imagenette = "python scripts/load_imagenette.py"
 
 [tool.pylint."MESSAGES CONTROL"]
 good-names = [

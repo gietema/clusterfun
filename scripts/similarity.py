@@ -13,7 +13,7 @@ from PIL import Image
 from transformers import CLIPModel, CLIPProcessor
 
 import clusterfun as clt
-from datasets import dataset_option, load_dataset
+from demo_datasets import dataset_option, load_dataset
 
 
 def load_image(url: str) -> Image.Image | None:
@@ -114,7 +114,7 @@ def main(dataset):
         print(f"Saved embeddings cache to {cache_path}")
 
     # Re-read dataset config (need it for column names)
-    from datasets import DATASETS
+    from demo_datasets import DATASETS
 
     ds = DATASETS[dataset]
 

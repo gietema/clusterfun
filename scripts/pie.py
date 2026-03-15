@@ -1,7 +1,7 @@
 import click
 
 import clusterfun as clt
-from datasets import dataset_option, load_dataset
+from demo_datasets import dataset_option, load_dataset
 
 
 @click.command()

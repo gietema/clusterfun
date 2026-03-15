@@ -16,4 +16,6 @@ frontend/.next
 *.parquet
 *.tar.gz
 *.whl
-.next/
+.next/scripts/imagenette2-*/
+scripts/imagenette_images/
+scripts/imagenette_*_with_embeddings.parquet
