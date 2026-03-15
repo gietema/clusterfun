@@ -66,8 +66,5 @@ export default function FilterBar() {
     };
   }, [filters, filtersFromBreadcrumb]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Hide the filter bar when filters are breadcrumb-driven
-  if (filtersFromBreadcrumb) return null;
-
-  return <FiltersManager />;
+  return <FiltersManager hidePills={!!filtersFromBreadcrumb} />;
 }

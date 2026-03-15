@@ -277,7 +277,7 @@ function FilterRow({
 // Main component
 // ---------------------------------------------------------------------------
 
-export default function FiltersManager() {
+export default function FiltersManager({ hidePills = false }: { hidePills?: boolean } = {}) {
   const [isOpen, setIsOpen] = useState(false);
   const [columns, setColumns] = useState<ColumnInfo[]>([]);
   const [filters, setFilters] = useAtom(filtersAtom);
@@ -342,8 +342,8 @@ export default function FiltersManager() {
           {activeCount > 0 ? `Filters (${activeCount})` : "Filter"}
         </button>
 
-        {/* Active filter pills (compact summary) */}
-        {activeCount > 0 && !isOpen && (
+        {/* Active filter pills (compact summary) — hidden when breadcrumb shows the same info */}
+        {activeCount > 0 && !isOpen && !hidePills && (
           <div className="flex flex-wrap gap-1">
             {filters.filter(isComplete).map((f, i) => (
               <span
