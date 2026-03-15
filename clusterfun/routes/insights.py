@@ -297,11 +297,24 @@ def _run_outlier_detection(
     if k < 1:
         return []
 
-    # k-NN search
-    knn_sims, knn_idx = knn_search(
-        index, all_ids, query_vectors, k,
-        progress_cb=progress_cb,
-    )
+    # When querying a subset, build a local index so k-NN indices are
+    # self-consistent (all positions within 0..n-1 of the subset).
+    # The full index would return positions in 0..N-1 which causes
+    # out-of-bounds errors in LOF computation.
+    if mask is not None:
+        import faiss as _faiss
+        dim = query_vectors.shape[1]
+        local_index = _faiss.IndexFlatIP(dim)
+        local_index.add(query_vectors)
+        knn_sims, knn_idx = knn_search(
+            local_index, query_ids, query_vectors, k,
+            progress_cb=progress_cb,
+        )
+    else:
+        knn_sims, knn_idx = knn_search(
+            index, all_ids, query_vectors, k,
+            progress_cb=progress_cb,
+        )
 
     if request.group_by:
         # Grouped LOF: run per-group k-NN search for accurate within-group LOF.

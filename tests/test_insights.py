@@ -221,6 +221,21 @@ class TestOutlierDetection:
         )
 
 
+    def test_ungrouped_with_media_ids_subset(self, client, saved_view):
+        """Outlier detection on a subset of media_ids must not crash."""
+        uuid, _, df = saved_view
+        subset = list(range(0, 23))  # smaller than total (100)
+        resp = client.post(
+            f"/api/views/{uuid}/outliers",
+            json={"media_ids": subset, "k": 5, "threshold": 1.2},
+        )
+        assert resp.status_code == 200
+        results = resp.json()
+        # All returned media_ids must be within the requested subset
+        for r in results:
+            assert r["media_id"] in subset
+
+
 class TestDuplicateDetection:
     def test_returns_duplicate_groups(self, client, saved_view):
         uuid, _, _ = saved_view
