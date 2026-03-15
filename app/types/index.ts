@@ -183,6 +183,7 @@ export interface PlotPanelConfig {
 export interface OutlierResult {
   media_id: number;
   score: number;
+  group?: string | null;
 }
 
 export interface DuplicateGroup {

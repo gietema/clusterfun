@@ -62,6 +62,16 @@ export async function fetchMediaMetadata(
   return data;
 }
 
+export async function fetchMediaSrcs(
+  uuid: string,
+  mediaIds: number[],
+): Promise<{ id: number; src: string }[]> {
+  const { data } = await axios.post(`${API_URL}/views/${uuid}/media-srcs`, {
+    media_ids: mediaIds,
+  });
+  return data;
+}
+
 // ── Columns ──
 
 export async function fetchColumns(uuid: string): Promise<ColumnInfo[]> {
@@ -234,12 +244,14 @@ export async function fetchOutliers(
   uuid: string,
   mediaIds: number[] = [],
   k = 20,
-  limit = 100,
+  threshold = 1.5,
+  groupBy?: string,
 ): Promise<OutlierResult[]> {
   const { data } = await axios.post(`${API_URL}/views/${uuid}/outliers`, {
     media_ids: mediaIds,
     k,
-    limit,
+    threshold,
+    group_by: groupBy ?? null,
   });
   return data;
 }

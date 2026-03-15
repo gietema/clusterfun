@@ -2,11 +2,19 @@
 import { useAtomValue } from "jotai";
 import { configAtom, dataAtom, dragModeAtom, highlightedPointsAtom } from "@/app/store/atoms";
 import type { PlotConfig, PlotTrace } from "@/app/types";
+import type { Thumbnail } from "./PlotPage";
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Data } from "plotly.js";
 
 const Plot = dynamic(() => import("@/app/lib/PlotlyChart"), { ssr: false });
+
+export interface ViewportRange {
+  xMin: number;
+  xMax: number;
+  yMin: number;
+  yMax: number;
+}
 
 interface PlotlyChartProps {
   revision: number;
@@ -17,6 +25,10 @@ interface PlotlyChartProps {
   overrideData?: PlotTrace[];
   /** Override config for multi-plot panels */
   overrideConfig?: PlotConfig;
+  /** Thumbnail images to overlay on the plot (embedding maps) */
+  thumbnails?: Thumbnail[];
+  /** Called (debounced) when the user zooms/pans, with the visible axis range */
+  onViewportChange?: (range: ViewportRange | null) => void;
 }
 
 function getXAxis(cfg: PlotConfig): Record<string, any> {
@@ -72,6 +84,8 @@ export default function PlotlyChart({
   onSelect,
   overrideData,
   overrideConfig,
+  thumbnails,
+  onViewportChange,
 }: PlotlyChartProps) {
   const globalConfig = useAtomValue(configAtom);
   const globalData = useAtomValue(dataAtom);
@@ -84,7 +98,19 @@ export default function PlotlyChart({
   const [layout, setLayout] = useState<Record<string, any>>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  // Build layout when config/data/revision change (NOT dragMode)
+  // Stable ref for the viewport callback so handleRelayout doesn't depend on it
+  const onViewportChangeRef = useRef(onViewportChange);
+  onViewportChangeRef.current = onViewportChange;
+  const viewportDebounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Cleanup timers
+  useEffect(() => {
+    return () => {
+      if (viewportDebounceRef.current) clearTimeout(viewportDebounceRef.current);
+    };
+  }, []);
+
+  // Build layout when config/data/revision/thumbnails change
   useEffect(() => {
     if (!config) return;
     const shapes = [
@@ -92,7 +118,43 @@ export default function PlotlyChart({
       ...(typeof config.vline === "number" ? [createReferenceLine(config.vline, "v")] : []),
     ];
 
+    // Compute thumbnail overlay images for embedding maps
+    let images: Record<string, any>[] | undefined;
+    if (thumbnails?.length && data) {
+      // Compute data extent for sizing thumbnails
+      let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
+      for (const trace of data) {
+        if (!trace.x || !trace.y) continue;
+        for (let i = 0; i < trace.x.length; i++) {
+          const x = trace.x[i] as number;
+          const y = trace.y[i] as number;
+          if (x < xMin) xMin = x;
+          if (x > xMax) xMax = x;
+          if (y < yMin) yMin = y;
+          if (y > yMax) yMax = y;
+        }
+      }
+      const xRange = xMax - xMin || 1;
+      const yRange = yMax - yMin || 1;
+      const thumbSize = Math.min(xRange, yRange) * 0.06;
+      images = thumbnails.map((t) => ({
+        source: t.src,
+        x: t.x,
+        y: t.y,
+        xref: "x",
+        yref: "y",
+        sizex: thumbSize,
+        sizey: thumbSize,
+        xanchor: "center",
+        yanchor: "middle",
+        layer: "above",
+        sizing: "contain",
+        opacity: 0.7,
+      }));
+    }
+
     setLayout({
+      uirevision: revision,
       hovermode: "closest",
       paper_bgcolor: "rgba(0,0,0,0)",
       plot_bgcolor: "rgba(0,0,0,0)",
@@ -109,12 +171,13 @@ export default function PlotlyChart({
       autosize: true,
       margin: { l: 40, r: 0, b: 40, t: 0, pad: 0 },
       shapes,
+      ...(images ? { images } : {}),
       legend: {
         traceorder: "normal",
         ...(config.color ? { title: { text: config.color } } : {}),
       },
     });
-  }, [config, revision, data]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [config, revision, data, thumbnails]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Update only dragmode without resetting zoom
   useEffect(() => {
@@ -140,20 +203,28 @@ export default function PlotlyChart({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleRelayout = (e: any) => {
+  // Capture viewport changes from zoom/pan — debounced, only notifies parent for re-sampling
+  const handleRelayout = useCallback((e: any) => {
+    if (viewportDebounceRef.current) clearTimeout(viewportDebounceRef.current);
     if (
-      e["xaxis.range[0]"] != null &&
-      e["xaxis.range[1]"] != null &&
-      e["yaxis.range[0]"] != null &&
-      e["yaxis.range[1]"] != null
+      e["xaxis.range[0]"] != null && e["xaxis.range[1]"] != null &&
+      e["yaxis.range[0]"] != null && e["yaxis.range[1]"] != null
     ) {
-      setLayout((prev) => ({
-        ...prev,
-        xaxis: { ...prev.xaxis, range: [e["xaxis.range[0]"], e["xaxis.range[1]"]] },
-        yaxis: { ...prev.yaxis, range: [e["yaxis.range[0]"], e["yaxis.range[1]"]] },
-      }));
+      const range: ViewportRange = {
+        xMin: e["xaxis.range[0]"],
+        xMax: e["xaxis.range[1]"],
+        yMin: e["yaxis.range[0]"],
+        yMax: e["yaxis.range[1]"],
+      };
+      viewportDebounceRef.current = setTimeout(() => {
+        onViewportChangeRef.current?.(range);
+      }, 300);
+    } else if (e["xaxis.autorange"] || e["yaxis.autorange"]) {
+      viewportDebounceRef.current = setTimeout(() => {
+        onViewportChangeRef.current?.(null);
+      }, 300);
     }
-  };
+  }, []);
 
   // Apply linked brushing: compute selectedpoints per trace
   const displayData = useMemo(() => {

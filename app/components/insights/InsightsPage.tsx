@@ -37,11 +37,11 @@ function MiniBarChart({
   const top = data.slice(0, 8);
   return (
     <div>
-      <div className="flex items-end gap-px" style={{ height: 48 }}>
+      <div className="flex items-end gap-px overflow-hidden" style={{ height: 48 }}>
         {top.map((d) => (
           <div
             key={d.label}
-            className={`min-w-[6px] flex-1 rounded-t transition-all ${
+            className={`min-w-0 flex-1 rounded-t transition-all ${
               selectedLabel === d.label
                 ? "bg-blue-600"
                 : "bg-blue-400 hover:bg-blue-500"
@@ -61,7 +61,7 @@ function MiniBarChart({
         {top.map((d) => (
           <div
             key={d.label}
-            className="min-w-[6px] flex-1 truncate text-center text-[8px] leading-tight text-gray-400"
+            className="min-w-0 flex-1 truncate text-center text-[8px] leading-tight text-gray-400"
             title={d.label}
           >
             {d.label}
@@ -93,11 +93,11 @@ function MiniHistogram({
 }) {
   return (
     <div>
-      <div className="flex items-end gap-px" style={{ height: 48 }}>
+      <div className="flex items-end gap-px overflow-hidden" style={{ height: 48 }}>
         {counts.map((c, i) => (
           <div
             key={i}
-            className={`min-w-[4px] flex-1 rounded-t transition-all ${
+            className={`min-w-0 flex-1 rounded-t transition-all ${
               selectedBin === i
                 ? "bg-emerald-600"
                 : "bg-emerald-400 hover:bg-emerald-500"
@@ -328,6 +328,8 @@ export default function InsightsPage() {
   // Tunable params
   const [dupThreshold, setDupThreshold] = useState(0.95);
   const [outlierK, setOutlierK] = useState(15);
+  const [outlierThreshold, setOutlierThreshold] = useState(1.5);
+  const [outlierGroupBy, setOutlierGroupBy] = useState<string | null>(null);
 
   // Derived
   const allMediaIds = useMemo(() => {
@@ -462,16 +464,41 @@ export default function InsightsPage() {
   const handleOutliers = async () => {
     setOutlierLoading(true);
     try {
-      let ids: number[];
-      if (USE_BROWSER) {
-        const emb = await ensureEmbeddings();
-        if (!emb) { toast.error("Could not load embeddings"); return; }
-        ids = computeOutlierScores(emb, allMediaIds.slice(0, 5000), outlierK).map((r) => r.mediaId);
+      if (outlierGroupBy) {
+        // Grouped mode — always use server (it handles grouping internally)
+        const results = await fetchOutliers(uuid, allMediaIds, outlierK, outlierThreshold, outlierGroupBy);
+        // Group results by label
+        const groupMap = new Map<string, number[]>();
+        for (const r of results) {
+          const label = r.group ?? "(unknown)";
+          const arr = groupMap.get(label) ?? [];
+          arr.push(r.media_id);
+          groupMap.set(label, arr);
+        }
+        const allIds = results.map((r) => r.media_id);
+        const groups: { label: string; ids: number[]; media: Media[] }[] = [];
+        for (const entry of Array.from(groupMap.entries())) {
+          const gMedia = await loadPreviewMedia(entry[1]);
+          groups.push({ label: entry[0], ids: entry[1], media: gMedia });
+        }
+        groups.sort((a, b) => a.label.localeCompare(b.label));
+        const media = await loadPreviewMedia(allIds);
+        setOutlierState({ ids: allIds, media, groups });
       } else {
-        ids = (await fetchOutliers(uuid, allMediaIds, outlierK, 200)).map((r) => r.media_id);
+        // Ungrouped mode
+        let ids: number[];
+        if (USE_BROWSER) {
+          const emb = await ensureEmbeddings();
+          if (!emb) { toast.error("Could not load embeddings"); return; }
+          ids = computeOutlierScores(emb, allMediaIds.slice(0, 5000), outlierK)
+            .filter((r) => r.score > outlierThreshold)
+            .map((r) => r.mediaId);
+        } else {
+          ids = (await fetchOutliers(uuid, allMediaIds, outlierK, outlierThreshold)).map((r) => r.media_id);
+        }
+        const media = await loadPreviewMedia(ids);
+        setOutlierState({ ids, media });
       }
-      const media = await loadPreviewMedia(ids);
-      setOutlierState({ ids, media });
     } catch {
       toast.error("Outlier detection failed");
     } finally {
@@ -509,7 +536,7 @@ export default function InsightsPage() {
         if (!emb) { toast.error("Could not load embeddings"); return; }
         ids = computeDistanceFromCentroid(emb, allMediaIds.slice(0, 5000)).map((r) => r.mediaId);
       } else {
-        ids = (await fetchOutliers(uuid, allMediaIds, 20, 200)).map((r) => r.media_id);
+        ids = (await fetchOutliers(uuid, allMediaIds, 20, 1.5)).map((r) => r.media_id);
       }
       const media = await loadPreviewMedia(ids);
       setWeirdState({ ids, media });
@@ -570,7 +597,7 @@ export default function InsightsPage() {
               return (
                 <div
                   key={col.name}
-                  className={`rounded-lg border bg-white p-3 transition-all hover:shadow-md ${
+                  className={`overflow-hidden rounded-lg border bg-white p-3 transition-all hover:shadow-md ${
                     isExpanded ? "col-span-2 border-gray-300 shadow-md" : "border-gray-200"
                   }`}
                 >
@@ -650,40 +677,89 @@ export default function InsightsPage() {
             <div className="space-y-4">
               {/* Outliers */}
               <div className="rounded-lg border border-gray-200 bg-white p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-medium text-gray-800">Outlier detection</div>
-                    <div className="text-xs text-gray-500">
-                      Find items that are most different from their neighbors using Local Outlier Factor
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <label className="flex items-center gap-1.5 text-xs text-gray-500">
-                      k neighbors
-                      <input
-                        type="number"
-                        min={3}
-                        max={50}
-                        value={outlierK}
-                        onChange={(e) => setOutlierK(Math.max(3, parseInt(e.target.value) || 15))}
-                        className="w-14 rounded border border-gray-200 px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
-                      />
-                    </label>
-                    <button
-                      onClick={handleOutliers}
-                      disabled={outlierLoading}
-                      className="rounded-md bg-gray-800 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
-                    >
-                      {outlierLoading ? "Analyzing..." : outlierState.ids.length > 0 ? "Re-run" : "Run"}
-                    </button>
+                <div className="mb-2">
+                  <div className="text-sm font-medium text-gray-800">Outlier detection</div>
+                  <div className="text-xs text-gray-500">
+                    Find items most different from their neighbors using Local Outlier Factor
                   </div>
                 </div>
-                <ThumbnailStrip
-                  mediaItems={outlierState.media}
-                  loading={outlierLoading}
-                  label={`${outlierState.ids.length} outliers found`}
-                  onViewAll={() => viewInGrid(outlierState.ids)}
-                />
+                <div className="mb-3 flex flex-wrap items-center gap-3">
+                  <label className="flex items-center gap-1.5 text-xs text-gray-500">
+                    group by
+                    <select
+                      value={outlierGroupBy ?? ""}
+                      onChange={(e) => setOutlierGroupBy(e.target.value || null)}
+                      className="w-28 rounded border border-gray-200 px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
+                    >
+                      <option value="">none</option>
+                      {categoricalCols.map((c) => (
+                        <option key={c.name} value={c.name}>{c.name}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs text-gray-500">
+                    k neighbors
+                    <input
+                      type="number"
+                      min={3}
+                      max={50}
+                      value={outlierK}
+                      onChange={(e) => setOutlierK(Math.max(3, parseInt(e.target.value) || 15))}
+                      className="w-14 rounded border border-gray-200 px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
+                    />
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs text-gray-500" title="LOF score cutoff — lower = more outliers, higher = only extreme outliers">
+                    min score
+                    <input
+                      type="number"
+                      min={1.0}
+                      max={10}
+                      step={0.1}
+                      value={outlierThreshold}
+                      onChange={(e) => setOutlierThreshold(Math.max(1.0, parseFloat(e.target.value) || 1.5))}
+                      className="w-16 rounded border border-gray-200 px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
+                    />
+                  </label>
+                  <button
+                    onClick={handleOutliers}
+                    disabled={outlierLoading}
+                    className="rounded-md bg-gray-800 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
+                  >
+                    {outlierLoading ? "Analyzing..." : outlierState.ids.length > 0 ? "Re-run" : "Run"}
+                  </button>
+                </div>
+                {outlierState.groups && outlierState.groups.length > 0 ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-gray-700">
+                        {outlierState.ids.length} outliers across {outlierState.groups.length} groups
+                      </span>
+                      <button
+                        onClick={() => viewInGrid(outlierState.ids)}
+                        className="rounded-md bg-gray-800 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-gray-700"
+                      >
+                        View all in grid
+                      </button>
+                    </div>
+                    {outlierState.groups.map((g) => (
+                      <div key={g.label} className="rounded border border-gray-100 p-2">
+                        <ThumbnailStrip
+                          mediaItems={g.media}
+                          loading={false}
+                          label={`${g.label} — ${g.ids.length} outliers`}
+                          onViewAll={() => viewInGrid(g.ids)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <ThumbnailStrip
+                    mediaItems={outlierState.media}
+                    loading={outlierLoading}
+                    label={`${outlierState.ids.length} outliers found`}
+                    onViewAll={() => viewInGrid(outlierState.ids)}
+                  />
+                )}
               </div>
 
               {/* Duplicates */}

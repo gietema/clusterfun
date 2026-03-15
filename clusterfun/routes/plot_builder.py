@@ -418,7 +418,7 @@ def build_plot_data(
     colors: Optional[List[str]] = None
 
     # Handle the case where x or y is None gracefully
-    if req.type != "grid" and req.x is None and req.y is None:
+    if req.type not in ("grid", "embedding_map") and req.x is None and req.y is None:
         cfg = dataclasses.replace(cfg, type="grid")
 
     if cfg.type == "grid":

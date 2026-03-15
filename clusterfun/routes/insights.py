@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 from clusterfun.storage.backends import get_backend
 from clusterfun.storage.data_loader import DataLoader
-from clusterfun.storage.query import ensure_embeddings_table
+from clusterfun.storage.query import ensure_embeddings_table, get_connection
 
 router = APIRouter()
 
@@ -19,12 +19,15 @@ MAX_EMBEDDINGS = 10_000
 class OutlierRequest(BaseModel):
     media_ids: List[int] = []
     k: int = 20
-    limit: int = 100
+    limit: int = 0  # 0 = no limit (return all above threshold)
+    threshold: float = 1.5  # LOF scores above this are considered outliers
+    group_by: str | None = None
 
 
 class OutlierResult(BaseModel):
     media_id: int
     score: float
+    group: str | None = None
 
 
 class DuplicateRequest(BaseModel):
@@ -146,9 +149,58 @@ def _compute_lof_scores(distances: np.ndarray, k: int) -> np.ndarray:
     return lof
 
 
+def _run_lof(
+    ids: np.ndarray,
+    vectors: np.ndarray,
+    k: int,
+    threshold: float = 1.5,
+    limit: int = 0,
+    group: str | None = None,
+) -> List[OutlierResult]:
+    """Run LOF on a single group and return results above the threshold."""
+    if len(ids) < 2:
+        return []
+    distances = _cosine_distance_matrix(vectors)
+    lof_scores = _compute_lof_scores(distances, k=k)
+    # Keep only points whose LOF score exceeds the threshold
+    ranked_indices = np.argsort(lof_scores)[::-1]
+    results = [
+        OutlierResult(media_id=int(ids[i]), score=float(lof_scores[i]), group=group)
+        for i in ranked_indices
+        if lof_scores[i] > threshold
+    ]
+    if limit > 0:
+        results = results[:limit]
+    return results
+
+
+def _load_group_labels(
+    view_uuid: str, media_ids: np.ndarray, column: str
+) -> dict[str, list[int]]:
+    """Load column values and group media_ids by label."""
+    backend = get_backend()
+    con = get_connection(view_uuid, backend)
+    safe_col = '"' + column.replace('"', '""') + '"'
+    id_list = [int(i) for i in media_ids]
+    placeholders = ",".join("?" for _ in id_list)
+    rows = con.execute(
+        f"SELECT id, {safe_col} FROM database WHERE id IN ({placeholders})",
+        id_list,
+    ).fetchall()
+    groups: dict[str, list[int]] = {}
+    for row_id, label in rows:
+        key = str(label) if label is not None else "(null)"
+        groups.setdefault(key, []).append(int(row_id))
+    return groups
+
+
 @router.post("/api/views/{view_uuid}/outliers")
 def find_outliers(view_uuid: str, request: OutlierRequest) -> List[OutlierResult]:
-    """Detect outliers using Local Outlier Factor (LOF)."""
+    """Detect outliers using Local Outlier Factor (LOF).
+
+    When ``group_by`` is set, outliers are detected *within* each group
+    independently (e.g. per-class outliers for a label column).
+    """
     backend = get_backend()
     loader = DataLoader(view_uuid, backend)
     config = loader.load_config()
@@ -164,16 +216,25 @@ def find_outliers(view_uuid: str, request: OutlierRequest) -> List[OutlierResult
     if len(ids) < 2:
         return []
 
-    distances = _cosine_distance_matrix(vectors)
-    lof_scores = _compute_lof_scores(distances, k=request.k)
+    # Ungrouped mode — original behaviour
+    if not request.group_by:
+        return _run_lof(ids, vectors, request.k, request.threshold, request.limit)
 
-    # Sort by LOF score descending and return top results
-    ranked_indices = np.argsort(lof_scores)[::-1]
-    limit = min(request.limit, len(ranked_indices))
-    results = [
-        OutlierResult(media_id=int(ids[i]), score=float(lof_scores[i]))
-        for i in ranked_indices[:limit]
-    ]
+    # Grouped mode — run LOF per group independently
+    group_labels = _load_group_labels(view_uuid, ids, request.group_by)
+    id_to_idx = {int(mid): i for i, mid in enumerate(ids)}
+
+    results: List[OutlierResult] = []
+    for label, group_ids in group_labels.items():
+        indices = [id_to_idx[mid] for mid in group_ids if mid in id_to_idx]
+        if len(indices) < 2:
+            continue
+        g_ids = ids[indices]
+        g_vecs = vectors[indices]
+        results.extend(
+            _run_lof(g_ids, g_vecs, request.k, request.threshold, group=label)
+        )
+
     return results
 
 

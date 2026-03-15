@@ -393,8 +393,8 @@ function FeatureCard({
 function Tip({ children }: { children: React.ReactNode }) {
   return (
     <div className="mt-4 flex gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
-      <svg className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" />
+      <svg className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none" />
       </svg>
       <p className="text-sm leading-relaxed text-blue-800">{children}</p>
     </div>
