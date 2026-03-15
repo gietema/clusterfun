@@ -1,8 +1,13 @@
-"""Active learning routes: fit a linear probe on labeled embeddings."""
+"""Active learning routes: fit a probe on labeled embeddings.
+
+Scales to millions of items via chunked scoring: only labeled embeddings
+are loaded for training; unlabeled items stream through in 100K chunks.
+"""
 
 import heapq
 from typing import Dict, List, Optional
 
+import faiss
 import numpy as np
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -22,6 +27,8 @@ class ProbeRequest(BaseModel):
     sort_by: str = "confidence"
     limit: int = 5000
     focus_labels: Optional[List[str]] = None
+    method: str = "auto"  # auto, centroid, knn, linear, prototype, mlp
+    mlp_layers: int = 1
 
 
 class PredictionItem(BaseModel):
@@ -36,6 +43,9 @@ class ProbeResponse(BaseModel):
     predictions: List[PredictionItem]
     label_classes: List[str]
     n_labeled: int
+
+
+# ── Helpers ──
 
 
 def _fetch_labeled_embeddings(
@@ -63,158 +73,14 @@ def _scope_query(emb_col: str, scope_ids: List[int]):
     return f'SELECT id, "{emb_col}" FROM embeddings', []
 
 
-def _centroid_search(
-    labeled_ids: List[int],
-    label_class: str,
-    con,
-    emb_col: str,
-    scope_ids: List[int],
-    limit: int = 5000,
-) -> List[PredictionItem]:
-    """Single-class: rank by cosine similarity to centroid, chunked."""
-    id_to_emb = _fetch_labeled_embeddings(con, emb_col, labeled_ids)
-    train_ids = [mid for mid in labeled_ids if mid in id_to_emb]
-    if not train_ids:
-        return []
-
-    labeled_embs = np.array([id_to_emb[mid] for mid in train_ids], dtype=np.float32)
-    centroid = labeled_embs.mean(axis=0)
-    centroid_norm = centroid / (np.linalg.norm(centroid) + 1e-8)
-
-    labeled_set = set(labeled_ids)
-    query, params = _scope_query(emb_col, scope_ids)
-
-    # Min-heap of (score, seq) — seq breaks ties and avoids comparison issues
-    heap: list = []
-    heap_data: dict = {}
-    seq = 0
-
-    result = con.execute(query, params)
-    while True:
-        chunk = result.fetchmany(CHUNK_SIZE)
-        if not chunk:
-            break
-
-        chunk_ids = []
-        chunk_embs = []
-        for r in chunk:
-            if r[0] not in labeled_set:
-                chunk_ids.append(r[0])
-                chunk_embs.append(r[1])
-        if not chunk_ids:
-            continue
-
-        X = np.array(chunk_embs, dtype=np.float32)
-        norms = np.linalg.norm(X, axis=1, keepdims=True)
-        norms = np.maximum(norms, 1e-8)
-        sims = (X / norms) @ centroid_norm
-
-        for i, mid in enumerate(chunk_ids):
-            score = max(0.0, float(sims[i]))
-            seq += 1
-            if len(heap) < limit:
-                heapq.heappush(heap, (score, seq))
-                heap_data[seq] = (mid, score)
-            elif score > heap[0][0]:
-                _, old_seq = heapq.heapreplace(heap, (score, seq))
-                del heap_data[old_seq]
-                heap_data[seq] = (mid, score)
-
-    # Build predictions sorted descending
-    entries = sorted(heap_data.values(), key=lambda x: x[1], reverse=True)
-    return [
-        PredictionItem(
-            media_id=mid,
-            predicted_class=label_class,
-            uncertainty=1.0 - score,
-            probabilities={label_class: score},
-            score=score,
-        )
-        for mid, score in entries
-    ]
+def _normalize(X: np.ndarray) -> np.ndarray:
+    norms = np.linalg.norm(X, axis=1, keepdims=True)
+    return X / np.maximum(norms, 1e-8)
 
 
-def _classifier_search(
-    labeled: Dict[int, str],
-    label_classes: List[str],
-    con,
-    emb_col: str,
-    scope_ids: List[int],
-    limit: int = 5000,
-) -> List[PredictionItem]:
-    """Multi-class: logistic regression, chunked scoring."""
-    from sklearn.linear_model import LogisticRegression
-
-    labeled_ids = list(labeled.keys())
-    id_to_emb = _fetch_labeled_embeddings(con, emb_col, labeled_ids)
-    train_ids = [mid for mid in labeled_ids if mid in id_to_emb]
-    if not train_ids:
-        return []
-
-    X_train = np.array([id_to_emb[mid] for mid in train_ids], dtype=np.float32)
-    y_train = [labeled[mid] for mid in train_ids]
-
-    clf = LogisticRegression(
-        max_iter=200, class_weight="balanced", solver="lbfgs", C=1.0,
-    )
-    clf.fit(X_train, y_train)
-    classes = list(clf.classes_)
-    positive_indices = [i for i, cls in enumerate(classes) if cls != EXCLUDE_LABEL]
-
-    labeled_set = set(labeled_ids)
-    query, params = _scope_query(emb_col, scope_ids)
-
-    heap: list = []
-    heap_data: dict = {}
-    seq = 0
-
-    result = con.execute(query, params)
-    while True:
-        chunk = result.fetchmany(CHUNK_SIZE)
-        if not chunk:
-            break
-
-        chunk_ids = []
-        chunk_embs = []
-        for r in chunk:
-            if r[0] not in labeled_set:
-                chunk_ids.append(r[0])
-                chunk_embs.append(r[1])
-        if not chunk_ids:
-            continue
-
-        X = np.array(chunk_embs, dtype=np.float32)
-        probas = clf.predict_proba(X)
-
-        for i, mid in enumerate(chunk_ids):
-            proba = probas[i]
-            max_idx = int(np.argmax(proba))
-            pos_score = (
-                float(sum(proba[j] for j in positive_indices))
-                if positive_indices
-                else float(proba[max_idx])
-            )
-            seq += 1
-            if len(heap) < limit:
-                heapq.heappush(heap, (pos_score, seq))
-                heap_data[seq] = (mid, max_idx, proba)
-            elif pos_score > heap[0][0]:
-                _, old_seq = heapq.heapreplace(heap, (pos_score, seq))
-                del heap_data[old_seq]
-                heap_data[seq] = (mid, max_idx, proba)
-
-    # Build predictions sorted descending
-    entries = sorted(heap_data.values(), key=lambda x: -_pos_score(x[2], positive_indices))
-    return [
-        PredictionItem(
-            media_id=mid,
-            predicted_class=classes[max_idx],
-            uncertainty=float(1.0 - proba[max_idx]),
-            probabilities={cls: float(proba[j]) for j, cls in enumerate(classes)},
-            score=_pos_score(proba, positive_indices),
-        )
-        for mid, max_idx, proba in entries
-    ]
+def _softmax(logits: np.ndarray) -> np.ndarray:
+    e = np.exp(logits - logits.max(axis=1, keepdims=True))
+    return e / e.sum(axis=1, keepdims=True)
 
 
 def _pos_score(proba: np.ndarray, positive_indices: List[int]) -> float:
@@ -223,13 +89,256 @@ def _pos_score(proba: np.ndarray, positive_indices: List[int]) -> float:
     return float(proba[int(np.argmax(proba))])
 
 
+def _prepare_labeled(
+    labeled: Dict[int, str], con, emb_col: str,
+):
+    """Fetch labeled embeddings and split into arrays."""
+    labeled_ids = list(labeled.keys())
+    id_to_emb = _fetch_labeled_embeddings(con, emb_col, labeled_ids)
+    train_ids = [mid for mid in labeled_ids if mid in id_to_emb]
+    if not train_ids:
+        return None, None, None
+    X = np.array([id_to_emb[mid] for mid in train_ids], dtype=np.float32)
+    y = [labeled[mid] for mid in train_ids]
+    return train_ids, X, y
+
+
+class _TopK:
+    """Min-heap that keeps the top-K (score, PredictionItem) pairs."""
+
+    def __init__(self, limit: int):
+        self.limit = limit
+        self.heap: list = []
+        self.data: dict = {}
+        self.seq = 0
+
+    def push(self, score: float, item: PredictionItem):
+        self.seq += 1
+        if len(self.heap) < self.limit:
+            heapq.heappush(self.heap, (score, self.seq))
+            self.data[self.seq] = item
+        elif score > self.heap[0][0]:
+            _, old = heapq.heapreplace(self.heap, (score, self.seq))
+            del self.data[old]
+            self.data[self.seq] = item
+
+    def results(self) -> List[PredictionItem]:
+        return sorted(self.data.values(), key=lambda p: p.score, reverse=True)
+
+
+def _stream_chunks(con, emb_col: str, scope_ids: List[int], labeled_set: set):
+    """Yield (chunk_ids, X_chunk) tuples, skipping labeled items."""
+    query, params = _scope_query(emb_col, scope_ids)
+    result = con.execute(query, params)
+    while True:
+        chunk = result.fetchmany(CHUNK_SIZE)
+        if not chunk:
+            break
+        ids, embs = [], []
+        for r in chunk:
+            if r[0] not in labeled_set:
+                ids.append(r[0])
+                embs.append(r[1])
+        if ids:
+            yield ids, np.array(embs, dtype=np.float32)
+
+
+# ── Methods ──
+
+
+def _centroid_search(
+    labeled_ids, label_class, con, emb_col, scope_ids, limit,
+) -> List[PredictionItem]:
+    """Single-class: cosine similarity to centroid."""
+    id_to_emb = _fetch_labeled_embeddings(con, emb_col, labeled_ids)
+    train_ids = [mid for mid in labeled_ids if mid in id_to_emb]
+    if not train_ids:
+        return []
+
+    centroid = np.mean(
+        [id_to_emb[mid] for mid in train_ids], axis=0,
+    ).astype(np.float32)
+    centroid /= np.linalg.norm(centroid) + 1e-8
+
+    top = _TopK(limit)
+    for chunk_ids, X in _stream_chunks(con, emb_col, scope_ids, set(labeled_ids)):
+        sims = _normalize(X) @ centroid
+        for i, mid in enumerate(chunk_ids):
+            s = max(0.0, float(sims[i]))
+            top.push(s, PredictionItem(
+                media_id=mid, predicted_class=label_class,
+                uncertainty=1.0 - s, probabilities={label_class: s}, score=s,
+            ))
+    return top.results()
+
+
+def _classifier_search(
+    labeled, label_classes, con, emb_col, scope_ids, limit,
+) -> List[PredictionItem]:
+    """Multi-class: sklearn logistic regression, chunked scoring."""
+    from sklearn.linear_model import LogisticRegression
+
+    train_ids, X_train, y_train = _prepare_labeled(labeled, con, emb_col)
+    if train_ids is None:
+        return []
+
+    clf = LogisticRegression(
+        max_iter=200, class_weight="balanced", solver="lbfgs", C=1.0,
+    )
+    clf.fit(X_train, y_train)
+    classes = list(clf.classes_)
+    pos_idx = [i for i, c in enumerate(classes) if c != EXCLUDE_LABEL]
+
+    top = _TopK(limit)
+    for chunk_ids, X in _stream_chunks(con, emb_col, scope_ids, set(labeled.keys())):
+        probas = clf.predict_proba(X)
+        for i, mid in enumerate(chunk_ids):
+            p = probas[i]
+            mx = int(np.argmax(p))
+            s = _pos_score(p, pos_idx)
+            top.push(s, PredictionItem(
+                media_id=mid, predicted_class=classes[mx],
+                uncertainty=float(1.0 - p[mx]),
+                probabilities={c: float(p[j]) for j, c in enumerate(classes)},
+                score=s,
+            ))
+    return top.results()
+
+
+def _knn_search(
+    labeled, label_classes, con, emb_col, scope_ids, limit, k=10,
+) -> List[PredictionItem]:
+    """KNN: build tiny faiss index of labeled items, batch-query unlabeled."""
+    train_ids, X_train, y_train = _prepare_labeled(labeled, con, emb_col)
+    if train_ids is None:
+        return []
+
+    X_train = _normalize(X_train)
+    dim = X_train.shape[1]
+    index = faiss.IndexFlatIP(dim)
+    index.add(X_train)
+    effective_k = min(k, len(train_ids))
+
+    pos_idx = [i for i, c in enumerate(label_classes) if c != EXCLUDE_LABEL]
+
+    top = _TopK(limit)
+    for chunk_ids, X in _stream_chunks(con, emb_col, scope_ids, set(labeled.keys())):
+        X = _normalize(X)
+        sims, indices = index.search(X, effective_k)
+
+        for i, mid in enumerate(chunk_ids):
+            votes: Dict[str, float] = {}
+            total = 0.0
+            for j in range(effective_k):
+                idx = int(indices[i][j])
+                if idx < 0:
+                    continue
+                w = max(0.0, float(sims[i][j]))
+                lbl = y_train[idx]
+                votes[lbl] = votes.get(lbl, 0) + w
+                total += w
+            if total == 0:
+                continue
+
+            probs = {c: votes.get(c, 0) / total for c in label_classes}
+            pred = max(probs, key=lambda c: probs[c])
+            s = _pos_score(
+                np.array([probs.get(c, 0) for c in label_classes]), pos_idx,
+            )
+            top.push(s, PredictionItem(
+                media_id=mid, predicted_class=pred,
+                uncertainty=1.0 - probs[pred],
+                probabilities=probs, score=s,
+            ))
+    return top.results()
+
+
+def _prototype_search(
+    labeled, label_classes, con, emb_col, scope_ids, limit,
+) -> List[PredictionItem]:
+    """Prototype: per-class centroids, softmax scoring."""
+    train_ids, X_train, y_train = _prepare_labeled(labeled, con, emb_col)
+    if train_ids is None:
+        return []
+
+    # Compute normalized prototype per class
+    proto_list = []
+    for cls in label_classes:
+        mask = [i for i, y in enumerate(y_train) if y == cls]
+        if mask:
+            proto = X_train[mask].mean(axis=0)
+            proto /= np.linalg.norm(proto) + 1e-8
+        else:
+            proto = np.zeros(X_train.shape[1], dtype=np.float32)
+        proto_list.append(proto)
+    protos = np.array(proto_list, dtype=np.float32)  # (n_classes, dim)
+
+    pos_idx = [i for i, c in enumerate(label_classes) if c != EXCLUDE_LABEL]
+
+    top = _TopK(limit)
+    for chunk_ids, X in _stream_chunks(con, emb_col, scope_ids, set(labeled.keys())):
+        X = _normalize(X)
+        logits = X @ protos.T  # (chunk, n_classes) — cosine similarities
+        probas = _softmax(logits)
+
+        for i, mid in enumerate(chunk_ids):
+            p = probas[i]
+            mx = int(np.argmax(p))
+            s = _pos_score(p, pos_idx)
+            top.push(s, PredictionItem(
+                media_id=mid, predicted_class=label_classes[mx],
+                uncertainty=float(1.0 - p[mx]),
+                probabilities={c: float(p[j]) for j, c in enumerate(label_classes)},
+                score=s,
+            ))
+    return top.results()
+
+
+def _mlp_search(
+    labeled, label_classes, con, emb_col, scope_ids, limit, n_layers=1,
+) -> List[PredictionItem]:
+    """MLP: sklearn MLPClassifier, chunked scoring."""
+    from sklearn.neural_network import MLPClassifier
+
+    train_ids, X_train, y_train = _prepare_labeled(labeled, con, emb_col)
+    if train_ids is None:
+        return []
+
+    hidden = {1: (64,), 2: (64, 32), 3: (64, 32, 16)}
+    use_early_stop = len(train_ids) >= 10
+    clf = MLPClassifier(
+        hidden_layer_sizes=hidden.get(n_layers, (64,)),
+        max_iter=500,
+        early_stopping=use_early_stop,
+        validation_fraction=0.2 if use_early_stop else 0.0,
+        solver="adam", learning_rate_init=0.001,
+    )
+    clf.fit(X_train, y_train)
+    classes = list(clf.classes_)
+    pos_idx = [i for i, c in enumerate(classes) if c != EXCLUDE_LABEL]
+
+    top = _TopK(limit)
+    for chunk_ids, X in _stream_chunks(con, emb_col, scope_ids, set(labeled.keys())):
+        probas = clf.predict_proba(X)
+        for i, mid in enumerate(chunk_ids):
+            p = probas[i]
+            mx = int(np.argmax(p))
+            s = _pos_score(p, pos_idx)
+            top.push(s, PredictionItem(
+                media_id=mid, predicted_class=classes[mx],
+                uncertainty=float(1.0 - p[mx]),
+                probabilities={c: float(p[j]) for j, c in enumerate(classes)},
+                score=s,
+            ))
+    return top.results()
+
+
+# ── Route ──
+
+
 @router.post("/api/views/{view_uuid}/active-learning/probe")
 def fit_probe(view_uuid: str, request: ProbeRequest) -> ProbeResponse:
-    """Fit a probe on labeled embeddings and return predictions.
-
-    Scales to millions of items: only labeled embeddings are loaded into
-    memory for training; unlabeled items are scored in streaming chunks.
-    """
+    """Fit a probe on labeled embeddings and return predictions."""
     backend = get_backend()
     loader = DataLoader(view_uuid, backend)
     config = loader.load_config()
@@ -239,7 +348,6 @@ def fit_probe(view_uuid: str, request: ProbeRequest) -> ProbeResponse:
             status_code=400, detail="No embeddings configured for this view"
         )
 
-    # Read labels
     labels_data = loader.label_manager.read_labels()
     if not labels_data:
         raise HTTPException(status_code=400, detail="No labels found")
@@ -267,24 +375,44 @@ def fit_probe(view_uuid: str, request: ProbeRequest) -> ProbeResponse:
     scope_ids = request.media_ids or []
     n_classes = len(label_classes)
 
-    if n_classes == 1:
-        train_ids = list(labeled.keys())
-        predictions = _centroid_search(
-            train_ids, label_classes[0], con, emb_col, scope_ids, request.limit,
-        )
-    elif n_classes >= 2:
-        try:
-            from sklearn.linear_model import LogisticRegression  # noqa: F401
-        except ImportError:
-            raise HTTPException(
-                status_code=501,
-                detail="Install scikit-learn for multi-class active learning: pip install scikit-learn",
+    # Resolve method
+    method = request.method
+    if method == "auto":
+        method = "centroid" if n_classes == 1 else "linear"
+    # Fallback: multi-class methods need 2+ classes
+    if n_classes < 2 and method in ("knn", "linear", "prototype", "mlp"):
+        method = "centroid"
+
+    train_ids = list(labeled.keys())
+
+    if method == "centroid":
+        if n_classes == 1:
+            predictions = _centroid_search(
+                train_ids, label_classes[0], con, emb_col, scope_ids, request.limit,
             )
+        else:
+            predictions = _prototype_search(
+                labeled, label_classes, con, emb_col, scope_ids, request.limit,
+            )
+    elif method == "knn":
+        predictions = _knn_search(
+            labeled, label_classes, con, emb_col, scope_ids, request.limit,
+        )
+    elif method == "linear":
         predictions = _classifier_search(
             labeled, label_classes, con, emb_col, scope_ids, request.limit,
         )
+    elif method == "prototype":
+        predictions = _prototype_search(
+            labeled, label_classes, con, emb_col, scope_ids, request.limit,
+        )
+    elif method == "mlp":
+        predictions = _mlp_search(
+            labeled, label_classes, con, emb_col, scope_ids, request.limit,
+            n_layers=request.mlp_layers,
+        )
     else:
-        predictions = []
+        raise HTTPException(status_code=400, detail=f"Unknown method: {method}")
 
     if request.sort_by == "uncertainty":
         predictions.sort(key=lambda p: p.uncertainty, reverse=True)

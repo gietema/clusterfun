@@ -82,11 +82,17 @@ export function useActiveLearning() {
   const refitServerSide = useCallback(
     async () => {
       if (!uuid) return;
+      // Send [] to score all items — avoids serializing millions of IDs.
+      // The server streams through all embeddings; applyOrder intersects
+      // the results with the current mediaIndices for display.
       const result = await fitProbe(
         uuid,
-        mediaIndices,
+        [],
         sortBy,
         focusLabels ?? undefined,
+        5000,
+        methodId,
+        mlpLayers,
       );
 
       const validFilter =
@@ -103,7 +109,7 @@ export function useActiveLearning() {
 
       applyOrder(result.predictions, validFilter, sortBy);
     },
-    [uuid, mediaIndices, sortBy, focusLabels, classFilter, setAlState, setClassFilterAtom, applyOrder],
+    [uuid, mediaIndices, sortBy, focusLabels, methodId, mlpLayers, classFilter, setAlState, setClassFilterAtom, applyOrder],
   );
 
   const refitClientSide = useCallback(

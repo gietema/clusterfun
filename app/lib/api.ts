@@ -188,12 +188,16 @@ export async function fitProbe(
   sortBy: ProbeSortBy = "confidence",
   focusLabels?: string[],
   limit = 5000,
+  method = "auto",
+  mlpLayers = 1,
 ): Promise<ProbeResponse> {
   const { data } = await axios.post(`${API_URL}/views/${uuid}/active-learning/probe`, {
     media_ids: mediaIds,
     sort_by: sortBy,
     focus_labels: focusLabels ?? null,
     limit,
+    method,
+    mlp_layers: mlpLayers,
   });
   return data;
 }
