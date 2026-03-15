@@ -6,6 +6,7 @@ the underlying Parquet data.
 """
 
 import dataclasses
+import threading
 from typing import Any, Dict, List, Optional
 
 import duckdb
@@ -234,6 +235,77 @@ def _build_bar_chart_data(
 
 # Cache for 2D projections so color changes are instant.
 _embedding_projection_cache: Dict[str, pd.DataFrame] = {}
+# Numba (used by UMAP internally) is not thread-safe with the default
+# "workqueue" threading layer. A lock ensures only one projection runs
+# at a time. Cached results bypass the lock entirely.
+_projection_lock = threading.Lock()
+
+
+def _compute_projection(
+    sample_emb: np.ndarray,
+    sample_ids: np.ndarray,
+    actual_sample: int,
+    method: str,
+    n_neighbors: int,
+) -> pd.DataFrame:
+    """Run dimensionality reduction (UMAP/t-SNE/PCA) on embeddings."""
+    # PCA pre-reduction: high-dim NN search is the bottleneck.
+    # Reducing 768-dim to 50-dim cuts distance computation ~15x.
+    n_dims = sample_emb.shape[1]
+    reduced = sample_emb
+    if method != "pca" and n_dims > 50:
+        from sklearn.decomposition import PCA as _PCA
+
+        reduced = _PCA(n_components=50).fit_transform(sample_emb)
+
+    # For large samples, fit UMAP on a subset then transform the rest.
+    FIT_THRESHOLD = 8000
+
+    if method == "umap":
+        import umap as umap_lib
+
+        reducer = umap_lib.UMAP(
+            n_neighbors=min(n_neighbors, actual_sample - 1),
+            n_components=2,
+            metric="euclidean",
+            init="pca",
+            n_jobs=-1,
+        )
+        if actual_sample > FIT_THRESHOLD:
+            fit_rng = np.random.RandomState(42)
+            fit_idx = fit_rng.choice(actual_sample, FIT_THRESHOLD, replace=False)
+            rest_mask = np.ones(actual_sample, dtype=bool)
+            rest_mask[fit_idx] = False
+            reducer.fit(reduced[fit_idx])
+            coords = np.empty((actual_sample, 2), dtype=np.float32)
+            coords[fit_idx] = reducer.embedding_
+            coords[rest_mask] = reducer.transform(reduced[rest_mask])
+        else:
+            coords = reducer.fit_transform(reduced)
+    elif method == "tsne":
+        from sklearn.manifold import TSNE
+
+        reducer = TSNE(
+            n_components=2,
+            perplexity=min(30, actual_sample - 1),
+            n_jobs=-1,
+        )
+        coords = reducer.fit_transform(reduced)
+    elif method == "pca":
+        from sklearn.decomposition import PCA
+
+        reducer = PCA(n_components=2)
+        coords = reducer.fit_transform(sample_emb)
+    else:
+        raise ValueError(f"Unknown method: {method}")
+
+    return pd.DataFrame(
+        {
+            "id": sample_ids,
+            "_x": coords[:, 0].astype(float),
+            "_y": coords[:, 1].astype(float),
+        }
+    )
 
 
 def _build_embedding_map_data(
@@ -264,7 +336,7 @@ def _build_embedding_map_data(
         return [], None
 
     all_ids = np.array([r[0] for r in rows])
-    all_embeddings = np.array([list(r[1]) for r in rows], dtype=np.float32)
+    all_embeddings = np.array([r[1] for r in rows], dtype=np.float32)
 
     n = len(all_ids)
     actual_sample = min(n, sample_size)
@@ -281,41 +353,15 @@ def _build_embedding_map_data(
     if cache_key in _embedding_projection_cache:
         proj_df = _embedding_projection_cache[cache_key]
     else:
-        if method == "umap":
-            import umap as umap_lib
-
-            reducer = umap_lib.UMAP(
-                n_neighbors=min(n_neighbors, actual_sample - 1),
-                n_components=2,
-                metric="cosine",
-                random_state=42,
-            )
-            coords = reducer.fit_transform(sample_emb)
-        elif method == "tsne":
-            from sklearn.manifold import TSNE
-
-            reducer = TSNE(
-                n_components=2,
-                perplexity=min(30, actual_sample - 1),
-                random_state=42,
-            )
-            coords = reducer.fit_transform(sample_emb)
-        elif method == "pca":
-            from sklearn.decomposition import PCA
-
-            reducer = PCA(n_components=2, random_state=42)
-            coords = reducer.fit_transform(sample_emb)
-        else:
-            raise ValueError(f"Unknown method: {method}")
-
-        proj_df = pd.DataFrame(
-            {
-                "id": sample_ids,
-                "_x": coords[:, 0].astype(float),
-                "_y": coords[:, 1].astype(float),
-            }
-        )
-        _embedding_projection_cache[cache_key] = proj_df
+        with _projection_lock:
+            # Double-check after acquiring lock (another thread may have filled it)
+            if cache_key in _embedding_projection_cache:
+                proj_df = _embedding_projection_cache[cache_key]
+            else:
+                proj_df = _compute_projection(
+                    sample_emb, sample_ids, actual_sample, method, n_neighbors
+                )
+                _embedding_projection_cache[cache_key] = proj_df
 
     # Join with color column if needed
     if cfg.color:

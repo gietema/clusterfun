@@ -122,13 +122,15 @@ export default function PlotPage({ onMediaSelect }: PlotPageProps) {
     (panelId: string, updated: PlotPanelConfig) => {
       setPanels((prev) => prev.map((p) => (p.id === panelId ? updated : p)));
 
-      // Debounce the API call
+      // Debounce the API call — longer delay for embedding maps since
+      // each parameter change triggers an expensive computation
+      const delay = updated.type === "embedding_map" ? 1500 : 300;
       if (debounceTimers.current[panelId]) {
         clearTimeout(debounceTimers.current[panelId]);
       }
       debounceTimers.current[panelId] = setTimeout(() => {
         fetchPanelData(updated);
-      }, 300);
+      }, delay);
     },
     [setPanels, fetchPanelData],
   );
