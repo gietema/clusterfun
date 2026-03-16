@@ -226,7 +226,9 @@ def _normalize_python_list(value) -> str:
     Handles edge cases like escaped quotes and mixed quoting styles
     that are common in HuggingFace datasets (e.g. MMMU options column).
     """
-    # Handle array/list values (DuckDB returns VARCHAR[] as Python lists)
+    # Handle array/list/ndarray values (DuckDB returns VARCHAR[] as numpy arrays via fetchdf)
+    if hasattr(value, "tolist"):
+        return json.dumps(value.tolist())
     if isinstance(value, (list, tuple)):
         return json.dumps(list(value))
     try:
@@ -271,6 +273,96 @@ def _synthesize_mmbench_choices(df: pd.DataFrame) -> pd.DataFrame:
         axis=1,
     )
     return df
+
+
+# CharXiv descriptive question templates (IDs 1-19 → question text)
+_CHARXIV_QMAP = {
+    1: "What is the title of the plot?",
+    2: "What is the label of the x-axis?",
+    3: "What is the label of the y-axis?",
+    4: "What is the leftmost labeled tick on the x-axis?",
+    5: "What is the rightmost labeled tick on the x-axis?",
+    6: "What is the spatially lowest labeled tick on the y-axis?",
+    7: "What is the spatially highest labeled tick on the y-axis?",
+    8: "What is difference between consecutive numerical tick values on the x-axis?",
+    9: "What is difference between consecutive numerical tick values on the y-axis?",
+    10: "How many lines are there?",
+    11: "Do any lines intersect?",
+    12: "How many discrete labels are there in the legend?",
+    13: "What are the names of the labels in the legend? (from top to bottom, then left to right)",
+    14: "What is the difference between the maximum and minimum values of the tick labels on the continuous legend (i.e., colorbar)?",
+    15: "What is the maximum value of the tick labels on the continuous legend (i.e., colorbar)?",
+    16: "What is the general trend of data from left to right?",
+    17: "What is the total number of explicitly labeled ticks across all axes?",
+    18: "What is the layout of the subplots?",
+    19: "What is the number of subplots?",
+}
+
+
+def _is_charxiv_schema(columns: List[str]) -> bool:
+    """Check if columns match the CharXiv dataset pattern."""
+    col_set = set(columns)
+    return (
+        "descriptive_q1" in col_set
+        and "descriptive_a1" in col_set
+        and "reasoning_q" in col_set
+        and "reasoning_a" in col_set
+    )
+
+
+def _transform_charxiv(
+    df: pd.DataFrame, media_col: str, other_columns: List[str]
+) -> tuple[pd.DataFrame, List[str]]:
+    """Transform CharXiv multi-question-per-row format into one-row-per-question.
+
+    Each chart in CharXiv has 4 descriptive questions (integer IDs mapping to
+    template text) and 1 reasoning question (free text). This function explodes
+    each chart into up to 5 rows with standard ``question`` and ``answer`` columns.
+
+    Returns (transformed_df, new_other_columns).
+    """
+    # Metadata columns to preserve on each exploded row
+    meta_cols = [
+        c for c in other_columns
+        if not c.startswith("descriptive_") and not c.startswith("reasoning_")
+    ]
+
+    rows = []
+    for _, row in df.iterrows():
+        base = {media_col: row[media_col]}
+        for col in meta_cols:
+            if col in row.index:
+                base[col] = row[col]
+
+        # Descriptive questions (q1-q4)
+        for i in range(1, 5):
+            q_col = f"descriptive_q{i}"
+            a_col = f"descriptive_a{i}"
+            if q_col in row.index and pd.notna(row[q_col]):
+                q_id = int(row[q_col])
+                q_text = _CHARXIV_QMAP.get(q_id, f"Descriptive question {q_id}")
+                answer = str(row[a_col]) if a_col in row.index and pd.notna(row[a_col]) else ""
+                rows.append({
+                    **base,
+                    "question": q_text,
+                    "answer": answer,
+                    "question_type": "descriptive",
+                    "question_id": q_id,
+                })
+
+        # Reasoning question
+        if "reasoning_q" in row.index and pd.notna(row["reasoning_q"]):
+            rows.append({
+                **base,
+                "question": str(row["reasoning_q"]),
+                "answer": str(row["reasoning_a"]) if pd.notna(row.get("reasoning_a")) else "",
+                "question_type": "reasoning",
+                "question_id": None,
+            })
+
+    new_df = pd.DataFrame(rows)
+    new_other_columns = meta_cols + ["question", "answer", "question_type", "question_id"]
+    return new_df, new_other_columns
 
 
 def _read_metadata(
@@ -509,6 +601,11 @@ def from_huggingface(
         for col_name, mapping in label_mappings.items():
             if col_name in df.columns:
                 df[col_name] = df[col_name].map(mapping).fillna(df[col_name])
+
+    # 5b. Transform CharXiv multi-question schema into one-row-per-question
+    if _is_charxiv_schema(other_columns):
+        df, other_columns = _transform_charxiv(df, "image", other_columns)
+        print(f"CharXiv: expanded to {len(df)} question-answer rows")
 
     # 6. Detect VQA columns and synthesize choices if needed
     vqa = _detect_vqa_columns(other_columns)
