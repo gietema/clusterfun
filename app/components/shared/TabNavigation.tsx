@@ -40,16 +40,16 @@ export default function TabNavigation() {
   const [searching, setSearching] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [focused, setFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const hasEmbeddingsModel = supportsTextSearch(config?.embeddings_model);
   const hasActiveSearch = searchQuery.length > 0;
+  const isDirty = inputValue.trim() !== searchQuery;
 
-  // Sync input with persisted query on mount
+  // Keep input in sync with persisted query
   useEffect(() => {
-    if (searchQuery) setInputValue(searchQuery);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    if (searchQuery && !inputValue) setInputValue(searchQuery);
+  }, [searchQuery]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cmd+K to focus search
   useEffect(() => {
@@ -58,6 +58,7 @@ export default function TabNavigation() {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         inputRef.current?.focus();
+        inputRef.current?.select();
       }
     };
     window.addEventListener("keydown", handler);
@@ -72,7 +73,6 @@ export default function TabNavigation() {
     try {
       let results;
       if (supportsBrowserTextSearch(config.embeddings_model)) {
-        // Browser-side CLIP text encoding (ONNX)
         const embedding = await encodeText(
           config.embeddings_model,
           query.trim(),
@@ -81,7 +81,6 @@ export default function TabNavigation() {
         setProgress(null);
         results = await fetchSimilarVector(uuid, embedding);
       } else {
-        // Server-side text encoding (SigLIP, etc.)
         setProgress(null);
         results = await fetchTextSearch(uuid, query.trim());
       }
@@ -90,9 +89,9 @@ export default function TabNavigation() {
       for (const r of results) scores[r.media_id] = r.similarity;
       setSimilarityResults(scores);
       setSearchQuery(query.trim());
+      setInputValue(query.trim());
       replaceTop(ids, `Search: ${query.trim()}`);
       setShowPage("grid");
-      inputRef.current?.blur();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Search failed");
     } finally {
@@ -107,6 +106,7 @@ export default function TabNavigation() {
     setSimilarityResults({});
     popSelection();
     setError(null);
+    inputRef.current?.focus();
   }, [setSearchQuery, setSimilarityResults, popSelection]);
 
   const tabs = [
@@ -147,54 +147,26 @@ export default function TabNavigation() {
       {/* Background tasks */}
       <TaskQueueIndicator />
 
-      {/* Text search */}
+      {/* Text search — always editable, never collapses */}
       {hasEmbeddingsModel && (
-        <div className="flex items-center gap-1.5 py-1">
-          {/* Active search pill */}
-          {hasActiveSearch && !focused && (
-            <div className="flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1">
-              <svg className="h-3 w-3 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.35-4.35" />
-              </svg>
-              <span className="max-w-[150px] truncate text-xs font-medium text-blue-700">
-                {searchQuery}
-              </span>
-              <button
-                onClick={handleClearSearch}
-                className="ml-0.5 rounded-full p-0.5 text-blue-400 transition-colors hover:bg-blue-100 hover:text-blue-700"
-                title="Clear search"
-              >
-                <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M18 6 6 18M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          )}
-
-          {/* Search input */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSearch(inputValue);
-            }}
-            className={`flex items-center rounded-md border transition-all ${
-              focused
-                ? "w-64 border-gray-400 bg-white shadow-sm"
-                : hasActiveSearch
-                  ? "w-8 border-transparent"
-                  : "w-48 border-gray-200 bg-gray-50"
-            }`}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSearch(inputValue);
+          }}
+          className="flex items-center gap-1.5 py-1"
+        >
+          <div className={`flex items-center rounded-md border transition-all ${
+            hasActiveSearch ? "border-blue-200 bg-blue-50" : "border-gray-200 bg-gray-50"
+          }`}
+            style={{ width: "18rem" }}
           >
-            {/* Search icon / button */}
+            {/* Search icon / spinner */}
             <button
-              type={inputValue.trim() ? "submit" : "button"}
-              onClick={() => {
-                if (!inputValue.trim()) inputRef.current?.focus();
-              }}
-              disabled={searching}
-              className="flex shrink-0 items-center justify-center px-2 py-1.5 text-gray-400 transition-colors hover:text-gray-600"
-              title="Search by text (⌘K)"
+              type="submit"
+              disabled={searching || !inputValue.trim()}
+              className="flex shrink-0 items-center justify-center px-2 py-1.5 text-gray-400 transition-colors hover:text-gray-600 disabled:opacity-50"
+              title="Search (Enter)"
             >
               {searching ? (
                 progress !== null ? (
@@ -210,6 +182,7 @@ export default function TabNavigation() {
               )}
             </button>
 
+            {/* Input — always visible and editable */}
             <input
               ref={inputRef}
               type="text"
@@ -218,34 +191,55 @@ export default function TabNavigation() {
                 setInputValue(e.target.value);
                 if (error) setError(null);
               }}
-              onFocus={() => setFocused(true)}
-              onBlur={() => setFocused(false)}
               onKeyDown={(e) => {
                 if (e.key === "Escape") {
+                  if (hasActiveSearch) {
+                    // Reset to current search query
+                    setInputValue(searchQuery);
+                  }
                   inputRef.current?.blur();
                 }
               }}
-              placeholder={focused ? "Describe what you're looking for..." : "Search by text..."}
-              className={`min-w-0 flex-1 bg-transparent py-1.5 pr-2 text-xs text-gray-700 placeholder-gray-400 focus:outline-none ${
-                !focused && hasActiveSearch ? "hidden" : ""
+              placeholder="Search by text..."
+              className={`min-w-0 flex-1 bg-transparent py-1.5 text-xs placeholder-gray-400 focus:outline-none ${
+                hasActiveSearch ? "text-blue-700" : "text-gray-700"
               }`}
             />
 
-            {/* Cmd+K hint — show only when not focused and no active search */}
-            {!focused && !hasActiveSearch && !searching && (
+            {/* Clear button — shown when there's an active search */}
+            {hasActiveSearch && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="mr-1 shrink-0 rounded p-0.5 text-blue-400 transition-colors hover:bg-blue-100 hover:text-blue-700"
+                title="Clear search"
+              >
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+
+            {/* Cmd+K hint — only when empty */}
+            {!hasActiveSearch && !inputValue && !searching && (
               <kbd className="mr-2 shrink-0 rounded border border-gray-200 bg-white px-1 py-0.5 text-[10px] text-gray-400">
                 ⌘K
               </kbd>
             )}
-          </form>
 
-          {/* Error tooltip */}
+            {/* "Modified" indicator — query changed but not submitted */}
+            {isDirty && inputValue.trim() && !searching && (
+              <span className="mr-2 shrink-0 text-[10px] text-gray-400">Enter to search</span>
+            )}
+          </div>
+
+          {/* Error */}
           {error && (
             <span className="text-xs text-red-500" title={error}>
               failed
             </span>
           )}
-        </div>
+        </form>
       )}
     </div>
   );
