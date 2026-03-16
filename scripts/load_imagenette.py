@@ -74,6 +74,10 @@ def load_imagenette(split: str = "train", size: str = "320px") -> pd.DataFrame:
 
 
 MODEL_INFO = {
+    "siglip2": {
+        "col": "siglip2_embedding",
+        "hf_name": "google/siglip2-base-patch16-224",
+    },
     "clip": {
         "col": "clip_embedding",
         "hf_name": "openai/clip-vit-base-patch32",
@@ -88,7 +92,7 @@ MODEL_INFO = {
 @click.command()
 @click.option("--split", type=click.Choice(["train", "validation"]), default="train")
 @click.option("--size", type=click.Choice(["full_size", "320px", "160px"]), default="320px")
-@click.option("--model", type=click.Choice(["clip", "dinov2"]), default="clip", help="Embedding model")
+@click.option("--model", type=click.Choice(list(MODEL_INFO.keys())), default="siglip2", help="Embedding model")
 @click.option("--embeddings/--no-embeddings", default=True, help="Compute embeddings")
 def main(split, size, model, embeddings):
     suffix = f"{model}_embeddings" if embeddings else "no_embeddings"
@@ -105,7 +109,11 @@ def main(split, size, model, embeddings):
             sys.path.insert(0, str(Path(__file__).parent))
 
             info = MODEL_INFO[model]
-            if model == "clip":
+            if model == "siglip2":
+                from similarity import compute_siglip2_embeddings
+                print("Computing SigLIP 2 embeddings...")
+                embs, valid_indices = compute_siglip2_embeddings(df["image"].tolist(), local=True)
+            elif model == "clip":
                 from similarity import compute_clip_embeddings
                 print("Computing CLIP embeddings...")
                 embs, valid_indices = compute_clip_embeddings(df["image"].tolist(), local=True)
@@ -123,7 +131,7 @@ def main(split, size, model, embeddings):
 
     import clusterfun as clt
 
-    info = MODEL_INFO.get(model, MODEL_INFO["clip"])
+    info = MODEL_INFO.get(model, MODEL_INFO["siglip2"])
     emb_col = info["col"] if info["col"] in df.columns else None
 
     kwargs = dict(
