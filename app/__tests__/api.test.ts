@@ -172,7 +172,7 @@ describe("fetchColumnStats", () => {
     expect(stats.type).toBe("categorical");
     expect(mockedAxios.post).toHaveBeenCalledWith(
       expect.stringContaining("/column-stats"),
-      { media_ids: [0, 1], column: "category" },
+      { media_ids: [0, 1], column: "category", offset: 0, limit: 50 },
     );
   });
 });

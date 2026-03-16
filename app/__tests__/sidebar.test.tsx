@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 import { screen } from "@testing-library/react";
 import { configAtom, mediaAtom } from "@/app/store/atoms";
 import { renderWithAtoms, makeMedia, testConfig, testConfigWithBbox } from "./helpers";
+import type { PlotConfig } from "@/app/types";
 import SideBar from "@/app/components/shared/SideBar";
 
 // Mock PreviewMedia since it uses refs and image loading
@@ -92,5 +93,58 @@ describe("SideBar", () => {
     ]);
     // Should render but with no information items
     expect(container.querySelector("[data-testid='preview-media']")).toBeNull();
+  });
+
+  it("renders QACard when config.vqa is set", () => {
+    const vqaConfig: PlotConfig = {
+      ...testConfig,
+      vqa: { question: "question", answer: "answer", choices: "options" },
+    };
+    const media = makeMedia({
+      information: {
+        question: "What color is the sky?",
+        answer: "B",
+        options: '["red", "blue", "green"]',
+        category: "science",
+      },
+    });
+    renderWithAtoms(<SideBar />, [
+      [configAtom, vqaConfig],
+      [mediaAtom, media],
+    ]);
+    // Question should be visible via QACard
+    expect(screen.getByText("What color is the sky?")).toBeInTheDocument();
+    // Choices should be rendered
+    expect(screen.getByText("red")).toBeInTheDocument();
+    expect(screen.getByText("blue")).toBeInTheDocument();
+    // Answer should be visible immediately (B appears as badge + answer)
+    expect(screen.getAllByText("B").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("filters VQA columns from regular information items", () => {
+    const vqaConfig: PlotConfig = {
+      ...testConfig,
+      vqa: { question: "question", answer: "answer" },
+    };
+    const media = makeMedia({
+      information: {
+        question: "What is this?",
+        answer: "cat",
+        category: "animal",
+        score: 0.9,
+      },
+    });
+    renderWithAtoms(<SideBar />, [
+      [configAtom, vqaConfig],
+      [mediaAtom, media],
+    ]);
+    // VQA columns should NOT appear as regular InformationItems
+    // (question appears in QACard, not as a label)
+    const allLabels = screen.getAllByText("category");
+    expect(allLabels.length).toBe(1);
+    // "answer" as a label for InformationItem should not exist
+    expect(screen.queryAllByText("answer").length).toBeLessThanOrEqual(1);
+    // Non-VQA column should still be visible
+    expect(screen.getByText("0.9")).toBeInTheDocument();
   });
 });

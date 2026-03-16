@@ -34,6 +34,13 @@ export interface PlotConfig {
   embeddings_model?: string;
   project?: string;
   total_count?: number;
+  vqa?: {
+    question?: string;
+    answer?: string;
+    choices?: string;
+    explanation?: string;
+  };
+  hf_extra_image_columns?: string[];
 }
 
 // ── Bounding Box ──

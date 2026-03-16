@@ -22,10 +22,13 @@ from fastapi.testclient import TestClient
 import clusterfun.storage.backends as backends_module
 from clusterfun.config import Config
 from clusterfun.huggingface import (
+    _detect_all_image_columns,
     _detect_image_column,
+    _detect_vqa_columns,
     _discover_parquet_urls,
     _read_metadata,
     _resolve_labels,
+    _synthesize_mmbench_choices,
     from_huggingface,
     search_datasets,
 )
@@ -465,11 +468,9 @@ class TestHfBytesEndpoint:
         uuid = self._save_hf_view(local_backend)
 
         fake_png = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
-        mock_con = MagicMock()
-        mock_con.execute.return_value.fetchone.return_value = (fake_png,)
 
         with patch(
-            "clusterfun.routes.huggingface.duckdb.connect", return_value=mock_con
+            "clusterfun.routes.huggingface._fetch_hf_bytes", return_value=fake_png
         ):
             resp = client.get(f"/api/views/{uuid}/hf-bytes/0")
 
@@ -483,7 +484,7 @@ class TestHfBytesEndpoint:
         assert (cache_dir / "0.png").read_bytes() == fake_png
 
     def test_remote_fetch_uses_correct_offset(self, local_backend, client):
-        """Verify the SQL uses OFFSET based on the row index from local parquet."""
+        """Verify _fetch_hf_bytes is called with the correct row index."""
         uuid = self._save_hf_view(local_backend)
 
         # Look up what row index id=1 maps to in the local parquet
@@ -494,21 +495,17 @@ class TestHfBytesEndpoint:
         expected_offset = int(row[0])
 
         fake_jpeg = b"\xff\xd8\xff\xe0" + b"\x00" * 100
-        mock_con = MagicMock()
-        mock_con.execute.return_value.fetchone.return_value = (fake_jpeg,)
 
         with patch(
-            "clusterfun.routes.huggingface.duckdb.connect", return_value=mock_con
-        ):
+            "clusterfun.routes.huggingface._fetch_hf_bytes", return_value=fake_jpeg
+        ) as mock_fetch:
             resp = client.get(f"/api/views/{uuid}/hf-bytes/1")
 
         assert resp.status_code == 200
-        # Check that the SQL contained the correct OFFSET
-        sql_calls = [
-            str(call) for call in mock_con.execute.call_args_list
-        ]
-        sql_text = " ".join(sql_calls)
-        assert f"OFFSET {expected_offset}" in sql_text
+        # Verify the row index passed to _fetch_hf_bytes
+        mock_fetch.assert_called_once()
+        call_args = mock_fetch.call_args
+        assert call_args[0][2] == expected_offset  # 3rd positional arg is row_idx
 
     def test_immutable_cache_header(self, local_backend, client):
         uuid = self._save_hf_view(local_backend)
@@ -562,12 +559,14 @@ class TestFromHuggingfaceEndToEnd:
         )
         other_columns = ["label"]
 
+        schema = [
+            ("image", "STRUCT(bytes BLOB, path VARCHAR)", None, None, None, None),
+            ("label", "BIGINT", None, None, None, None),
+        ]
+
         with (
             patch("clusterfun.huggingface.requests.get", mock_requests_get),
-            patch(
-                "clusterfun.huggingface._detect_image_column",
-                return_value="image",
-            ),
+            patch("clusterfun.huggingface._get_schema", return_value=schema),
             patch(
                 "clusterfun.huggingface._read_metadata",
                 return_value=(metadata_df, other_columns),
@@ -596,3 +595,394 @@ class TestFromHuggingfaceEndToEnd:
         assert rows[0][2] == "cat"
         assert rows[1][2] == "dog"
         assert rows[2][2] == "cat"
+
+
+# ---------------------------------------------------------------------------
+# Unit tests: VQA column detection
+# ---------------------------------------------------------------------------
+
+
+class TestDetectVqaColumns:
+    def test_mmmu_schema(self):
+        """MMMU has question, answer, options, explanation."""
+        cols = ["question", "options", "answer", "explanation", "img_type", "topic_difficulty"]
+        result = _detect_vqa_columns(cols)
+        assert result == {
+            "question": "question",
+            "answer": "answer",
+            "choices": "options",
+            "explanation": "explanation",
+        }
+
+    def test_mmbench_schema(self):
+        """MMBench has question, answer, A, B, C, D."""
+        cols = ["question", "A", "B", "C", "D", "answer", "category", "hint"]
+        result = _detect_vqa_columns(cols)
+        assert result is not None
+        assert result["question"] == "question"
+        assert result["answer"] == "answer"
+        assert result["choices"] == "_choices"
+
+    def test_chartqa_schema(self):
+        """ChartQA uses 'query' and 'label' instead of 'question' and 'answer'."""
+        cols = ["query", "label", "human_or_machine"]
+        result = _detect_vqa_columns(cols)
+        assert result is not None
+        assert result["question"] == "query"
+        assert result["answer"] == "label"
+        assert "choices" not in result
+
+    def test_vqav2_schema(self):
+        """VQAv2 has question and multiple_choice_answer."""
+        cols = ["question", "multiple_choice_answer", "answers", "question_type"]
+        result = _detect_vqa_columns(cols)
+        assert result is not None
+        assert result["question"] == "question"
+        # Should pick 'multiple_choice_answer' before 'answers' since it comes first
+        # Actually the order is: answer, answers, multiple_choice_answer, label
+        # So 'answers' wins
+        assert result["answer"] == "answers"
+
+    def test_docvqa_schema(self):
+        """DocVQA has question and answers (list)."""
+        cols = ["question", "answers", "questionId", "question_types"]
+        result = _detect_vqa_columns(cols)
+        assert result is not None
+        assert result["question"] == "question"
+        assert result["answer"] == "answers"
+
+    def test_scienceqa_with_solution(self):
+        """ScienceQA has question, answer, choices, and solution."""
+        cols = ["question", "choices", "answer", "hint", "task", "grade", "solution"]
+        result = _detect_vqa_columns(cols)
+        assert result is not None
+        assert result["question"] == "question"
+        assert result["answer"] == "answer"
+        assert result["choices"] == "choices"
+        assert result["explanation"] == "solution"
+
+    def test_classification_no_false_positive(self):
+        """Classification datasets (image + label) should NOT be detected as VQA."""
+        cols = ["label", "split"]
+        result = _detect_vqa_columns(cols)
+        assert result is None
+
+    def test_no_question_returns_none(self):
+        """Without a question column, returns None."""
+        cols = ["answer", "text", "summary"]
+        result = _detect_vqa_columns(cols)
+        assert result is None
+
+
+# ---------------------------------------------------------------------------
+# Unit tests: multi-image detection
+# ---------------------------------------------------------------------------
+
+
+class TestDetectAllImageColumns:
+    def test_single_image(self):
+        schema = [
+            ("image", "STRUCT(bytes BLOB, path VARCHAR)", None, None, None, None),
+            ("label", "BIGINT", None, None, None, None),
+        ]
+        result = _detect_all_image_columns(schema)
+        assert result == ["image"]
+
+    def test_multiple_images_mmmu(self):
+        """MMMU-style image_1 through image_7."""
+        schema = [
+            ("id", "VARCHAR", None, None, None, None),
+            ("question", "VARCHAR", None, None, None, None),
+            ("image_1", "STRUCT(bytes BLOB, path VARCHAR)", None, None, None, None),
+            ("image_2", "STRUCT(bytes BLOB, path VARCHAR)", None, None, None, None),
+            ("image_3", "STRUCT(bytes BLOB, path VARCHAR)", None, None, None, None),
+            ("answer", "VARCHAR", None, None, None, None),
+        ]
+        result = _detect_all_image_columns(schema)
+        assert result == ["image_1", "image_2", "image_3"]
+
+    def test_no_images(self):
+        schema = [
+            ("text", "VARCHAR", None, None, None, None),
+            ("label", "BIGINT", None, None, None, None),
+        ]
+        result = _detect_all_image_columns(schema)
+        assert result == []
+
+    def test_mixed_structs(self):
+        """Only struct columns with 'bytes' are image columns."""
+        schema = [
+            ("image", "STRUCT(bytes BLOB, path VARCHAR)", None, None, None, None),
+            ("metadata", "STRUCT(key VARCHAR, value VARCHAR)", None, None, None, None),
+        ]
+        result = _detect_all_image_columns(schema)
+        assert result == ["image"]
+
+
+# ---------------------------------------------------------------------------
+# Unit tests: MMBench choice synthesis
+# ---------------------------------------------------------------------------
+
+
+class TestSynthesizeMmbenchChoices:
+    def test_combines_abcd(self):
+        df = pd.DataFrame({
+            "question": ["What is this?"],
+            "A": ["cat"], "B": ["dog"], "C": ["bird"], "D": ["fish"],
+            "answer": ["A"],
+        })
+        result = _synthesize_mmbench_choices(df)
+        assert "_choices" in result.columns
+        choices = json.loads(result["_choices"].iloc[0])
+        assert choices == ["cat", "dog", "bird", "fish"]
+
+    def test_handles_nan(self):
+        df = pd.DataFrame({
+            "question": ["What?"],
+            "A": ["yes"], "B": ["no"], "C": [None], "D": [None],
+            "answer": ["A"],
+        })
+        result = _synthesize_mmbench_choices(df)
+        choices = json.loads(result["_choices"].iloc[0])
+        assert choices == ["yes", "no"]
+
+    def test_noop_without_abcd(self):
+        df = pd.DataFrame({"question": ["What?"], "answer": ["yes"]})
+        result = _synthesize_mmbench_choices(df)
+        assert "_choices" not in result.columns
+
+
+# ---------------------------------------------------------------------------
+# Unit tests: Config VQA fields
+# ---------------------------------------------------------------------------
+
+
+class TestConfigVqaFields:
+    def test_config_with_vqa(self):
+        cfg = Config(
+            type="grid",
+            media="image",
+            columns=["id", "image", "question", "answer"],
+            vqa={"question": "question", "answer": "answer"},
+            hf_extra_image_columns=["image_2", "image_3"],
+        )
+        assert cfg.vqa == {"question": "question", "answer": "answer"}
+        assert cfg.hf_extra_image_columns == ["image_2", "image_3"]
+
+    def test_config_without_vqa(self):
+        cfg = Config(type="grid", media="image", columns=["id", "image"])
+        assert cfg.vqa is None
+        assert cfg.hf_extra_image_columns is None
+
+
+# ---------------------------------------------------------------------------
+# Integration: HF bytes with extra image column
+# ---------------------------------------------------------------------------
+
+
+class TestHfBytesExtraCol:
+    def _save_hf_view_with_extras(self, backend, uuid="test-hf-extra"):
+        df = pd.DataFrame({
+            "image": ["0", "1"],
+            "question": ["What?", "Who?"],
+        })
+        cfg = Config(
+            type="grid",
+            media="image",
+            columns=["id", "image", "question"],
+            hf_parquet_urls=["https://example.com/data.parquet"],
+            hf_image_column="image_1",
+            hf_extra_image_columns=["image_2", "image_3"],
+        )
+        LocalStorer(backend=backend).save(uuid, df, cfg)
+        return uuid
+
+    def test_extra_col_cache_hit(self, local_backend, client):
+        uuid = self._save_hf_view_with_extras(local_backend)
+        cache_dir = local_backend.cache_dir / uuid / "hf_image_cache"
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        png_bytes = b"\x89PNG\r\n\x1a\n" + b"\x00" * 50
+        (cache_dir / "0_image_2.png").write_bytes(png_bytes)
+
+        resp = client.get(f"/api/views/{uuid}/hf-bytes/0?col=image_2")
+        assert resp.status_code == 200
+        assert resp.content == png_bytes
+
+    def test_invalid_col_rejected(self, local_backend, client):
+        uuid = self._save_hf_view_with_extras(local_backend)
+        resp = client.get(f"/api/views/{uuid}/hf-bytes/0?col=malicious_col")
+        assert resp.status_code == 404
+
+    def test_extra_col_remote_fetch(self, local_backend, client):
+        uuid = self._save_hf_view_with_extras(local_backend)
+        fake_png = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
+
+        with patch(
+            "clusterfun.routes.huggingface._fetch_hf_bytes", return_value=fake_png
+        ):
+            resp = client.get(f"/api/views/{uuid}/hf-bytes/0?col=image_2")
+
+        assert resp.status_code == 200
+        # Verify cache uses col-namespaced key
+        cache_dir = local_backend.cache_dir / uuid / "hf_image_cache"
+        assert (cache_dir / "0_image_2.png").exists()
+
+
+# ---------------------------------------------------------------------------
+# Integration: from_huggingface with VQA detection
+# ---------------------------------------------------------------------------
+
+
+class TestHfThumbnailAutoFetch:
+    """Thumbnails should auto-fetch from HF when not cached."""
+
+    def _save_hf_view(self, backend, uuid="test-hf-thumb"):
+        df = pd.DataFrame({
+            "image": ["0", "1"],
+            "label": ["cat", "dog"],
+        })
+        cfg = Config(
+            type="grid",
+            media="image",
+            columns=["id", "image", "label"],
+            hf_parquet_urls=["https://example.com/data.parquet"],
+            hf_image_column="img",
+        )
+        LocalStorer(backend=backend).save(uuid, df, cfg)
+        return uuid
+
+    def test_thumbnail_fetches_uncached_image(self, local_backend, client):
+        """When thumbnail is requested but image not cached, it should fetch from HF."""
+        from io import BytesIO
+        from PIL import Image as PILImage
+
+        uuid = self._save_hf_view(local_backend)
+
+        # Create a valid PNG in memory
+        img = PILImage.new("RGB", (10, 10), color="blue")
+        buf = BytesIO()
+        img.save(buf, format="PNG")
+        valid_png = buf.getvalue()
+
+        with patch(
+            "clusterfun.routes.huggingface._fetch_hf_bytes", return_value=valid_png
+        ):
+            resp = client.get(f"/api/views/{uuid}/media/0/thumbnail?size=64")
+
+        assert resp.status_code == 200
+        assert resp.headers["content-type"] == "image/jpeg"
+
+        # Image should now be cached
+        cache_dir = local_backend.cache_dir / uuid / "hf_image_cache"
+        assert (cache_dir / "0.png").exists()
+
+    def test_thumbnail_uses_existing_cache(self, local_backend, client):
+        """When image is already cached, thumbnail should not trigger a fetch."""
+        from io import BytesIO
+        from PIL import Image as PILImage
+
+        uuid = self._save_hf_view(local_backend)
+
+        cache_dir = local_backend.cache_dir / uuid / "hf_image_cache"
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        img = PILImage.new("RGB", (10, 10), color="red")
+        buf = BytesIO()
+        img.save(buf, format="PNG")
+        (cache_dir / "0.png").write_bytes(buf.getvalue())
+
+        # Should work without any DuckDB mock (no remote fetch needed)
+        resp = client.get(f"/api/views/{uuid}/media/0/thumbnail?size=64")
+        assert resp.status_code == 200
+        assert resp.headers["content-type"] == "image/jpeg"
+
+
+class TestFromHuggingfaceVqa:
+    def test_vqa_pipeline(self, local_backend):
+        """VQA columns are detected and config.vqa + config.display are set."""
+        parquet_resp = MagicMock()
+        parquet_resp.status_code = 200
+        parquet_resp.json.return_value = _make_parquet_response(
+            [("default", "train")]
+        )
+
+        info_resp = MagicMock()
+        info_resp.status_code = 200
+        info_resp.raise_for_status = MagicMock()
+        info_resp.json.return_value = {
+            "dataset_info": {"features": {"image": {"_type": "Image"}}}
+        }
+
+        mock_requests_get = MagicMock(side_effect=[parquet_resp, info_resp])
+
+        schema = [
+            ("image", "STRUCT(bytes BLOB, path VARCHAR)", None, None, None, None),
+            ("question", "VARCHAR", None, None, None, None),
+            ("answer", "VARCHAR", None, None, None, None),
+            ("options", "VARCHAR", None, None, None, None),
+        ]
+
+        metadata_df = pd.DataFrame({
+            "image": ["0", "1"],
+            "question": ["What color?", "How many?"],
+            "answer": ["A", "B"],
+            "options": ['["red","blue"]', '["3","4"]'],
+        })
+
+        with (
+            patch("clusterfun.huggingface.requests.get", mock_requests_get),
+            patch("clusterfun.huggingface._get_schema", return_value=schema),
+            patch(
+                "clusterfun.huggingface._read_metadata",
+                return_value=(metadata_df, ["question", "answer", "options"]),
+            ),
+        ):
+            path = from_huggingface("test/vqa-dataset", show=False)
+
+        cfg_data = local_backend.load_json(path.name, "config.json")
+        assert cfg_data["vqa"] == {
+            "question": "question",
+            "answer": "answer",
+            "choices": "options",
+        }
+        assert cfg_data["display"] == ["question"]
+
+    def test_non_vqa_dataset_no_vqa_config(self, local_backend):
+        """Classification datasets should not get vqa config."""
+        parquet_resp = MagicMock()
+        parquet_resp.status_code = 200
+        parquet_resp.json.return_value = _make_parquet_response(
+            [("default", "train")]
+        )
+
+        info_resp = MagicMock()
+        info_resp.status_code = 200
+        info_resp.raise_for_status = MagicMock()
+        info_resp.json.return_value = {
+            "dataset_info": {
+                "features": {
+                    "label": {"_type": "ClassLabel", "names": ["cat", "dog"]},
+                    "image": {"_type": "Image"},
+                }
+            }
+        }
+
+        mock_requests_get = MagicMock(side_effect=[parquet_resp, info_resp])
+        schema = [
+            ("image", "STRUCT(bytes BLOB, path VARCHAR)", None, None, None, None),
+            ("label", "BIGINT", None, None, None, None),
+        ]
+        metadata_df = pd.DataFrame({"image": ["0", "1"], "label": [0, 1]})
+
+        with (
+            patch("clusterfun.huggingface.requests.get", mock_requests_get),
+            patch("clusterfun.huggingface._get_schema", return_value=schema),
+            patch(
+                "clusterfun.huggingface._read_metadata",
+                return_value=(metadata_df, ["label"]),
+            ),
+        ):
+            path = from_huggingface("test/classification", show=False)
+
+        cfg_data = local_backend.load_json(path.name, "config.json")
+        assert cfg_data.get("vqa") is None
+        assert cfg_data.get("display") is None

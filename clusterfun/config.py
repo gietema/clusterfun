@@ -86,3 +86,5 @@ class Config:  # pylint: disable=too-many-instance-attributes
     total_count: Optional[int] = None
     hf_parquet_urls: Optional[List[str]] = None
     hf_image_column: Optional[str] = None
+    hf_extra_image_columns: Optional[List[str]] = None
+    vqa: Optional[dict] = None

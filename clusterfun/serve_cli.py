@@ -1,9 +1,16 @@
-"""File to serve a plot from local storage using its unique identifier."""
+"""CLI entry point for clusterfun.
 
-import argparse
+Usage:
+    clusterfun                          # serve most recent view
+    clusterfun serve <uuid>             # serve a specific view
+    clusterfun hf <dataset>             # browse a HuggingFace dataset
+    clusterfun hf <dataset> -e openai/clip-vit-base-patch32
+"""
+
 import os
 from pathlib import Path
 
+import click
 from fastapi.staticfiles import StaticFiles
 
 from clusterfun.app import APP
@@ -24,30 +31,14 @@ def _resolve_project_uuid(backend, project_name: str) -> str:
     return views[-1]["uuid"]
 
 
-def main():
-    """
-    Serve a plot from local storage using its unique identifier.
-    """
-    parser = argparse.ArgumentParser(
-        description="Serve a plot from local storage using its unique identifier."
-    )
-    parser.add_argument(
-        "location",
-        type=str,
-        help='The UUID for the plot, the path to a local file, or a project name. Defaults to "recent"',
-        default="recent",
-        nargs="?",
-    )
-    args = parser.parse_args()
-    path_or_uuid = args.location
-
+def _serve(path_or_uuid: str):
+    """Serve a saved view by UUID, path, or project name."""
     backend = get_backend()
 
     if path_or_uuid == "recent":
         loader = get_loader("recent")
         path_or_uuid = loader.uuid
 
-    # Check if it's a project name
     if (
         not os.path.exists(path_or_uuid)
         and isinstance(backend, LocalBackend)
@@ -57,7 +48,6 @@ def main():
         path_or_uuid = _resolve_project_uuid(backend, path_or_uuid)
 
     if os.path.exists(path_or_uuid):
-        # if it is a path, set cache_dir to path
         cache_dir = Path(path_or_uuid)
     elif isinstance(backend, LocalBackend):
         cache_dir = backend.cache_dir / path_or_uuid
@@ -70,9 +60,52 @@ def main():
     plot = Plot.load(cache_dir.stem)
     cfg = plot.cfg
 
-    # run query to get max 1000 random media columns, to see how to load data.
     common_media_path = cfg.common_media_path
     if common_media_path is not None:
-        # mounting here actually works.
         APP.mount("/media", StaticFiles(directory=common_media_path), name="media")
     plot.show(open_browser=True, common_media_path=common_media_path)
+
+
+@click.group(invoke_without_command=True)
+@click.pass_context
+def main(ctx):
+    """Browse and visualize image datasets."""
+    if ctx.invoked_subcommand is None:
+        _serve("recent")
+
+
+@main.command()
+@click.argument("location", default="recent", required=False)
+def serve(location):
+    """Serve a saved view by UUID, path, or project name."""
+    _serve(location)
+
+
+@main.command()
+@click.argument("dataset")
+@click.option("--split", "-s", default="train", help="Dataset split.")
+@click.option("--config", "-c", default="default", help="Dataset config name.")
+@click.option("--max-rows", "-n", type=int, default=None, help="Max rows to load.")
+@click.option(
+    "--embeddings", "-e", default=None,
+    help='Model for embeddings, e.g. "openai/clip-vit-base-patch32". '
+    "Enables similarity search. Requires torch + transformers.",
+)
+@click.option("--title", "-t", default=None, help="View title.")
+@click.option("--project", "-p", default=None, help="Project name.")
+def hf(dataset, split, config, max_rows, embeddings, title, project):
+    """Browse a HuggingFace dataset.
+
+    DATASET is the HuggingFace dataset ID, e.g. "ethz/food101" or "lmms-lab/MMMU".
+    """
+    from clusterfun.huggingface import from_huggingface
+
+    from_huggingface(
+        dataset=dataset,
+        split=split,
+        config_name=config,
+        max_rows=max_rows,
+        embeddings_model=embeddings,
+        title=title,
+        project=project,
+    )

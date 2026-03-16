@@ -174,12 +174,19 @@ export async function saveLabelAsGrid(uuid: string, mediaIds: number[], label?: 
 
 // ── Similarity ──
 
+export async function fetchTextSearchStatus(uuid: string): Promise<{ ready: boolean; model: string | null }> {
+  const { data } = await axios.get(`${API_URL}/views/${uuid}/text-search/status`);
+  return data;
+}
+
 export async function fetchSimilar(
   uuid: string,
   mediaId: number,
+  limit = 1000,
 ): Promise<SimilarityResult[]> {
   const { data } = await axios.post(`${API_URL}/views/${uuid}/similar`, {
     media_id: mediaId,
+    limit,
   });
   return data;
 }
@@ -187,7 +194,7 @@ export async function fetchSimilar(
 export async function fetchTextSearch(
   uuid: string,
   query: string,
-  limit = 100,
+  limit = 1000,
 ): Promise<SimilarityResult[]> {
   const { data } = await axios.post(`${API_URL}/views/${uuid}/search-text`, {
     query,
@@ -199,9 +206,11 @@ export async function fetchTextSearch(
 export async function fetchSimilarVector(
   uuid: string,
   embedding: number[],
+  limit = 1000,
 ): Promise<SimilarityResult[]> {
   const { data } = await axios.post(`${API_URL}/views/${uuid}/similar-vector`, {
     embedding,
+    limit,
   });
   return data;
 }

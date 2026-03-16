@@ -9,8 +9,9 @@ Usage:
 """
 
 import dataclasses
+import json
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 from uuid import uuid4
 
 import duckdb
@@ -111,23 +112,37 @@ def _discover_parquet_urls(dataset: str, split: str, config_name: str) -> tuple[
     return urls, resolved_config
 
 
-def _detect_image_column(urls: List[str]) -> str:
-    """Auto-detect the image column by finding a struct with a 'bytes' field."""
+def _get_schema(urls: List[str]) -> List[tuple]:
+    """Get the column schema from the first parquet file."""
     con = duckdb.connect()
     try:
         con.execute("INSTALL httpfs; LOAD httpfs;")
-        result = con.execute(f"DESCRIBE SELECT * FROM read_parquet('{urls[0]}')").fetchall()
+        return con.execute(f"DESCRIBE SELECT * FROM read_parquet('{urls[0]}')").fetchall()
     finally:
         con.close()
 
-    # Look for struct columns with 'bytes' field (HF image format)
-    for row in result:
-        col_name, col_type = row[0], row[1]
-        if "STRUCT" in col_type.upper() and "bytes" in col_type.lower():
-            return col_name
+
+def _detect_all_image_columns(schema: List[tuple]) -> List[str]:
+    """Find all struct columns with a 'bytes' field (HF image format).
+
+    Returns column names sorted alphabetically. Returns empty list if none found.
+    """
+    return sorted(
+        row[0]
+        for row in schema
+        if "STRUCT" in row[1].upper() and "bytes" in row[1].lower()
+    )
+
+
+def _detect_image_column(urls: List[str]) -> str:
+    """Auto-detect the primary image column."""
+    schema = _get_schema(urls)
+    image_cols = _detect_all_image_columns(schema)
+    if image_cols:
+        return image_cols[0]
 
     # Fall back to common image column names
-    col_names = [row[0] for row in result]
+    col_names = [row[0] for row in schema]
     for candidate in ("image", "img", "photo", "picture"):
         if candidate in col_names:
             return candidate
@@ -164,14 +179,105 @@ def _resolve_labels(dataset: str, config_name: str) -> Optional[dict]:
         return None
 
 
+def _detect_vqa_columns(other_columns: List[str]) -> Optional[Dict[str, str]]:
+    """Detect VQA (question/answer/choices/explanation) columns by name matching.
+
+    Returns a dict mapping semantic roles to column names, or None if not a VQA dataset.
+    A dataset is considered VQA only if a question column is found.
+    """
+    col_set = set(other_columns)
+    vqa: Dict[str, str] = {}
+
+    # Question: must have one of these to be a VQA dataset
+    for name in ("question", "query"):
+        if name in col_set:
+            vqa["question"] = name
+            break
+    if "question" not in vqa:
+        return None
+
+    # Answer
+    for name in ("answer", "answers", "multiple_choice_answer", "label"):
+        if name in col_set:
+            vqa["answer"] = name
+            break
+
+    # Choices: explicit list column, or MMBench-style A/B/C/D
+    for name in ("options", "choices"):
+        if name in col_set:
+            vqa["choices"] = name
+            break
+    if "choices" not in vqa and all(c in col_set for c in ("A", "B", "C", "D")):
+        # MMBench style — will be synthesized into _choices during metadata processing
+        vqa["choices"] = "_choices"
+
+    # Explanation
+    for name in ("explanation", "solution", "lecture"):
+        if name in col_set:
+            vqa["explanation"] = name
+            break
+
+    return vqa
+
+
+def _normalize_python_list(value) -> str:
+    """Convert a Python repr list string to a proper JSON array string.
+
+    Handles edge cases like escaped quotes and mixed quoting styles
+    that are common in HuggingFace datasets (e.g. MMMU options column).
+    """
+    if pd.isna(value):
+        return "[]"
+    s = str(value).strip()
+    if not s.startswith("["):
+        return s
+
+    # Try JSON first (already valid)
+    try:
+        parsed = json.loads(s)
+        if isinstance(parsed, list):
+            return json.dumps(parsed)
+    except (json.JSONDecodeError, ValueError):
+        pass
+
+    # Use Python's ast.literal_eval to safely parse Python repr
+    import ast
+    try:
+        parsed = ast.literal_eval(s)
+        if isinstance(parsed, list):
+            return json.dumps([str(item) for item in parsed])
+    except (ValueError, SyntaxError):
+        pass
+
+    return s
+
+
+def _synthesize_mmbench_choices(df: pd.DataFrame) -> pd.DataFrame:
+    """Combine MMBench-style A/B/C/D columns into a single JSON _choices column."""
+    if not all(c in df.columns for c in ("A", "B", "C", "D")):
+        return df
+    df["_choices"] = df.apply(
+        lambda row: json.dumps(
+            [str(row[c]) for c in ("A", "B", "C", "D") if pd.notna(row[c])]
+        ),
+        axis=1,
+    )
+    return df
+
+
 def _read_metadata(
-    urls: List[str], image_column: str, max_rows: Optional[int]
+    urls: List[str],
+    image_column: str,
+    max_rows: Optional[int],
+    extra_image_columns: Optional[List[str]] = None,
 ) -> tuple[pd.DataFrame, List[str]]:
     """Read metadata columns from remote HF parquet files via DuckDB httpfs.
 
     Returns (df, other_columns) where df has a synthetic 'image' column
     containing the row index for byte fetching.
     """
+    extra_set = set(extra_image_columns) if extra_image_columns else set()
+
     con = duckdb.connect()
     try:
         con.execute("INSTALL httpfs; LOAD httpfs;")
@@ -186,8 +292,12 @@ def _read_metadata(
         for row in schema:
             col_name, col_type = row[0], row[1]
             if col_name == image_column:
-                # Skip image column entirely — we use row number for lookups
-                pass
+                pass  # Skip primary image column (use row number instead)
+            elif col_name in extra_set:
+                # Check null status without reading bytes (parquet bitmap only)
+                select_cols.append(
+                    f'("{col_name}" IS NOT NULL)::BOOLEAN AS "_has_{col_name}"'
+                )
             else:
                 select_cols.append(f'"{col_name}"')
                 other_columns.append(col_name)
@@ -214,7 +324,107 @@ def _read_metadata(
     finally:
         con.close()
 
+    # Combine _has_* boolean columns into a single _extra_images JSON list
+    if extra_image_columns:
+        has_cols = [f"_has_{c}" for c in extra_image_columns if f"_has_{c}" in df.columns]
+        if has_cols:
+            df["_extra_images"] = df.apply(
+                lambda row: json.dumps([
+                    c for c in extra_image_columns if row.get(f"_has_{c}", False)
+                ]),
+                axis=1,
+            )
+            df = df.drop(columns=has_cols)
+            other_columns.append("_extra_images")
+
     return df, other_columns
+
+
+def _compute_hf_embeddings(
+    urls: List[str],
+    image_column: str,
+    row_indices: List[int],
+    model_name: str,
+    batch_size: int = 32,
+) -> tuple[List[List[float]], List[int]]:
+    """Compute image embeddings by fetching bytes from HF parquet files.
+
+    Returns (embeddings, valid_indices).
+    Requires torch and transformers to be installed.
+    """
+    try:
+        import torch
+        from transformers import AutoModel, AutoProcessor
+    except ImportError:
+        raise ImportError(
+            "Computing embeddings requires torch and transformers. "
+            "Install with: pip install torch transformers"
+        )
+
+    from io import BytesIO
+    from PIL import Image
+
+    device = (
+        "mps" if torch.backends.mps.is_available()
+        else "cuda" if torch.cuda.is_available()
+        else "cpu"
+    )
+    print(f"Computing embeddings with {model_name} on {device}...")
+    model = AutoModel.from_pretrained(model_name, trust_remote_code=True).to(device)
+    processor = AutoProcessor.from_pretrained(model_name, trust_remote_code=True)
+    model.eval()
+
+    url_list = ", ".join(f"'{u}'" for u in urls)
+    embeddings: List[List[float]] = []
+    valid_indices: List[int] = []
+    failed = 0
+
+    for start in range(0, len(row_indices), batch_size):
+        batch_indices = row_indices[start: start + batch_size]
+        batch_images = []
+        batch_valid = []
+
+        con = duckdb.connect()
+        try:
+            con.execute("INSTALL httpfs; LOAD httpfs;")
+            for idx in batch_indices:
+                try:
+                    result = con.execute(
+                        f'SELECT "{image_column}".bytes '
+                        f"FROM read_parquet([{url_list}]) "
+                        f"LIMIT 1 OFFSET {idx}",
+                    ).fetchone()
+                    if result and result[0]:
+                        img = Image.open(BytesIO(bytes(result[0]))).convert("RGB")
+                        batch_images.append(img)
+                        batch_valid.append(idx)
+                    else:
+                        failed += 1
+                except Exception:
+                    failed += 1
+        finally:
+            con.close()
+
+        if not batch_images:
+            continue
+
+        inputs = processor(images=batch_images, return_tensors="pt", padding=True).to(device)
+        with torch.no_grad():
+            features = model.get_image_features(**inputs)
+            if not isinstance(features, torch.Tensor):
+                features = features.pooler_output
+            features = features / features.norm(dim=-1, keepdim=True)
+
+        for idx, emb in zip(batch_valid, features.cpu().tolist()):
+            embeddings.append(emb)
+            valid_indices.append(idx)
+
+        processed = min(start + batch_size, len(row_indices))
+        print(f"  {processed}/{len(row_indices)} images embedded")
+
+    if failed:
+        print(f"  Skipped {failed} images that failed to load")
+    return embeddings, valid_indices
 
 
 def from_huggingface(
@@ -226,6 +436,7 @@ def from_huggingface(
     show: bool = True,
     project: Optional[str] = None,
     max_rows: Optional[int] = None,
+    embeddings_model: Optional[str] = None,
 ) -> Path:
     """Browse a public HuggingFace image dataset in clusterfun.
 
@@ -247,6 +458,11 @@ def from_huggingface(
         Project name to register this view with.
     max_rows : int, optional
         Maximum number of rows to load. None for all.
+    embeddings_model : str, optional
+        HuggingFace model ID for computing image embeddings, e.g.
+        "openai/clip-vit-base-patch32" or "google/siglip2-base-patch16-224".
+        Enables similarity search in the resulting view.
+        Requires torch and transformers to be installed.
 
     Returns
     -------
@@ -257,16 +473,26 @@ def from_huggingface(
     urls, resolved_config = _discover_parquet_urls(dataset, split, config_name)
     print(f"Found {len(urls)} parquet file(s) for {dataset}/{split}")
 
-    # 2. Auto-detect image column
+    # 2. Auto-detect image columns (primary + extras for multi-image datasets)
+    schema = _get_schema(urls)
+    all_image_cols = _detect_all_image_columns(schema)
     if image_column is None:
-        image_column = _detect_image_column(urls)
+        if all_image_cols:
+            image_column = all_image_cols[0]
+        else:
+            image_column = _detect_image_column(urls)
+    extra_image_columns = [c for c in all_image_cols if c != image_column] or None
     print(f"Image column: {image_column}")
+    if extra_image_columns:
+        print(f"Extra image columns: {extra_image_columns}")
 
     # 3. Resolve label mappings
     label_mappings = _resolve_labels(dataset, resolved_config)
 
     # 4. Read metadata via DuckDB httpfs (column pruning skips image bytes)
-    df, other_columns = _read_metadata(urls, image_column, max_rows)
+    df, other_columns = _read_metadata(
+        urls, image_column, max_rows, extra_image_columns=extra_image_columns
+    )
 
     print(f"Loaded {len(df)} rows")
 
@@ -276,33 +502,77 @@ def from_huggingface(
             if col_name in df.columns:
                 df[col_name] = df[col_name].map(mapping).fillna(df[col_name])
 
-    # 6. Set up media column name and columns list
+    # 6. Detect VQA columns and synthesize choices if needed
+    vqa = _detect_vqa_columns(other_columns)
+    if vqa and vqa.get("choices") == "_choices":
+        df = _synthesize_mmbench_choices(df)
+        other_columns.append("_choices")
+
+    # 6b. Normalize choices column: convert Python repr to JSON
+    if vqa and "choices" in vqa:
+        choices_col = vqa["choices"]
+        if choices_col in df.columns:
+            df[choices_col] = df[choices_col].apply(_normalize_python_list)
+
+    # 7. Set up media column name and columns list
     df = df.reset_index(drop=True)
     media_col = "image"
-    # columns includes "id" as schema declaration; the storer adds the actual id column
+
+    # Rename dataset's own 'id' column to avoid clash with the storer's synthetic id
+    if "id" in other_columns and "id" in df.columns:
+        df = df.rename(columns={"id": "original_id"})
+        other_columns = ["original_id" if c == "id" else c for c in other_columns]
+        if vqa:
+            vqa = {k: ("original_id" if v == "id" else v) for k, v in vqa.items()}
+
     columns = ["id", media_col] + [c for c in other_columns if c in df.columns]
     df_cols = [c for c in columns if c != "id"]
 
-    # 7. Build config
+    # 8. Compute embeddings if requested
+    emb_col_name = None
+    if embeddings_model:
+        row_indices = df[media_col].astype(int).tolist()
+        emb_list, valid_indices = _compute_hf_embeddings(
+            urls, image_column, row_indices, embeddings_model,
+        )
+        if emb_list:
+            emb_col_name = "_embedding"
+            valid_set = set(valid_indices)
+            df = df[df[media_col].astype(int).isin(valid_set)].reset_index(drop=True)
+            df[emb_col_name] = emb_list
+            df_cols.append(emb_col_name)
+            print(f"Computed {len(emb_list)} embeddings ({len(emb_list[0])}-dim)")
+
+    # 9. Build config
+    display = None
+    if vqa:
+        display = [vqa["question"]]
+        print(f"VQA detected: {vqa}")
+
     cfg = Config(
         type="grid",
         media=media_col,
         columns=columns,
         title=title or f"{dataset} ({split})",
+        display=display,
         hf_parquet_urls=urls,
         hf_image_column=image_column,
+        hf_extra_image_columns=extra_image_columns,
+        vqa=vqa,
+        embeddings=emb_col_name,
+        embeddings_model=embeddings_model if emb_col_name else None,
         project=project,
         total_count=len(df),
     )
 
-    # 8. Save using LocalStorer directly (bypass Plot.save's common_media_path logic)
+    # 10. Save using LocalStorer directly (bypass Plot.save's common_media_path logic)
     uuid = str(uuid4())
     LocalStorer().save(uuid, df[df_cols], cfg)
 
-    # 9. Register with project if specified
+    # 11. Register with project if specified
     if project:
         backend = get_backend()
         _register_view_with_project(uuid, cfg, backend)
 
-    # 10. Open browser
+    # 12. Open browser
     return Plot(uuid, {}, cfg).show(show)

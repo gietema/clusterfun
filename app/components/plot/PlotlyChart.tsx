@@ -108,7 +108,7 @@ export default function PlotlyChart({
       dragmode: dragMode,
       datarevision: revision,
       autosize: true,
-      margin: { l: 40, r: 0, b: 40, t: 0, pad: 0 },
+      margin: { l: 40, r: 0, b: 60, t: 0, pad: 0 },
       shapes,
       legend: {
         traceorder: "normal",

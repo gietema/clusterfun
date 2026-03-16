@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import {
   configAtom,
@@ -7,7 +7,7 @@ import {
   showPageAtom,
   similarityResultsAtom,
 } from "@/app/store/atoms";
-import { fetchSimilarVector, fetchTextSearch } from "@/app/lib/api";
+import { fetchSimilarVector, fetchTextSearch, fetchTextSearchStatus } from "@/app/lib/api";
 import { encodeText, supportsTextSearch, supportsBrowserTextSearch } from "@/app/lib/clip";
 import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
 
@@ -45,6 +45,12 @@ function ProgressCircle({ progress }: { progress: number }) {
   );
 }
 
+function Spinner() {
+  return (
+    <div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-gray-300 border-t-gray-700" />
+  );
+}
+
 export default function TextSearchBar() {
   const config = useAtomValue(configAtom);
   const uuid = useAtomValue(uuidAtom);
@@ -54,7 +60,20 @@ export default function TextSearchBar() {
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [serverModelReady, setServerModelReady] = useState<boolean | null>(null);
+
+  const isBrowser = supportsBrowserTextSearch(config?.embeddings_model);
+
+  // Check server model readiness on mount (only for server-side models)
+  useEffect(() => {
+    if (!config?.embeddings_model || isBrowser) return;
+    if (!supportsTextSearch(config.embeddings_model)) return;
+    fetchTextSearchStatus(uuid)
+      .then((s) => setServerModelReady(s.ready))
+      .catch(() => {});
+  }, [uuid, config?.embeddings_model, isBrowser]);
 
   if (!supportsTextSearch(config?.embeddings_model)) return null;
 
@@ -63,21 +82,33 @@ export default function TextSearchBar() {
     if (!query.trim()) return;
     setSearching(true);
     setError(null);
-    setProgress(0);
+    setProgress(null);
+    setStatusMessage(null);
     try {
       let results;
-      if (supportsBrowserTextSearch(config?.embeddings_model)) {
+      if (isBrowser) {
+        setStatusMessage("Loading model...");
+        setProgress(0);
         const embedding = await encodeText(
           config!.embeddings_model!,
           query.trim(),
           (p) => setProgress(p),
         );
         setProgress(null);
+        setStatusMessage("Searching...");
         results = await fetchSimilarVector(uuid, embedding);
       } else {
-        setProgress(null);
+        // Server-side: model may need to load on first call
+        if (!serverModelReady) {
+          setStatusMessage("Loading model on server (first search may take a moment)...");
+        } else {
+          setStatusMessage("Searching...");
+        }
         results = await fetchTextSearch(uuid, query.trim());
+        // Model is now loaded on the server
+        setServerModelReady(true);
       }
+      setStatusMessage(null);
       const ids = results.map((r) => r.media_id);
       const scores: Record<number, number> = {};
       for (const r of results) {
@@ -92,6 +123,7 @@ export default function TextSearchBar() {
     } finally {
       setSearching(false);
       setProgress(null);
+      setStatusMessage(null);
     }
   };
 
@@ -116,11 +148,17 @@ export default function TextSearchBar() {
           {searching ? "..." : "Search"}
         </button>
       </form>
-      {progress !== null && (
+      {(progress !== null || statusMessage) && (
         <div className="mt-1.5 flex items-center gap-1.5">
-          <ProgressCircle progress={progress} />
+          {progress !== null ? (
+            <ProgressCircle progress={progress} />
+          ) : (
+            <Spinner />
+          )}
           <span className="text-xs text-gray-500">
-            Loading model {Math.round(progress)}%
+            {progress !== null
+              ? `Downloading model ${Math.round(progress)}%`
+              : statusMessage}
           </span>
         </div>
       )}

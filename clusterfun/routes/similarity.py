@@ -21,15 +21,17 @@ _text_encoder_cache: dict[str, dict] = {}  # model_name -> {"model", "tokenizer"
 
 class SimilarityRequest(BaseModel):
     media_id: int
+    limit: int = 1000
 
 
 class VectorSearchRequest(BaseModel):
     embedding: List[float]
+    limit: int = 1000
 
 
 class TextSearchRequest(BaseModel):
     query: str
-    limit: int = 100
+    limit: int = 1000
 
 
 class SimilarityResult(BaseModel):
@@ -98,7 +100,7 @@ def find_similar(view_uuid: str, request: SimilarityRequest) -> List[SimilarityR
         media_col=config.media,
     )
 
-    return _search_by_vector(index, ids, list(query_emb), exclude_id=request.media_id)
+    return _search_by_vector(index, ids, list(query_emb), exclude_id=request.media_id, limit=request.limit)
 
 
 @router.post("/api/views/{view_uuid}/similar-vector")
@@ -128,7 +130,7 @@ def find_similar_vector(
         media_col=config.media,
     )
 
-    return _search_by_vector(index, ids, request.embedding)
+    return _search_by_vector(index, ids, request.embedding, limit=request.limit)
 
 
 def _get_text_encoder(model_name: str) -> dict:
@@ -183,6 +185,18 @@ def _encode_text(model_name: str, text: str) -> list[float]:
         features = features / features.norm(dim=-1, keepdim=True)
 
     return features[0].cpu().tolist()
+
+
+@router.get("/api/views/{view_uuid}/text-search/status")
+def text_search_status(view_uuid: str) -> dict:
+    """Check if the text encoder model is loaded and ready."""
+    backend = get_backend()
+    loader = DataLoader(view_uuid, backend)
+    config = loader.load_config()
+    model = config.embeddings_model
+    if not model:
+        return {"ready": False, "model": None}
+    return {"ready": model in _text_encoder_cache, "model": model}
 
 
 @router.post("/api/views/{view_uuid}/search-text")

@@ -3,7 +3,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { configAtom, currentMediaIndicesAtom, mediaAtom, mediaIndexAtom, mediaItemsAtom, uuidAtom } from "@/app/store/atoms";
 import { COLORS } from "@/app/lib/constants";
-import { getNextMedia, getPreviousMedia, parseBoundingBoxes, rotateImage } from "@/app/lib/media-utils";
+import { getNextMedia, getPreviousMedia, parseBoundingBoxes, rotateImage, buildExtraImageUrls } from "@/app/lib/media-utils";
 import { fetchAnnotations, saveAnnotations as saveAnnotationsApi, exportAnnotations } from "@/app/lib/api";
 import { useMediaPreview } from "@/app/lib/use-media-preview";
 import type { Annotation, AnnotationTool, BoundingBox } from "@/app/types";
@@ -188,13 +188,32 @@ export default function MediaPage({ mediaIndex, onBack }: MediaPageProps) {
                 height: `calc(100vh - ${showAdjustments ? "120px" : "80px"})`,
                 filter: adjustmentsToFilter(adjustments),
               }}
+              className="flex flex-col"
             >
-              <PlotlyImagePlot
-                media={{ ...media, src: rotatedSrc || media.src }}
-                scaleFactor={1}
-                shapes={shapes}
-                boundingBoxes={boundingBoxes}
-              />
+              <div className="min-h-0 flex-1">
+                <PlotlyImagePlot
+                  media={{ ...media, src: rotatedSrc || media.src }}
+                  scaleFactor={1}
+                  shapes={shapes}
+                  boundingBoxes={boundingBoxes}
+                />
+              </div>
+              {(() => {
+                const extras = buildExtraImageUrls(uuid, media.index, media.information);
+                return extras && extras.length > 0 ? (
+                  <div className="flex shrink-0 gap-2 overflow-x-auto border-t border-gray-200 bg-gray-50 p-2">
+                    {extras.map(({ col, url }) => (
+                      <img
+                        key={col}
+                        src={url}
+                        alt={col}
+                        className="h-20 w-20 shrink-0 cursor-pointer rounded border border-gray-200 object-cover hover:border-gray-400"
+                        loading="lazy"
+                      />
+                    ))}
+                  </div>
+                ) : null;
+              })()}
             </div>
           )}
           {media && annotateMode && (
@@ -238,3 +257,4 @@ export default function MediaPage({ mediaIndex, onBack }: MediaPageProps) {
     </ResizableLayout>
   );
 }
+

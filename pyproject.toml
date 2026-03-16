@@ -15,6 +15,7 @@ dependencies = [
     "boto3>=1.26.0",
     "requests",
     "pillow",
+    "click>=8.0",
     "urllib3<2",
     "umap-learn>=0.5.11",
     "faiss-cpu>=1.7.4",

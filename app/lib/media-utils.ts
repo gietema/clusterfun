@@ -117,3 +117,37 @@ export function isCategorical(data: (string | number | boolean | null)[]): boole
     (value) => typeof value === "string" || value === null || value === undefined,
   );
 }
+
+/**
+ * Parse the _extra_images JSON string from media information.
+ * Returns the list of column names that have image data, or empty array.
+ */
+export function parseExtraImages(info?: Record<string, InformationValue>): string[] {
+  const raw = info?.["_extra_images"];
+  if (typeof raw !== "string") return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Build URLs for extra image columns in multi-image HF datasets.
+ * Only builds URLs for columns that actually have data (from _extra_images).
+ * Returns undefined if no extra images exist.
+ */
+export function buildExtraImageUrls(
+  uuid: string,
+  mediaId: number,
+  info?: Record<string, InformationValue>,
+): { col: string; url: string }[] | undefined {
+  const cols = parseExtraImages(info);
+  if (cols.length === 0) return undefined;
+  const base = BACKEND_URL || "";
+  return cols.map((col) => ({
+    col,
+    url: `${base}/api/views/${uuid}/hf-bytes/${mediaId}?col=${encodeURIComponent(col)}`,
+  }));
+}

@@ -131,12 +131,21 @@ export default function MediaGridItem({
           </div>
         )}
         {media.type !== "audio" ? (
-          <PreviewMedia
-            media={media}
-            boundingBoxColumn={boundingBoxColumn}
-            displayLabel={showBboxLabel}
-            columns={columns}
-          />
+          <>
+            <PreviewMedia
+              media={media}
+              boundingBoxColumn={boundingBoxColumn}
+              displayLabel={showBboxLabel}
+              columns={columns}
+            />
+            {display && display.length > 0 && (
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-1.5 pt-4">
+                <div className="line-clamp-2 text-xs leading-snug text-white/90">
+                  {display.map((d) => media.information?.[d]).filter(Boolean).join(" ")}
+                </div>
+              </div>
+            )}
+          </>
         ) : (
           <div className="p-2">
             {!display && (
