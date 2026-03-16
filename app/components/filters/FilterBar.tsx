@@ -51,7 +51,16 @@ export default function FilterBar() {
           setPlotData(data);
           if (completeFilters.length > 0 && mediaIndices.length > 0) {
             const indices = data.flatMap((d) => d.id ?? []);
-            const filtered = indices.filter((i: number) => mediaIndices[0].includes(i));
+            // Use Set for O(1) lookups instead of O(n) .includes()
+            const base = mediaIndices[0];
+            let filtered: number[];
+            if (base.length === 0) {
+              // Empty base means "all items" — no intersection needed
+              filtered = indices;
+            } else {
+              const baseSet = new Set(base);
+              filtered = indices.filter((i: number) => baseSet.has(i));
+            }
             setMediaIndices((prev) => [...prev, filtered]);
             const label = filterLabel(completeFilters);
             setCrumbs((c) => [...c, { label, thumbnailId: filtered[0] }]);

@@ -50,9 +50,13 @@ class ProjectLabelManager:
             return
 
         if self.backend.json_exists(self.uuid, "id_to_path.json"):
+            # Legacy JSON format
             raw = self.backend.load_json(self.uuid, "id_to_path.json")
             self._id_to_path = {int(k): v for k, v in raw.items()}
+        elif self._try_load_parquet_mapping():
+            pass  # loaded from Parquet
         else:
+            # Fallback: query the database directly
             rows = run_query(
                 self.uuid,
                 self.backend,
@@ -64,6 +68,23 @@ class ProjectLabelManager:
                 self._id_to_path[media_id] = self._to_original_path(str(src))
 
         self._path_to_id = {v: k for k, v in self._id_to_path.items()}
+
+    def _try_load_parquet_mapping(self) -> bool:
+        """Try to load id-to-path mapping from Parquet file."""
+        try:
+            import pyarrow.parquet as pq
+
+            uri = self.backend.get_parquet_uri_named(self.uuid, "id_to_path.parquet")
+            import os
+            if not os.path.exists(uri):
+                return False
+            table = pq.read_table(uri)
+            ids = table.column("id").to_pylist()
+            paths = table.column("path").to_pylist()
+            self._id_to_path = dict(zip(ids, paths))
+            return True
+        except Exception:
+            return False
 
     def _to_original_path(self, src: str) -> str:
         if self.common_media_path and src.startswith("/media"):

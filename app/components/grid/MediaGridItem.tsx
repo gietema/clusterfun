@@ -17,15 +17,19 @@ interface MediaGridItemProps {
   boundingBoxColumn?: string;
   showBboxLabel: boolean;
   display?: string[];
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void;
   onHover: () => void;
   onLabelToggle: (label: string) => void;
   onExclude?: () => void;
+  selected?: boolean;
+  anySelected?: boolean;
+  onSelect?: (e: React.MouseEvent) => void;
 }
 
 export default function MediaGridItem({
   media, columns, showColumns, boundingBoxColumn, showBboxLabel,
   display, onClick, onHover, onLabelToggle, onExclude,
+  selected, anySelected, onSelect,
 }: MediaGridItemProps) {
   const config = useAtomValue(configAtom);
   const similarityResults = useAtomValue(similarityResultsAtom);
@@ -66,7 +70,9 @@ export default function MediaGridItem({
     <div
       ref={elementRef}
       tabIndex={0}
-      className="group flex h-full cursor-pointer flex-col overflow-hidden border border-gray-200 transition-colors hover:border-gray-300"
+      className={`group flex h-full cursor-pointer flex-col overflow-hidden border transition-colors ${
+        selected ? "border-blue-500 ring-2 ring-blue-200" : "border-gray-200 hover:border-gray-300"
+      }`}
       onClick={onClick}
       onMouseEnter={() => {
         onHover();
@@ -74,6 +80,23 @@ export default function MediaGridItem({
       }}
     >
       <div className="relative flex-grow">
+        {/* Selection checkbox */}
+        {onSelect && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onSelect(e); }}
+            className={`absolute right-1 top-1 z-20 flex h-5 w-5 items-center justify-center rounded border transition-all ${
+              selected
+                ? "border-blue-500 bg-blue-500 text-white"
+                : anySelected
+                  ? "border-gray-300 bg-white/80 text-transparent hover:border-gray-400"
+                  : "border-gray-300 bg-white/80 text-transparent opacity-0 group-hover:opacity-100 hover:border-gray-400"
+            }`}
+          >
+            <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+              <path d="M5 13l4 4L19 7" />
+            </svg>
+          </button>
+        )}
         {/* Label badges overlay */}
         {media.labels && media.labels.length > 0 && config?.labels && (
           <div className="absolute left-1 top-1 z-10 flex flex-wrap gap-0.5">
@@ -137,8 +160,14 @@ export default function MediaGridItem({
         )}
       </div>
       {similarityScore !== undefined && (
-        <div className="bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
-          similarity: {similarityScore.toFixed(4)}
+        <div className="flex items-center gap-1.5 bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
+          <div className="h-1.5 w-12 overflow-hidden rounded-full bg-blue-200">
+            <div
+              className="h-full rounded-full bg-blue-600"
+              style={{ width: `${Math.max(0, Math.min(100, similarityScore * 100))}%` }}
+            />
+          </div>
+          <span>{(similarityScore * 100).toFixed(1)}%</span>
         </div>
       )}
       {prediction && (

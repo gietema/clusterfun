@@ -1,8 +1,7 @@
 "use client";
 import { useCallback } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useSetAtom } from "jotai";
 import {
-  dataAtom,
   mediaIndicesStackAtom,
   breadcrumbsAtom,
   gridValuesAtom,
@@ -11,7 +10,6 @@ import {
   textSearchQueryAtom,
   labelFilterAtom,
   filtersAtom,
-  configAtom,
 } from "@/app/store/atoms";
 import type { Filter } from "@/app/types";
 
@@ -20,7 +18,6 @@ import type { Filter } from "@/app/types";
  * together with breadcrumb metadata so every call-site stays in sync.
  */
 export function useBreadcrumbNav() {
-  const data = useAtomValue(dataAtom);
   const setStack = useSetAtom(mediaIndicesStackAtom);
   const setCrumbs = useSetAtom(breadcrumbsAtom);
   const setGridValues = useSetAtom(gridValuesAtom);
@@ -29,24 +26,22 @@ export function useBreadcrumbNav() {
   const setTextSearchQuery = useSetAtom(textSearchQueryAtom);
   const setLabelFilter = useSetAtom(labelFilterAtom);
   const setFilters = useSetAtom(filtersAtom);
-  const config = useAtomValue(configAtom);
 
   /** Push a new selection level and navigate to grid. */
   const pushSelection = useCallback(
     (indices: number[], label: string) => {
       setStack((prev) => {
-        if (prev.length === 0 && data) {
-          const allIndices = data.flatMap((d) => d.id ?? []);
-          // Also push the "All" base crumb
+        if (prev.length === 0) {
+          // Push empty "All" base (empty = all items, avoids storing millions of IDs)
           setCrumbs((c) =>
             c.length === 0
               ? [
-                  { label: "All", thumbnailId: allIndices[0] },
+                  { label: "All" },
                   { label, thumbnailId: indices[0] },
                 ]
               : [...c, { label, thumbnailId: indices[0] }],
           );
-          return [allIndices, indices];
+          return [[], indices];
         }
         setCrumbs((c) => [...c, { label, thumbnailId: indices[0] }]);
         return [...prev, indices];
@@ -54,7 +49,7 @@ export function useBreadcrumbNav() {
       setGridValues((prev) => ({ ...prev, page: 0 }));
       setShowPage("grid");
     },
-    [data, setStack, setCrumbs, setGridValues, setShowPage],
+    [setStack, setCrumbs, setGridValues, setShowPage],
   );
 
   /** Replace the top of the stack (e.g. for text search or find-similar). */
@@ -68,21 +63,20 @@ export function useBreadcrumbNav() {
           ]);
           return [...prev.slice(0, -1), indices];
         }
-        // Only base level or empty — just push
-        if (prev.length === 0 && data) {
-          const allIndices = data.flatMap((d) => d.id ?? []);
+        // Only base level or empty — just push with empty base
+        if (prev.length === 0) {
           setCrumbs([
-            { label: "All", thumbnailId: allIndices[0] },
+            { label: "All" },
             { label, thumbnailId: indices[0] },
           ]);
-          return [allIndices, indices];
+          return [[], indices];
         }
         setCrumbs((c) => [...c, { label, thumbnailId: indices[0] }]);
         return [...prev, indices];
       });
       setGridValues((prev) => ({ ...prev, page: 0 }));
     },
-    [data, setStack, setCrumbs, setGridValues],
+    [setStack, setCrumbs, setGridValues],
   );
 
   /** Pop one level (go back). */

@@ -77,15 +77,18 @@ def load_imagenette(split: str = "train", size: str = "320px") -> pd.DataFrame:
 @click.option("--size", type=click.Choice(["full_size", "320px", "160px"]), default="320px")
 @click.option("--embeddings/--no-embeddings", default=True, help="Compute CLIP embeddings")
 def main(split, size, embeddings):
-    cache_path = CACHE_DIR / f"imagenette_{split}_with_embeddings.parquet"
+    suffix = "with_embeddings" if embeddings else "no_embeddings"
+    cache_path = CACHE_DIR / f"imagenette_{split}_{suffix}.parquet"
 
     if cache_path.exists():
         df = pd.read_parquet(cache_path)
-        print(f"Loaded {len(df)} items with cached embeddings from {cache_path}")
+        print(f"Loaded {len(df)} items from cache {cache_path}")
     else:
         df = load_imagenette(split, size)
 
         if embeddings:
+            import sys
+            sys.path.insert(0, str(Path(__file__).parent))
             from similarity import compute_clip_embeddings
 
             print("Computing CLIP embeddings...")

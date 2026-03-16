@@ -17,6 +17,7 @@ import { fetchUuid, fetchPlotData, fetchFilteredPlotData, fetchMedia, fetchAllLa
 import { useUrlState } from "@/app/lib/use-url-state";
 import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
 import TabNavigation from "./shared/TabNavigation";
+import KeyboardShortcutsOverlay from "./shared/KeyboardShortcutsOverlay";
 import PlotPage from "./plot/PlotPage";
 import GridView from "./grid/GridView";
 import MediaPage from "./media/MediaPage";
@@ -78,33 +79,18 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
         if (labels.includes(labelFilter)) ids.push(parseInt(mediaId));
       }
       if (ids.length > 0) {
-        const allIndices = data.flatMap((d) => d.id ?? []);
-        setBaseAndSelection(allIndices.length > 0 ? allIndices : [], ids, `Label: ${labelFilter}`);
+        setBaseAndSelection([], ids, `Label: ${labelFilter}`);
         setShowPage("grid");
       }
     });
   }, [uuid, data, labelFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Populate media indices when grid view is shown but stack is empty.
+  // Always use [] (empty = "all items") so the grid paginates server-side
+  // instead of holding millions of IDs in browser memory.
   useEffect(() => {
     if (showPage !== "grid" || mediaIndices.length > 0 || !data) return;
-
-    if (filters.length > 0) {
-      fetchFilteredPlotData(uuid, filters).then((filtered) => {
-        if (filtered) {
-          const indices = filtered.flatMap((d) => d.id ?? []);
-          initBase(indices);
-        }
-      });
-    } else {
-      const indices = data.flatMap((d) => d.id ?? []);
-      if (indices.length > 0) {
-        initBase(indices);
-      } else {
-        // New count-only format from grid views — use empty array meaning "all items"
-        initBase([]);
-      }
-    }
+    initBase([]);
   }, [showPage, mediaIndices.length, data, filters, uuid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleMediaIndices = (newIndices: number[]) => {
@@ -126,6 +112,7 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <TabNavigation />
+      <KeyboardShortcutsOverlay />
       <div className="min-h-0 flex-1 overflow-hidden">
         {showPage === "projects" ? (
           <ProjectsPage />

@@ -66,24 +66,33 @@ export default function GridView({ onBack }: GridViewProps) {
   const effectiveIndices = useMemo(() => {
     if (gridValues.subsample <= 0) return mediaIndices;
 
-    // When no explicit selection, generate the full ID list from total_count
-    const sourceIds = mediaIndices.length > 0
-      ? mediaIndices
-      : Array.from({ length: config?.total_count ?? 0 }, (_, i) => i);
+    const total = mediaIndices.length > 0 ? mediaIndices.length : (config?.total_count ?? 0);
+    if (total === 0) return mediaIndices;
 
-    if (sourceIds.length === 0) return mediaIndices;
+    const count = Math.max(1, Math.round(total * gridValues.subsample / 100));
+    if (count >= total) return mediaIndices;
 
-    const count = Math.max(1, Math.round(sourceIds.length * gridValues.subsample / 100));
-    if (count >= sourceIds.length) return sourceIds;
-    // Seeded shuffle (Fisher-Yates with simple LCG)
-    const arr = [...sourceIds];
+    // Seeded LCG for deterministic sampling
     let seed = 42;
     const lcg = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 0x100000000; };
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(lcg() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
+
+    if (mediaIndices.length > 0) {
+      // Shuffle a copy of the explicit ID list
+      const arr = [...mediaIndices];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(lcg() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr.slice(0, count);
     }
-    return arr.slice(0, count);
+
+    // No explicit IDs (empty = all items): generate random indices
+    // without allocating the full array
+    const selected = new Set<number>();
+    while (selected.size < count) {
+      selected.add(Math.floor(lcg() * total));
+    }
+    return Array.from(selected).sort((a, b) => a - b);
   }, [mediaIndices, gridValues.subsample, config?.total_count]);
 
   const loadMedia = (sortCol?: string, asc?: boolean) => {

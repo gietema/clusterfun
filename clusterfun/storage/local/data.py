@@ -10,6 +10,11 @@ from typing import Any, Dict, List, Optional, Tuple
 from clusterfun.config import Config
 from clusterfun.constants import COLORS
 
+# Maximum number of points to send to the browser for plot rendering.
+# Beyond this, a deterministic sample is used. Does not affect grid views,
+# filtering accuracy, export, or any non-plot functionality.
+PLOT_SAMPLE_LIMIT = 500_000
+
 
 def get_data_dict(
     con: Any,
@@ -94,6 +99,10 @@ def get_data_standard(
         query += f" WHERE {query_addition}"
         if query_params:
             params.extend(query_params)
+
+    # Sample large datasets to keep the browser responsive
+    query += f" ORDER BY hash(id) LIMIT {PLOT_SAMPLE_LIMIT}"
+
     if params:
         res = con.execute(query, params).fetchall()
     else:
@@ -200,6 +209,9 @@ def get_data_per_color(
         query += f" WHERE {where}"
         if query_params:
             params.extend(query_params)
+
+    # Sample large datasets to keep the browser responsive
+    query += f" ORDER BY hash(id) LIMIT {PLOT_SAMPLE_LIMIT}"
 
     if params:
         all_rows: List[Any] = con.execute(query, params).fetchall()

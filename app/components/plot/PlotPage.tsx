@@ -1,6 +1,6 @@
 "use client";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   configAtom, dataAtom, mediaAtom, uuidAtom, columnsAtom,
   plotPanelsAtom, plotPanelDataAtom, highlightedPointsAtom,
@@ -239,6 +239,9 @@ export default function PlotPage({ onMediaSelect }: PlotPageProps) {
               const data = hasPanelData ? panelData[panel.id] : plotData;
               const panelConfig = hasPanelData ? panelConfigs[panel.id] : undefined;
               const loading = panelLoading[panel.id];
+              const pointCount = data?.reduce((sum, t) => sum + (t.id?.length ?? 0), 0) ?? 0;
+              const totalCount = (panelConfig ?? config)?.total_count ?? 0;
+              const isSampled = totalCount > 0 && pointCount > 0 && pointCount < totalCount;
               return (
                 <div key={panel.id} className="flex min-h-0 flex-col bg-white">
                   <div className="shrink-0 border-b border-gray-100 px-2 py-1">
@@ -264,6 +267,11 @@ export default function PlotPage({ onMediaSelect }: PlotPageProps) {
                         overrideConfig={panelConfig}
                       />
                     </div>
+                    {isSampled && (
+                      <div className="pointer-events-none absolute bottom-2 right-2 rounded bg-gray-800/70 px-1.5 py-0.5 text-[10px] text-white">
+                        Showing {pointCount.toLocaleString()} of {totalCount.toLocaleString()}
+                      </div>
+                    )}
                   </div>
                 </div>
               );

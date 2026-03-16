@@ -173,8 +173,11 @@ class Plot:
         if not str(df[cfg.media].iloc[0]).startswith("http") and not str(
             df[cfg.media].iloc[0]
         ).startswith("s3://"):
-            # assume all media paths are local and replace with /media
-            common_media_path = os.path.commonpath(df[cfg.media].tolist())
+            # Find common media path using a sample to avoid materializing
+            # millions of path strings into a Python list
+            step = max(1, len(df) // 1000)
+            sample_paths = df[cfg.media].iloc[::step].tolist()
+            common_media_path = os.path.commonpath(sample_paths)
             if os.path.isfile(common_media_path):
                 common_media_path = os.path.dirname(common_media_path)
             # store common media path in config
@@ -190,22 +193,27 @@ class Plot:
 
         # If this view belongs to a project, register it and write id-to-path mapping
         if cfg.project:
+            import pyarrow as pa
+
             backend = get_backend()
             _register_view_with_project(uuid, cfg, backend)
-            # Build id_to_path mapping: index → original media path
-            # At this point, local paths in df[cfg.media] have been replaced with /media/...
-            # so we reverse that substitution to get original paths.
-            id_to_path: Dict[str, str] = {}
-            for idx, media_val in df[cfg.media].items():
-                original = str(media_val)
-                if cfg.common_media_path and original.startswith("/media"):
-                    original = original.replace(
-                        "/media", cfg.common_media_path, 1
-                    )
-                id_to_path[str(idx)] = original
-            backend.save_json(uuid, "id_to_path.json", id_to_path)
+            # Save id-to-path mapping as Parquet (compact) instead of JSON
+            # (a 10M-entry JSON would be ~1.5GB; Parquet is ~50MB).
+            # The ProjectLabelManager has a fallback that queries the DB
+            # directly if this file doesn't exist, so older code still works.
+            id_path_df = pd.DataFrame({
+                "id": range(len(df)),
+                "path": df[cfg.media].astype(str).str.replace(
+                    "/media", cfg.common_media_path or "", 1
+                ) if cfg.common_media_path else df[cfg.media].astype(str),
+            })
+            table = pa.Table.from_pandas(id_path_df, preserve_index=False)
+            backend.save_parquet_named(uuid, "id_to_path.parquet", table)
 
-        return cls(uuid, df.to_dict(), cfg)
+        # Return with empty data dict — plot data is served from data.json
+        # on disk, not from this object. Avoids converting the entire
+        # DataFrame to a Python dict (which would be ~5GB at 10M rows).
+        return cls(uuid, {}, cfg)
 
     @classmethod
     def load(cls, uuid: str, cache_dir: Optional[Path] = None) -> "Plot":

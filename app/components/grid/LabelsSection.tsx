@@ -31,6 +31,7 @@ export default function LabelsSection() {
 
   const [labelCounts, setLabelCounts] = useState<LabelCount[]>([]);
   const [newLabel, setNewLabel] = useState("");
+  const [confirmAction, setConfirmAction] = useState<{ label: string; action: "add" | "remove" } | null>(null);
   const { pushAction, undo, redo, canUndo, canRedo } = useLabelUndo();
 
   useEffect(() => {
@@ -159,13 +160,33 @@ export default function LabelsSection() {
                 <span>{inSel} in page</span>
                 <span>{inAll} total</span>
                 <div className="ml-auto flex items-center gap-1">
-                  <button
-                    className="rounded px-1 py-px text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700"
-                    onClick={() => handleLabelAllOnPage(label)}
-                    title={allOnPageHave ? "Remove from all on page" : "Apply to all on page"}
-                  >
-                    {allOnPageHave ? "Remove all" : "Label page"}
-                  </button>
+                  {confirmAction?.label === label ? (
+                    <span className="flex items-center gap-1">
+                      <span className="text-[10px] text-gray-500">
+                        {confirmAction.action === "remove" ? `Remove from ${mediaItems.length}?` : `Apply to ${mediaItems.length}?`}
+                      </span>
+                      <button
+                        className="rounded bg-gray-800 px-1.5 py-px text-[10px] font-medium text-white transition-colors hover:bg-gray-700"
+                        onClick={() => { handleLabelAllOnPage(label); setConfirmAction(null); }}
+                      >
+                        Yes
+                      </button>
+                      <button
+                        className="rounded px-1 py-px text-[10px] text-gray-400 transition-colors hover:text-gray-700"
+                        onClick={() => setConfirmAction(null)}
+                      >
+                        No
+                      </button>
+                    </span>
+                  ) : (
+                    <button
+                      className="rounded px-1 py-px text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700"
+                      onClick={() => setConfirmAction({ label, action: allOnPageHave ? "remove" : "add" })}
+                      title={allOnPageHave ? "Remove from all on page" : "Apply to all on page"}
+                    >
+                      {allOnPageHave ? "Remove all" : "Label page"}
+                    </button>
+                  )}
                   {inAll > 0 && (
                     <button
                       className="flex items-center gap-0.5 rounded px-1 py-px text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700"

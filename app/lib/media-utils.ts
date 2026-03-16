@@ -18,9 +18,12 @@ export function determineMediaType(filename: string): MediaType {
 
 export function createMedia(data: Record<string, unknown>): Media {
   let src = data.src as string;
-  // In dev mode, /media/ paths need the backend URL prefix since the
+  // In dev mode, /media/ and /api/ paths need the backend URL prefix since the
   // Next.js dev server doesn't serve them.
   if (src?.startsWith("/media/") && BACKEND_URL) {
+    src = `${BACKEND_URL}${src}`;
+  }
+  if (src?.startsWith("/api/") && BACKEND_URL) {
     src = `${BACKEND_URL}${src}`;
   }
   const media: Media = {

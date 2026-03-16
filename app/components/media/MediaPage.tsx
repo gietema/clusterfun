@@ -1,7 +1,7 @@
 "use client";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { configAtom, mediaAtom, mediaIndexAtom, mediaItemsAtom, uuidAtom } from "@/app/store/atoms";
+import { configAtom, currentMediaIndicesAtom, mediaAtom, mediaIndexAtom, mediaItemsAtom, uuidAtom } from "@/app/store/atoms";
 import { COLORS } from "@/app/lib/constants";
 import { getNextMedia, getPreviousMedia, parseBoundingBoxes, rotateImage } from "@/app/lib/media-utils";
 import { fetchAnnotations, saveAnnotations as saveAnnotationsApi, exportAnnotations } from "@/app/lib/api";
@@ -24,6 +24,7 @@ export default function MediaPage({ mediaIndex, onBack }: MediaPageProps) {
   const config = useAtomValue(configAtom);
   const media = useAtomValue(mediaAtom);
   const mediaItems = useAtomValue(mediaItemsAtom);
+  const mediaIndices = useAtomValue(currentMediaIndicesAtom);
   const uuid = useAtomValue(uuidAtom);
   const setSideMedia = useSetAtom(mediaAtom);
   const [shapes, setShapes] = useState<Record<string, any>[]>([]);
@@ -174,6 +175,7 @@ export default function MediaPage({ mediaIndex, onBack }: MediaPageProps) {
         onToggleAdjustments={() => setShowAdjustments((s) => !s)}
         annotateMode={annotateMode}
         onToggleAnnotate={() => setAnnotateMode((s) => !s)}
+        totalCount={mediaIndices.length > 0 ? mediaIndices.length : (config?.total_count ?? undefined)}
       />
       {showAdjustments && (
         <ImageAdjustments values={adjustments} onChange={setAdjustments} />

@@ -133,14 +133,20 @@ function ColumnDetail({
   column,
   onCategoryClick,
   onBinClick,
+  onLoadMore,
+  loadingMore,
 }: {
   stats: ColumnStats;
   column: ColumnInfo;
   onCategoryClick?: (label: string) => void;
   onBinClick?: (binIndex: number) => void;
+  onLoadMore?: () => void;
+  loadingMore?: boolean;
 }) {
   if (stats.type === "categorical") {
     const total = stats.data.reduce((s, d) => s + d.count, 0);
+    const totalUnique = stats.total_unique ?? stats.data.length;
+    const hasMore = stats.data.length < totalUnique;
     return (
       <div className="space-y-2">
         <div className="flex items-end gap-1" style={{ height: 120 }}>
@@ -167,37 +173,45 @@ function ColumnDetail({
             </div>
           ))}
         </div>
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-gray-100">
-              <th className="py-1 text-left font-medium text-gray-500">Value</th>
-              <th className="py-1 text-right font-medium text-gray-500">Count</th>
-              <th className="py-1 text-right font-medium text-gray-500">%</th>
-              <th className="py-1 text-right font-medium text-gray-500"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {stats.data.slice(0, 15).map((d) => (
-              <tr
-                key={d.label}
-                className="cursor-pointer border-b border-gray-50 transition-colors hover:bg-gray-50"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onCategoryClick?.(d.label);
-                }}
-              >
-                <td className="py-1 text-gray-700">{d.label}</td>
-                <td className="py-1 text-right text-gray-600">{d.count.toLocaleString()}</td>
-                <td className="py-1 text-right text-gray-400">{((d.count / total) * 100).toFixed(1)}%</td>
-                <td className="py-1 text-right">
-                  <span className="text-[10px] text-gray-400 hover:text-gray-600">view →</span>
-                </td>
+        <div className="max-h-64 overflow-y-auto">
+          <table className="w-full text-xs">
+            <thead className="sticky top-0 bg-white">
+              <tr className="border-b border-gray-100">
+                <th className="py-1 text-left font-medium text-gray-500">Value</th>
+                <th className="py-1 text-right font-medium text-gray-500">Count</th>
+                <th className="py-1 text-right font-medium text-gray-500">%</th>
+                <th className="py-1 text-right font-medium text-gray-500"></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        {stats.data.length > 15 && (
-          <p className="text-xs text-gray-400">+{stats.data.length - 15} more values</p>
+            </thead>
+            <tbody>
+              {stats.data.map((d) => (
+                <tr
+                  key={d.label}
+                  className="cursor-pointer border-b border-gray-50 transition-colors hover:bg-gray-50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onCategoryClick?.(d.label);
+                  }}
+                >
+                  <td className="py-1 text-gray-700">{d.label}</td>
+                  <td className="py-1 text-right text-gray-600">{d.count.toLocaleString()}</td>
+                  <td className="py-1 text-right text-gray-400">{((d.count / total) * 100).toFixed(1)}%</td>
+                  <td className="py-1 text-right">
+                    <span className="text-[10px] text-gray-400 hover:text-gray-600">view →</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {hasMore && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onLoadMore?.(); }}
+            disabled={loadingMore}
+            className="text-xs text-blue-500 hover:text-blue-700 disabled:text-gray-400"
+          >
+            {loadingMore ? "Loading..." : `Show more (${stats.data.length} of ${totalUnique})`}
+          </button>
         )}
       </div>
     );
@@ -320,6 +334,7 @@ export default function InsightsPage() {
   const setBackgroundTasks = useSetAtom(backgroundTasksAtom);
 
   const [loadingStats, setLoadingStats] = useState<Set<string>>(new Set());
+  const [loadingMore, setLoadingMore] = useState<string | null>(null);
   const [expandedCol, setExpandedCol] = useState<string | null>(null);
 
   const [showAllDupGroups, setShowAllDupGroups] = useState(false);
@@ -421,6 +436,34 @@ export default function InsightsPage() {
       );
     },
     [pushFilter, columnStats],
+  );
+
+  const handleLoadMore = useCallback(
+    async (colName: string) => {
+      const stats = columnStats[colName];
+      if (!stats || stats.type !== "categorical") return;
+      setLoadingMore(colName);
+      try {
+        const ids = allMediaIds.slice(0, 50000);
+        const more = await fetchColumnStats(uuid, ids, colName, stats.data.length, 50);
+        if (more.type === "categorical") {
+          setColumnStats((prev) => {
+            const existing = prev[colName];
+            if (!existing || existing.type !== "categorical") return prev;
+            return {
+              ...prev,
+              [colName]: {
+                ...existing,
+                data: [...existing.data, ...more.data],
+                total_unique: more.total_unique ?? existing.total_unique,
+              },
+            };
+          });
+        }
+      } catch { /* ignore */ }
+      setLoadingMore(null);
+    },
+    [uuid, allMediaIds, columnStats, setColumnStats],
   );
 
   const viewByNumericRange = useCallback(
@@ -730,6 +773,8 @@ export default function InsightsPage() {
                           column={col}
                           onCategoryClick={handleCategoryClick}
                           onBinClick={handleBinClick}
+                          onLoadMore={() => handleLoadMore(col.name)}
+                          loadingMore={loadingMore === col.name}
                         />
                       )}
                     </>

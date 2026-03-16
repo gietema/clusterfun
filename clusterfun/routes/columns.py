@@ -22,6 +22,8 @@ router = APIRouter()
 class ColumnStatsRequest(BaseModel):
     media_ids: List[int]
     column: str
+    offset: int = 0
+    limit: int = 50
 
 
 @router.post("/api/views/{view_uuid}/filter")
@@ -125,16 +127,25 @@ def column_stats(view_uuid: str, req: ColumnStatsRequest) -> Dict[str, Any]:
     is_categorical = all(isinstance(v, str) or v is None for v in values)
 
     if is_categorical:
-        # Return value counts (top 50)
+        # Get total number of distinct values
+        total_query = (
+            f"SELECT COUNT(DISTINCT {col}) FROM database WHERE {base_where}"
+        )
+        total_row = con.execute(total_query, params).fetchone()
+        total_unique = total_row[0] if total_row else 0
+
+        # Return paginated value counts
         query = (
             f"SELECT {col} as label, COUNT(*) as count "
             f"FROM database WHERE {base_where} "
-            f"GROUP BY {col} ORDER BY count DESC LIMIT 50"
+            f"GROUP BY {col} ORDER BY count DESC "
+            f"LIMIT {req.limit} OFFSET {req.offset}"
         )
         rows = con.execute(query, params).fetchall()
         return {
             "type": "categorical",
             "data": [{"label": str(r[0]), "count": r[1]} for r in rows],
+            "total_unique": total_unique,
         }
     else:
         # Compute histogram bins server-side

@@ -104,6 +104,7 @@ class DataLoader:
 
     def get_row(self, media_id: int, as_base64: bool = False) -> MediaItem:
         """Get a single row of data."""
+        config = self._load_base_config()
         result = run_query(
             self.uuid,
             self.backend,
@@ -111,11 +112,24 @@ class DataLoader:
             params=[media_id],
             fetch_one=True,
         )
+        # HuggingFace views: serve images via the hf-bytes endpoint
+        if config.hf_parquet_urls:
+            if as_base64:
+                src, height, width = self._load_hf_as_base64(media_id)
+            else:
+                src, height, width = f"/api/views/{self.uuid}/hf-bytes/{media_id}", None, None
+            return MediaItem(
+                index=media_id,
+                src=src,
+                height=height,
+                width=width,
+                information=self._build_info_dict(result),
+            )
         if as_base64:
             src, height, width = load_media(
                 result[1],
                 as_base64=True,
-                common_media_path=self._load_base_config().common_media_path,
+                common_media_path=config.common_media_path,
             )
         else:
             src, height, width = result[1], None, None
@@ -127,6 +141,28 @@ class DataLoader:
             information=self._build_info_dict(result),
         )
 
+    def _load_hf_as_base64(self, media_id: int) -> tuple:
+        """Fetch HF image bytes and return as base64 data URI with dimensions."""
+        import base64
+        from io import BytesIO
+        from PIL import Image
+
+        from clusterfun.routes.huggingface import get_hf_image_bytes
+
+        response = get_hf_image_bytes(self.uuid, media_id)
+        if response.status_code != 200:
+            return f"/api/views/{self.uuid}/hf-bytes/{media_id}", None, None
+
+        image_bytes = response.body
+        try:
+            img = Image.open(BytesIO(image_bytes))
+            width, height = img.size
+            b64 = base64.b64encode(image_bytes).decode("ascii")
+            content_type = response.media_type or "image/jpeg"
+            return f"data:{content_type};base64,{b64}", height, width
+        except Exception:
+            return f"/api/views/{self.uuid}/hf-bytes/{media_id}", None, None
+
     def get_rows(self, media_indices: MediaIndices) -> List[MediaItem]:
         """Get a paginated list of rows."""
         con, config = None, self.load_config()
@@ -135,13 +171,16 @@ class DataLoader:
         query, params = get_media_query(media_indices, config=config, con=con)
         result = run_query(self.uuid, self.backend, query, params=params)
         labels = self.label_manager.read_labels()
-        needs_url_transform = any(
+        is_hf = bool(config.hf_parquet_urls)
+        needs_url_transform = not is_hf and any(
             str(item[1]).startswith("s3://") or str(item[1]).startswith("gs://")
             for item in result[:1]
         )
         items = []
         for item in result:
-            if needs_url_transform:
+            if is_hf:
+                src = f"/api/views/{self.uuid}/hf-bytes/{item[0]}"
+            elif needs_url_transform:
                 src, _, _ = load_media(
                     item[1], common_media_path=config.common_media_path
                 )

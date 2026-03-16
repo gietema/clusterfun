@@ -35,6 +35,8 @@ class TestProjectSave:
         assert manifest["views"][0]["type"] == "scatter"
 
     def test_save_creates_id_to_path_mapping(self, cache_dir):
+        import pyarrow.parquet as pq
+
         df = _make_df(10)
         cache_path = scatter(
             df, x="x", y="y", media="media", project="test-project", show=False
@@ -42,11 +44,13 @@ class TestProjectSave:
         uuid = cache_path.stem
 
         backend = get_backend()
-        assert backend.json_exists(uuid, "id_to_path.json")
-        mapping = backend.load_json(uuid, "id_to_path.json")
-        assert len(mapping) == 10
+        uri = backend.get_parquet_uri_named(uuid, "id_to_path.parquet")
+        import os
+        assert os.path.exists(uri)
+        table = pq.read_table(uri)
+        assert len(table) == 10
         # All values should be the original URLs
-        for path in mapping.values():
+        for path in table.column("path").to_pylist():
             assert path.startswith("https://example.com/img_")
 
     def test_multiple_views_same_project(self, cache_dir):

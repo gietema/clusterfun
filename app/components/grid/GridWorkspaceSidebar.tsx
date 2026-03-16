@@ -16,6 +16,7 @@ import InformationItem from "../shared/InformationItem";
 import Section from "../shared/Section";
 import LabelsSection from "./LabelsSection";
 import ActiveLearningSection from "./ActiveLearningSection";
+import ExportSection from "./ExportSection";
 
 export default function GridWorkspaceSidebar() {
   const uuid = useAtomValue(uuidAtom);
@@ -218,6 +219,7 @@ export default function GridWorkspaceSidebar() {
 
       <LabelsSection />
       <ActiveLearningSection />
+      <ExportSection />
     </div>
   );
 }

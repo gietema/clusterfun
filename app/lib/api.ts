@@ -119,10 +119,14 @@ export async function fetchColumnStats(
   uuid: string,
   mediaIds: number[],
   column: string,
+  offset = 0,
+  limit = 50,
 ): Promise<ColumnStats> {
   const { data } = await axios.post(`${API_URL}/views/${uuid}/column-stats`, {
     media_ids: mediaIds,
     column,
+    offset,
+    limit,
   });
   return data;
 }

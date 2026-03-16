@@ -6,6 +6,7 @@ the underlying Parquet data.
 """
 
 import dataclasses
+import os
 import threading
 from collections import defaultdict
 from typing import Any, Dict, List, Optional
@@ -13,10 +14,10 @@ from typing import Any, Dict, List, Optional
 import duckdb
 import numpy as np
 import pandas as pd
-from fastapi import APIRouter
+import pyarrow as pa
+import pyarrow.parquet as pq
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-
-from fastapi import HTTPException
 
 from clusterfun.config import Config
 from clusterfun.constants import COLORS
@@ -24,7 +25,7 @@ from clusterfun.plot_types.histogram import get_x_and_y
 from clusterfun.plot_types.violin import get_violin_x_single
 from clusterfun.storage.backends import get_backend
 from clusterfun.storage.factory import get_loader
-from clusterfun.storage.local.data import get_data_dict
+from clusterfun.storage.local.data import get_data_dict, PLOT_SAMPLE_LIMIT
 from clusterfun.storage.query import ensure_embeddings_table, get_connection
 
 router = APIRouter()
@@ -128,9 +129,11 @@ def _build_histogram_data(
     cat_color = cfg.color if cfg.color and cfg.color_is_categorical else None
     x_col = cfg.x
 
+    _sample = f" ORDER BY hash(id) LIMIT {PLOT_SAMPLE_LIMIT}"
+
     if cat_color is not None:
         rows = con.execute(
-            f"SELECT id, {_safe_col(x_col)}, {_safe_col(cat_color)} FROM database"
+            f"SELECT id, {_safe_col(x_col)}, {_safe_col(cat_color)} FROM database{_sample}"
         ).fetchall()
 
         grouped: Dict[Any, list] = defaultdict(list)
@@ -158,7 +161,7 @@ def _build_histogram_data(
         has_color = cfg.color and not cfg.color_is_categorical and cfg.color != x_col
         if has_color:
             select_cols += f", {_safe_col(cfg.color)}"
-        rows = con.execute(f"SELECT {select_cols} FROM database").fetchall()
+        rows = con.execute(f"SELECT {select_cols} FROM database{_sample}").fetchall()
         x_values = [r[1] for r in rows]
         dots = get_x_and_y(x_values, bins)
         trace = {
@@ -185,10 +188,11 @@ def _build_violin_data(
 
     y_col = cfg.y
     cat_color = cfg.color if cfg.color and cfg.color_is_categorical else None
+    _sample = f" ORDER BY hash(id) LIMIT {PLOT_SAMPLE_LIMIT}"
 
     if cat_color is not None:
         rows = con.execute(
-            f"SELECT id, {_safe_col(y_col)}, {_safe_col(cat_color)} FROM database"
+            f"SELECT id, {_safe_col(y_col)}, {_safe_col(cat_color)} FROM database{_sample}"
         ).fetchall()
 
         grouped: Dict[Any, list] = defaultdict(list)
@@ -217,7 +221,7 @@ def _build_violin_data(
         has_color = cfg.color and not cfg.color_is_categorical and cfg.color != y_col
         if has_color:
             select_cols += f", {_safe_col(cfg.color)}"
-        rows = con.execute(f"SELECT {select_cols} FROM database").fetchall()
+        rows = con.execute(f"SELECT {select_cols} FROM database{_sample}").fetchall()
         y_vals = [r[1] for r in rows]
         x_jitter = get_violin_x_single(y_vals)
         trace = {
@@ -245,17 +249,19 @@ def _build_bar_chart_data(
     x_col = cfg.x
     cat_color = cfg.color if cfg.color and cfg.color_is_categorical else None
 
+    _sample = f" ORDER BY hash(id) LIMIT {PLOT_SAMPLE_LIMIT}"
+
     has_nc_color = False
     if cat_color is not None:
         rows = con.execute(
-            f"SELECT id, {_safe_col(x_col)}, {_safe_col(cat_color)} FROM database"
+            f"SELECT id, {_safe_col(x_col)}, {_safe_col(cat_color)} FROM database{_sample}"
         ).fetchall()
     else:
         select_cols = f"id, {_safe_col(x_col)}"
         has_nc_color = bool(cfg.color and not cfg.color_is_categorical and cfg.color != x_col)
         if has_nc_color:
             select_cols += f", {_safe_col(cfg.color)}"
-        rows = con.execute(f"SELECT {select_cols} FROM database").fetchall()
+        rows = con.execute(f"SELECT {select_cols} FROM database{_sample}").fetchall()
 
     # Compute value counts for x
     from collections import Counter
@@ -386,6 +392,41 @@ def _compute_projection(
     )
 
 
+def _projection_filename(method: str, sample_size: int, n_neighbors: int) -> str:
+    """Return a deterministic parquet filename for a cached projection."""
+    return f"projection_{method}_{sample_size}_{n_neighbors}.parquet"
+
+
+def _load_projection_from_disk(
+    view_uuid: str, method: str, sample_size: int, n_neighbors: int
+) -> Optional[pd.DataFrame]:
+    """Try to load a previously saved projection from disk."""
+    backend = get_backend()
+    filename = _projection_filename(method, sample_size, n_neighbors)
+    try:
+        uri = backend.get_parquet_uri_named(view_uuid, filename)
+        if not os.path.exists(uri):
+            return None
+        table = pq.read_table(uri)
+        return table.to_pandas()
+    except Exception:
+        return None
+
+
+def _save_projection_to_disk(
+    view_uuid: str, proj_df: pd.DataFrame,
+    method: str, sample_size: int, n_neighbors: int,
+) -> None:
+    """Persist a projection to disk for future sessions."""
+    backend = get_backend()
+    filename = _projection_filename(method, sample_size, n_neighbors)
+    try:
+        table = pa.Table.from_pandas(proj_df, preserve_index=False)
+        backend.save_parquet_named(view_uuid, filename, table)
+    except Exception:
+        pass  # Non-critical — next request will just recompute
+
+
 def _build_embedding_map_data(
     con: duckdb.DuckDBPyConnection,
     cfg: Config,
@@ -413,33 +454,46 @@ def _build_embedding_map_data(
         return [], None
 
     actual_sample = min(n, sample_size)
-    if n > sample_size:
-        rows = emb_con.execute(
-            f'SELECT id, "{emb_col}" FROM embeddings '
-            f"ORDER BY hash(id + 42) LIMIT {sample_size}"
-        ).fetchall()
-    else:
-        rows = emb_con.execute(
-            f'SELECT id, "{emb_col}" FROM embeddings'
-        ).fetchall()
-
-    sample_ids = np.array([r[0] for r in rows])
-    sample_emb = np.array([r[1] for r in rows], dtype=np.float32)
-    actual_sample = len(sample_ids)
-
     cache_key = f"{view_uuid}:{method}:{actual_sample}:{n_neighbors}"
+
+    # 1. In-memory cache (instant)
     if cache_key in _embedding_projection_cache:
         proj_df = _embedding_projection_cache[cache_key]
     else:
-        with _projection_lock:
-            # Double-check after acquiring lock (another thread may have filled it)
-            if cache_key in _embedding_projection_cache:
-                proj_df = _embedding_projection_cache[cache_key]
-            else:
-                proj_df = _compute_projection(
-                    sample_emb, sample_ids, actual_sample, method, n_neighbors
-                )
-                _embedding_projection_cache[cache_key] = proj_df
+        # 2. Disk cache (fast — avoids UMAP recomputation)
+        proj_df = _load_projection_from_disk(
+            view_uuid, method, actual_sample, n_neighbors
+        )
+        if proj_df is not None:
+            _embedding_projection_cache[cache_key] = proj_df
+        else:
+            # 3. Compute (slow — UMAP/t-SNE)
+            with _projection_lock:
+                # Double-check after acquiring lock
+                if cache_key in _embedding_projection_cache:
+                    proj_df = _embedding_projection_cache[cache_key]
+                else:
+                    if n > sample_size:
+                        rows = emb_con.execute(
+                            f'SELECT id, "{emb_col}" FROM embeddings '
+                            f"ORDER BY hash(id + 42) LIMIT {sample_size}"
+                        ).fetchall()
+                    else:
+                        rows = emb_con.execute(
+                            f'SELECT id, "{emb_col}" FROM embeddings'
+                        ).fetchall()
+
+                    sample_ids = np.array([r[0] for r in rows])
+                    sample_emb = np.array([r[1] for r in rows], dtype=np.float32)
+                    actual_sample = len(sample_ids)
+
+                    proj_df = _compute_projection(
+                        sample_emb, sample_ids, actual_sample, method, n_neighbors
+                    )
+                    _embedding_projection_cache[cache_key] = proj_df
+                    _save_projection_to_disk(
+                        view_uuid, proj_df, method, actual_sample, n_neighbors
+                    )
 
     # Build traces directly — join with color column if needed
     proj_ids = proj_df["id"].tolist()
@@ -448,8 +502,10 @@ def _build_embedding_map_data(
 
     if cfg.color:
         col_safe = _safe_col(cfg.color)
+        placeholders = ",".join("?" for _ in proj_ids)
         color_rows = con.execute(
-            f"SELECT id, {col_safe} FROM database"
+            f"SELECT id, {col_safe} FROM database WHERE id IN ({placeholders})",
+            proj_ids,
         ).fetchall()
         color_map = {r[0]: r[1] for r in color_rows}
         trace_rows = [

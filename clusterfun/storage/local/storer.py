@@ -50,6 +50,10 @@ class LocalStorer(Storer):
         table = table.replace_schema_metadata(None)
         self.backend.save_parquet(uuid, table)
 
+        # Store total count so the frontend knows the full dataset size
+        # even when plot data is sampled
+        cfg.total_count = len(df)
+
         # Generate plot data via DuckDB on the in-memory DataFrame
         con = duckdb.connect()
         temp_df = df[cfg.columns]

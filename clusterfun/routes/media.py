@@ -4,6 +4,7 @@ import base64
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from io import BytesIO
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import os
@@ -32,16 +33,30 @@ _thumb_pool = ThreadPoolExecutor(max_workers=8)
 
 
 @lru_cache(maxsize=32)
-def _get_view_media_config(view_uuid: str) -> tuple[str, Optional[str]]:
-    """Cache media column name and common_media_path for a view."""
+def _get_view_media_config(view_uuid: str) -> tuple[str, Optional[str], bool]:
+    """Cache media column name, common_media_path, and HF status for a view."""
     loader = get_loader(view_uuid)
     config = loader.load_config()
-    return config.media, config.common_media_path
+    is_hf = bool(config.hf_parquet_urls)
+    return config.media, config.common_media_path, is_hf
 
 
 def _get_media_path(view_uuid: str, media_id: int) -> tuple[str, Optional[str]]:
     """Look up the raw media path and common_media_path for a media id."""
-    media_col, common_media_path = _get_view_media_config(view_uuid)
+    media_col, common_media_path, is_hf = _get_view_media_config(view_uuid)
+
+    # For HF views, check the image cache directory
+    if is_hf:
+        from clusterfun.storage.backends.local import LocalBackend
+        backend = get_backend()
+        if isinstance(backend, LocalBackend):
+            cache_dir = backend.cache_dir / view_uuid / "hf_image_cache"
+            for ext in (".jpg", ".png", ".webp", ".gif"):
+                cached = cache_dir / f"{media_id}{ext}"
+                if cached.exists():
+                    return str(cached), None
+        return "", None
+
     backend = get_backend()
     rows = run_query(
         view_uuid,
@@ -58,10 +73,15 @@ def _get_media_path(view_uuid: str, media_id: int) -> tuple[str, Optional[str]]:
 def _generate_thumbnail_bytes(media_path: str, common_media_path: Optional[str], size: int) -> Optional[bytes]:
     """Load image, resize to thumbnail, return JPEG bytes. Cached."""
     try:
-        storage_client = get_storage_client(media_path, common_media_path)
-        url = storage_client.get_media(media_path)
-        image_data = storage_client.get_media_to_local(url)
-        image = Image.open(image_data)
+        path = Path(media_path)
+        if path.is_absolute() and path.exists():
+            # Direct file path (e.g. HF cached image)
+            image = Image.open(path)
+        else:
+            storage_client = get_storage_client(media_path, common_media_path)
+            url = storage_client.get_media(media_path)
+            image_data = storage_client.get_media_to_local(url)
+            image = Image.open(image_data)
         if image.mode != "RGB":
             image = image.convert("RGB")
         image.thumbnail((size, size))
@@ -127,6 +147,8 @@ def get_media_thumbnails(
     max_size = req.max_size
     common_media_path = config.common_media_path
 
+    is_hf = bool(config.hf_parquet_urls)
+
     placeholders = ",".join("?" for _ in req.media_ids)
     rows = run_query(
         view_uuid,
@@ -136,7 +158,24 @@ def get_media_thumbnails(
     )
 
     def process_row(row: tuple) -> Optional[Dict[str, Any]]:
-        data = _generate_thumbnail_bytes(row[1], common_media_path, max_size)
+        media_path = row[1]
+        cmp = common_media_path
+        if is_hf:
+            # For HF views, look up the cached image file
+            from clusterfun.storage.backends.local import LocalBackend
+            if isinstance(backend, LocalBackend):
+                cache_dir = backend.cache_dir / view_uuid / "hf_image_cache"
+                for ext in (".jpg", ".png", ".webp", ".gif"):
+                    cached = cache_dir / f"{row[0]}{ext}"
+                    if cached.exists():
+                        media_path = str(cached)
+                        cmp = None
+                        break
+                else:
+                    return None
+            else:
+                return None
+        data = _generate_thumbnail_bytes(media_path, cmp, max_size)
         if data is None:
             return None
         src = f"data:image/jpeg;base64,{base64.b64encode(data).decode('ascii')}"

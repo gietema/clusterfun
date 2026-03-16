@@ -156,7 +156,7 @@ export interface NumericStats {
 }
 
 export type ColumnStats =
-  | { type: "categorical"; data: CategoricalStat[] }
+  | { type: "categorical"; data: CategoricalStat[]; total_unique?: number }
   | ({ type: "numeric" } & NumericStats);
 
 // ── Similarity ──

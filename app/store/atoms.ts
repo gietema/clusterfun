@@ -32,6 +32,7 @@ export const labelFilterAtom = atom<string | null>(null);
 export const selectedProjectAtom = atom<string | null>(null);
 export const sidebarWidthAtom = atom<number | null>(null);
 export const similarityResultsAtom = atom<Record<number, number>>({});
+export const selectedMediaAtom = atom<Set<number>>(new Set());
 
 // Active learning state
 export const activeLearningAtom = atom<{

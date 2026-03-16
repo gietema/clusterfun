@@ -84,3 +84,5 @@ class Config:  # pylint: disable=too-many-instance-attributes
     embeddings_source: Optional[str] = None
     project: Optional[str] = None
     total_count: Optional[int] = None
+    hf_parquet_urls: Optional[List[str]] = None
+    hf_image_column: Optional[str] = None

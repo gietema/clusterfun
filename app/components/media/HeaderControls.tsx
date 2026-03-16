@@ -16,6 +16,7 @@ interface HeaderControlsProps {
   onToggleAdjustments?: () => void;
   annotateMode?: boolean;
   onToggleAnnotate?: () => void;
+  totalCount?: number;
 }
 
 export default function HeaderControls({
@@ -23,9 +24,11 @@ export default function HeaderControls({
   onRotateClockwise, onRotateCounterclockwise, onBack,
   showAdjustments, onToggleAdjustments,
   annotateMode, onToggleAnnotate,
+  totalCount,
 }: HeaderControlsProps) {
   const hasPrev = mediaIndex != null && getPreviousMedia(mediaItems, mediaIndex) !== null;
   const hasNext = mediaIndex != null && getNextMedia(mediaItems, mediaIndex) !== null;
+  const currentPosition = mediaIndex != null ? mediaItems.findIndex((m) => m.index === mediaIndex) : -1;
 
   return (
     <div className="flex items-center justify-between border-b border-gray-200 px-3 py-2">
@@ -68,14 +71,17 @@ export default function HeaderControls({
         </div>
         <div className="flex items-center gap-1.5">
           {hasPrev && (
-            <button className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={onPrevious}>
+            <button className="rounded-md px-2 py-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={onPrevious}>
               <FontAwesomeIcon icon={faArrowLeft} />
-              <span>Previous</span>
             </button>
           )}
+          {currentPosition >= 0 && (
+            <span className="tabular-nums text-gray-500">
+              {currentPosition + 1}{totalCount != null ? ` / ${totalCount}` : ` / ${mediaItems.length}`}
+            </span>
+          )}
           {hasNext && (
-            <button className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={onNext}>
-              <span>Next</span>
+            <button className="rounded-md px-2 py-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={onNext}>
               <FontAwesomeIcon icon={faArrowRight} />
             </button>
           )}
