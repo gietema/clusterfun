@@ -378,7 +378,7 @@ export default function InsightsPage() {
 
   // Load stats for all visible columns in parallel, batch state updates
   useEffect(() => {
-    if (!uuid || allMediaIds.length === 0 || visibleColumns.length === 0) return;
+    if (!uuid || visibleColumns.length === 0) return;
     const toFetch = visibleColumns.filter(
       (c) => !columnStats[c.name] && !loadingStats.has(c.name),
     );
@@ -390,7 +390,10 @@ export default function InsightsPage() {
       return next;
     });
 
-    const ids = allMediaIds.slice(0, 50000);
+    // Pass IDs for subset views, empty array for "all items" (lets backend use full dataset)
+    const ids = allMediaIds.length > 0 && allMediaIds.length < (config?.total_count ?? Infinity)
+      ? allMediaIds.slice(0, 50000)
+      : [];
     Promise.all(
       toFetch.map((col) =>
         fetchColumnStats(uuid, ids, col.name)

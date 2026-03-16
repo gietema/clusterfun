@@ -112,9 +112,14 @@ def column_stats(view_uuid: str, req: ColumnStatsRequest) -> Dict[str, Any]:
     backend = get_backend()
     con = get_connection(view_uuid, backend)
 
-    placeholders = ",".join("?" for _ in req.media_ids)
-    base_where = f"id IN ({placeholders})"
-    params: list = list(req.media_ids)
+    # Empty media_ids means "all items" — no WHERE clause needed
+    if req.media_ids:
+        placeholders = ",".join("?" for _ in req.media_ids)
+        base_where = f"id IN ({placeholders})"
+        params: list = list(req.media_ids)
+    else:
+        base_where = "1=1"
+        params = []
 
     # Use double-quoted identifiers (DuckDB standard); square brackets [col]
     # are list constructors in DuckDB, not column references.
