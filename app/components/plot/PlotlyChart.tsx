@@ -155,8 +155,10 @@ export default function PlotlyChart({
     return sortedData.map((trace) => ({
       ...trace,
       selectedpoints: trace.id
-        .map((id, idx) => (highlightedIds.has(id) ? idx : -1))
-        .filter((idx) => idx >= 0),
+        ? trace.id
+            .map((id, idx) => (highlightedIds.has(id) ? idx : -1))
+            .filter((idx) => idx >= 0)
+        : [],
     }));
   }, [sortedData, highlightedIds]);
 
