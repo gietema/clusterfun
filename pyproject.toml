@@ -66,6 +66,7 @@ violin = "python scripts/violin.py"
 grid = "python scripts/grid.py"
 audio = "python scripts/audio.py"
 imagenette = "python scripts/load_imagenette.py"
+imagenet = "python scripts/load_imagenet.py"
 
 [tool.pylint."MESSAGES CONTROL"]
 good-names = [
