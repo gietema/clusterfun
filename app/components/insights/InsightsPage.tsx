@@ -12,7 +12,7 @@ import {
 import {
   fetchColumns, fetchColumnStats, fetchMediaItems,
   fetchEmbeddings, fetchOutliers, fetchDuplicates,
-  fetchCentroidDistance,
+  fetchCentroidDistance, computeImageStats,
 } from "@/app/lib/api";
 import type { InsightsTaskResponse } from "@/app/lib/api";
 import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
@@ -683,6 +683,47 @@ export default function InsightsPage() {
             {visibleColumns.length} columns
             ({numericCols.length} numeric, {categoricalCols.length} categorical)
           </p>
+        </div>
+
+        {/* Image statistics */}
+        <div className="mb-6 flex items-center gap-3">
+          <button
+            onClick={async () => {
+              try {
+                const status = await computeImageStats(uuid);
+                if (status.status === "already_computed") {
+                  toast("Image statistics already computed");
+                } else {
+                  setBackgroundTasks((prev) => [
+                    ...prev,
+                    {
+                      id: `img-stats-${uuid}`,
+                      type: "image_stats" as const,
+                      viewUuid: uuid,
+                      label: "Image statistics",
+                      status: "running" as const,
+                      progress: 0,
+                      done: 0,
+                      total: 0,
+                      startedAt: Date.now(),
+                    },
+                  ]);
+                  toast("Computing image statistics in background");
+                }
+              } catch {
+                toast.error("Failed to start image stats computation");
+              }
+            }}
+            className="flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-600 transition-colors hover:bg-gray-50"
+          >
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+            </svg>
+            Compute image statistics
+          </button>
+          <span className="text-[11px] text-gray-400">
+            Adds brightness, contrast, sharpness, and other columns
+          </span>
         </div>
 
         {/* Column cards */}
