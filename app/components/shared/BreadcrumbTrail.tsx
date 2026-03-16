@@ -86,13 +86,9 @@ export default function BreadcrumbTrail() {
       label: fLabel,
       type: "filter",
       onRemove: () => {
-        // Check if this filter came from a breadcrumb
-        const currentCrumb = crumbs[crumbs.length - 1];
-        if (currentCrumb?.filters?.length) {
-          popSelection();
-        } else {
-          setFilters((prev) => prev.filter((pf) => pf !== f));
-        }
+        // Remove the filter and pop any crumb it created
+        setFilters((prev) => prev.filter((pf) => pf !== f));
+        popSelection();
       },
     });
   }
