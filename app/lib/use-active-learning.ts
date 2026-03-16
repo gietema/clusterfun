@@ -72,11 +72,23 @@ export function useActiveLearning() {
       const sorted = sortPredictions(predictions, filter, sort);
       const orderedIds = sorted.map((p) => p.media_id);
       const idSet = new Set(orderedIds);
-      const remaining = mediaIndices.filter((id) => !idSet.has(id));
-      setMediaIndicesStack((prev) => [...prev.slice(0, -1), [...orderedIds, ...remaining]]);
+
+      // When mediaIndices is empty (grid view = "all items"), generate the
+      // full ID range so predictions appear first, then everything else.
+      const baseIds = mediaIndices.length > 0
+        ? mediaIndices
+        : Array.from({ length: config?.total_count ?? 0 }, (_, i) => i);
+
+      const remaining = baseIds.filter((id) => !idSet.has(id));
+      const newIds = [...orderedIds, ...remaining];
+
+      setMediaIndicesStack((prev) => {
+        if (prev.length === 0) return [newIds];
+        return [...prev.slice(0, -1), newIds];
+      });
       setGridValues((prev) => ({ ...prev, page: 0 }));
     },
-    [mediaIndices, setMediaIndicesStack, setGridValues],
+    [mediaIndices, config?.total_count, setMediaIndicesStack, setGridValues],
   );
 
   const refitServerSide = useCallback(
@@ -200,15 +212,17 @@ export function useActiveLearning() {
     async () => {
       if (!uuid || !config?.embeddings) return;
       try {
-        // Use server-side for large datasets (avoids downloading all embeddings)
-        const useServer = !embCache && mediaIndices.length > SERVER_THRESHOLD;
+        // Use server-side for large datasets (avoids downloading all embeddings).
+        // When mediaIndices is empty (grid view = "all items"), use total_count.
+        const itemCount = mediaIndices.length > 0 ? mediaIndices.length : (config?.total_count ?? 0);
+        const useServer = !embCache && itemCount > SERVER_THRESHOLD;
         if (useServer) {
           await refitServerSide();
         } else {
           await refitClientSide();
         }
-      } catch {
-        // Silently handle errors (e.g. not enough labels yet)
+      } catch (err) {
+        console.error("Active learning refit failed:", err);
       }
     },
     [uuid, config?.embeddings, embCache, mediaIndices.length, refitServerSide, refitClientSide],
