@@ -132,7 +132,7 @@ def find_similar_vector(
 
 
 def _get_text_encoder(model_name: str) -> dict:
-    """Lazily load a text encoder model + tokenizer, cached per model name."""
+    """Lazily load a text encoder model + processor, cached per model name."""
     if model_name in _text_encoder_cache:
         return _text_encoder_cache[model_name]
 
@@ -141,7 +141,7 @@ def _get_text_encoder(model_name: str) -> dict:
             return _text_encoder_cache[model_name]
 
         import torch
-        from transformers import AutoModel, AutoTokenizer
+        from transformers import AutoModel, AutoProcessor
 
         device = (
             "mps" if torch.backends.mps.is_available()
@@ -150,26 +150,31 @@ def _get_text_encoder(model_name: str) -> dict:
         )
 
         model = AutoModel.from_pretrained(model_name).to(device)
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        processor = AutoProcessor.from_pretrained(model_name)
         model.eval()
 
         _text_encoder_cache[model_name] = {
             "model": model,
-            "tokenizer": tokenizer,
+            "processor": processor,
             "device": device,
         }
         return _text_encoder_cache[model_name]
 
 
 def _encode_text(model_name: str, text: str) -> list[float]:
-    """Encode text into an embedding vector using the specified model."""
+    """Encode text into an embedding vector using the specified model.
+
+    Uses the processor (not raw tokenizer) for tokenization — this
+    ensures correct padding length, which is critical for models like
+    SigLIP that pool from the last token position.
+    """
     import torch
 
     enc = _get_text_encoder(model_name)
-    model, tokenizer, device = enc["model"], enc["tokenizer"], enc["device"]
+    model, processor, device = enc["model"], enc["processor"], enc["device"]
 
-    inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
-    inputs = {k: v.to(device) for k, v in inputs.items()}
+    inputs = processor(text=[text], return_tensors="pt", padding="max_length", truncation=True)
+    inputs = {k: v.to(device) for k, v in inputs.items() if k == "input_ids"}
 
     with torch.no_grad():
         features = model.get_text_features(**inputs)
