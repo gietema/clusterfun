@@ -13,9 +13,22 @@ const TEXT_SEARCH_MODELS: Record<string, string> = {
   "openai/clip-vit-large-patch14": "Xenova/clip-vit-large-patch14",
 };
 
-/** Check if a model supports text search in the browser. */
-export function supportsTextSearch(modelName: string | undefined): boolean {
+/** Check if a model supports text search in the browser (ONNX). */
+export function supportsBrowserTextSearch(modelName: string | undefined): boolean {
   return !!modelName && modelName in TEXT_SEARCH_MODELS;
+}
+
+/** Vision-language models that support server-side text search. */
+const VL_MODELS = [
+  "openai/clip",
+  "google/siglip",
+  "laion/",
+];
+
+/** Check if a model supports text search (browser or server-side). */
+export function supportsTextSearch(modelName: string | undefined): boolean {
+  if (!modelName) return false;
+  return modelName in TEXT_SEARCH_MODELS || VL_MODELS.some((prefix) => modelName.startsWith(prefix));
 }
 
 let tokenizer: any = null;

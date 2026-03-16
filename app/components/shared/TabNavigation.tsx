@@ -5,8 +5,8 @@ import {
   configAtom, showPageAtom, uuidAtom,
   similarityResultsAtom, textSearchQueryAtom,
 } from "@/app/store/atoms";
-import { fetchSimilarVector } from "@/app/lib/api";
-import { encodeText, supportsTextSearch } from "@/app/lib/clip";
+import { fetchSimilarVector, fetchTextSearch } from "@/app/lib/api";
+import { encodeText, supportsTextSearch, supportsBrowserTextSearch } from "@/app/lib/clip";
 import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
 import TaskQueueIndicator from "./TaskQueueIndicator";
 
@@ -70,13 +70,21 @@ export default function TabNavigation() {
     setError(null);
     setProgress(0);
     try {
-      const embedding = await encodeText(
-        config.embeddings_model,
-        query.trim(),
-        (p) => setProgress(p),
-      );
-      setProgress(null);
-      const results = await fetchSimilarVector(uuid, embedding);
+      let results;
+      if (supportsBrowserTextSearch(config.embeddings_model)) {
+        // Browser-side CLIP text encoding (ONNX)
+        const embedding = await encodeText(
+          config.embeddings_model,
+          query.trim(),
+          (p) => setProgress(p),
+        );
+        setProgress(null);
+        results = await fetchSimilarVector(uuid, embedding);
+      } else {
+        // Server-side text encoding (SigLIP, etc.)
+        setProgress(null);
+        results = await fetchTextSearch(uuid, query.trim());
+      }
       const ids = results.map((r) => r.media_id);
       const scores: Record<number, number> = {};
       for (const r of results) scores[r.media_id] = r.similarity;

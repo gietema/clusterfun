@@ -184,6 +184,18 @@ export async function fetchSimilar(
   return data;
 }
 
+export async function fetchTextSearch(
+  uuid: string,
+  query: string,
+  limit = 100,
+): Promise<SimilarityResult[]> {
+  const { data } = await axios.post(`${API_URL}/views/${uuid}/search-text`, {
+    query,
+    limit,
+  });
+  return data;
+}
+
 export async function fetchSimilarVector(
   uuid: string,
   embedding: number[],

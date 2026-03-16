@@ -1,9 +1,10 @@
 """Similarity search routes (by image and by text)."""
 
-from typing import List
+import threading
+from typing import List, Optional
 
 import numpy as np
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from clusterfun.faiss_index import get_or_load_index
@@ -13,6 +14,10 @@ from clusterfun.storage.query import ensure_embeddings_table
 
 router = APIRouter()
 
+# Lazy-loaded text encoder for server-side text search
+_text_encoder_lock = threading.Lock()
+_text_encoder_cache: dict[str, dict] = {}  # model_name -> {"model", "tokenizer"}
+
 
 class SimilarityRequest(BaseModel):
     media_id: int
@@ -20,6 +25,11 @@ class SimilarityRequest(BaseModel):
 
 class VectorSearchRequest(BaseModel):
     embedding: List[float]
+
+
+class TextSearchRequest(BaseModel):
+    query: str
+    limit: int = 100
 
 
 class SimilarityResult(BaseModel):
@@ -119,3 +129,86 @@ def find_similar_vector(
     )
 
     return _search_by_vector(index, ids, request.embedding)
+
+
+def _get_text_encoder(model_name: str) -> dict:
+    """Lazily load a text encoder model + tokenizer, cached per model name."""
+    if model_name in _text_encoder_cache:
+        return _text_encoder_cache[model_name]
+
+    with _text_encoder_lock:
+        if model_name in _text_encoder_cache:
+            return _text_encoder_cache[model_name]
+
+        import torch
+        from transformers import AutoModel, AutoTokenizer
+
+        device = (
+            "mps" if torch.backends.mps.is_available()
+            else "cuda" if torch.cuda.is_available()
+            else "cpu"
+        )
+
+        model = AutoModel.from_pretrained(model_name).to(device)
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model.eval()
+
+        _text_encoder_cache[model_name] = {
+            "model": model,
+            "tokenizer": tokenizer,
+            "device": device,
+        }
+        return _text_encoder_cache[model_name]
+
+
+def _encode_text(model_name: str, text: str) -> list[float]:
+    """Encode text into an embedding vector using the specified model."""
+    import torch
+
+    enc = _get_text_encoder(model_name)
+    model, tokenizer, device = enc["model"], enc["tokenizer"], enc["device"]
+
+    inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
+    inputs = {k: v.to(device) for k, v in inputs.items()}
+
+    with torch.no_grad():
+        features = model.get_text_features(**inputs)
+        if not isinstance(features, torch.Tensor):
+            features = features.pooler_output
+        features = features / features.norm(dim=-1, keepdim=True)
+
+    return features[0].cpu().tolist()
+
+
+@router.post("/api/views/{view_uuid}/search-text")
+def search_by_text(
+    view_uuid: str, request: TextSearchRequest,
+) -> List[SimilarityResult]:
+    """Search by natural language query using server-side text encoding.
+
+    Loads the embedding model's text encoder on demand (cached after first use).
+    Works with any vision-language model (CLIP, SigLIP, etc.).
+    """
+    backend = get_backend()
+    loader = DataLoader(view_uuid, backend)
+    config = loader.load_config()
+
+    if not config.embeddings or not config.embeddings_model:
+        raise HTTPException(status_code=400, detail="No embeddings model configured")
+
+    # Encode the text query server-side
+    text_embedding = _encode_text(config.embeddings_model, request.query)
+
+    # Search the FAISS index
+    ensure_embeddings_table(
+        view_uuid, backend, config.embeddings,
+        embeddings_source=config.embeddings_source,
+        media_col=config.media,
+    )
+    index, ids = get_or_load_index(
+        view_uuid, config.embeddings,
+        embeddings_source=config.embeddings_source,
+        media_col=config.media,
+    )
+
+    return _search_by_vector(index, ids, text_embedding, limit=request.limit)
