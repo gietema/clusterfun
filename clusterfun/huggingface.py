@@ -226,7 +226,15 @@ def _normalize_python_list(value) -> str:
     Handles edge cases like escaped quotes and mixed quoting styles
     that are common in HuggingFace datasets (e.g. MMMU options column).
     """
-    if pd.isna(value):
+    # Handle array/list values (DuckDB returns VARCHAR[] as Python lists)
+    if isinstance(value, (list, tuple)):
+        return json.dumps(list(value))
+    try:
+        if pd.isna(value):
+            return "[]"
+    except (ValueError, TypeError):
+        pass
+    if value is None:
         return "[]"
     s = str(value).strip()
     if not s.startswith("["):
@@ -291,8 +299,8 @@ def _read_metadata(
         other_columns = []
         for row in schema:
             col_name, col_type = row[0], row[1]
-            if col_name == image_column:
-                pass  # Skip primary image column (use row number instead)
+            if col_name == image_column or col_name == "image":
+                pass  # Skip image columns (synthetic 'image' column replaces them)
             elif col_name in extra_set:
                 # Check null status without reading bytes (parquet bitmap only)
                 select_cols.append(
@@ -517,6 +525,12 @@ def from_huggingface(
     # 7. Set up media column name and columns list
     df = df.reset_index(drop=True)
     media_col = "image"
+
+    # Remove original 'image' column from metadata if it clashes with the
+    # synthetic media column (e.g. MathVision has both 'image' path and
+    # 'decoded_image' bytes — we use decoded_image, synthetic col is 'image')
+    if media_col in other_columns:
+        other_columns = [c for c in other_columns if c != media_col]
 
     # Rename dataset's own 'id' column to avoid clash with the storer's synthetic id
     if "id" in other_columns and "id" in df.columns:
