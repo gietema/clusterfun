@@ -1,12 +1,20 @@
 """Load Imagenette (10-class ImageNet subset) and launch with embeddings.
 
-Downloads from fastai's official URL, computes embeddings (CLIP or DINOv2),
-and opens a grid view with similarity search and active learning.
+Downloads from fastai's official URL, computes embeddings, and opens
+a grid view with similarity search and active learning.
 
 Usage:
-    uv run --with click scripts/load_imagenette.py --no-embeddings
     uv run --with click --with torch --with transformers scripts/load_imagenette.py
     uv run --with click --with torch --with transformers scripts/load_imagenette.py --model dinov2
+    uv run --with click scripts/load_imagenette.py --no-embeddings
+
+Available embedding models (--model):
+    siglip2-384   SigLIP 2 base, 384px input, 768-dim  (default, best quality/speed)
+    siglip2-224   SigLIP 2 base, 224px input, 768-dim  (faster, slightly lower quality)
+    siglip2-l     SigLIP 2 large, 384px, 1024-dim      (slower, higher quality)
+    siglip2-so    SigLIP 2 SO-400M, 384px, 1152-dim    (slowest, highest quality)
+    clip          CLIP ViT-B/32, 224px, 512-dim         (fast, semantic similarity)
+    dinov2        DINOv2 base, 224px, 768-dim           (visual/spatial features)
 """
 
 import tarfile
@@ -37,13 +45,57 @@ LABEL_MAP = {
     "n03888257": "parachute",
 }
 
+MODEL_INFO = {
+    "siglip2-384": {
+        "col": "siglip2_embedding",
+        "hf_name": "google/siglip2-base-patch16-384",
+        "fn": "compute_siglip2_embeddings",
+        "kwargs": {"model_name": "google/siglip2-base-patch16-384"},
+        "desc": "SigLIP 2 base 384px (768-dim, best quality/speed balance)",
+    },
+    "siglip2-224": {
+        "col": "siglip2_embedding",
+        "hf_name": "google/siglip2-base-patch16-224",
+        "fn": "compute_siglip2_embeddings",
+        "kwargs": {"model_name": "google/siglip2-base-patch16-224"},
+        "desc": "SigLIP 2 base 224px (768-dim, faster)",
+    },
+    "siglip2-l": {
+        "col": "siglip2l_embedding",
+        "hf_name": "google/siglip2-large-patch16-384",
+        "fn": "compute_siglip2_embeddings",
+        "kwargs": {"model_name": "google/siglip2-large-patch16-384"},
+        "desc": "SigLIP 2 large 384px (1024-dim, higher quality)",
+    },
+    "siglip2-so": {
+        "col": "siglip2so_embedding",
+        "hf_name": "google/siglip2-so400m-patch14-384",
+        "fn": "compute_siglip2_embeddings",
+        "kwargs": {"model_name": "google/siglip2-so400m-patch14-384"},
+        "desc": "SigLIP 2 SO-400M 384px (1152-dim, highest quality)",
+    },
+    "clip": {
+        "col": "clip_embedding",
+        "hf_name": "openai/clip-vit-base-patch32",
+        "fn": "compute_clip_embeddings",
+        "kwargs": {},
+        "desc": "CLIP ViT-B/32 (512-dim, fast, semantic)",
+    },
+    "dinov2": {
+        "col": "dinov2_embedding",
+        "hf_name": "facebook/dinov2-base",
+        "fn": "compute_dinov2_embeddings",
+        "kwargs": {},
+        "desc": "DINOv2 base (768-dim, visual/spatial features)",
+    },
+}
+
 
 def load_imagenette(split: str = "train", size: str = "320px") -> pd.DataFrame:
     """Download imagenette and build a DataFrame with image paths and labels."""
     url = IMAGENETTE_URLS[size]
-    # Determine extract dir name from URL
-    tar_name = url.split("/")[-1]  # e.g. imagenette2-320.tgz
-    extract_name = tar_name.replace(".tgz", "")  # e.g. imagenette2-320
+    tar_name = url.split("/")[-1]
+    extract_name = tar_name.replace(".tgz", "")
     data_dir = CACHE_DIR / extract_name
 
     if not data_dir.exists():
@@ -73,28 +125,14 @@ def load_imagenette(split: str = "train", size: str = "320px") -> pd.DataFrame:
     return df
 
 
-MODEL_INFO = {
-    "siglip2": {
-        "col": "siglip2_embedding",
-        "hf_name": "google/siglip2-base-patch16-224",
-    },
-    "clip": {
-        "col": "clip_embedding",
-        "hf_name": "openai/clip-vit-base-patch32",
-    },
-    "dinov2": {
-        "col": "dinov2_embedding",
-        "hf_name": "facebook/dinov2-base",
-    },
-}
-
-
 @click.command()
 @click.option("--split", type=click.Choice(["train", "validation"]), default="train")
 @click.option("--size", type=click.Choice(["full_size", "320px", "160px"]), default="320px")
-@click.option("--model", type=click.Choice(list(MODEL_INFO.keys())), default="siglip2", help="Embedding model")
+@click.option("--model", type=click.Choice(list(MODEL_INFO.keys())), default="siglip2-384",
+              help="Embedding model (see module docstring for details)")
 @click.option("--embeddings/--no-embeddings", default=True, help="Compute embeddings")
 def main(split, size, model, embeddings):
+    info = MODEL_INFO[model]
     suffix = f"{model}_embeddings" if embeddings else "no_embeddings"
     cache_path = CACHE_DIR / f"imagenette_{split}_{suffix}.parquet"
 
@@ -107,31 +145,21 @@ def main(split, size, model, embeddings):
         if embeddings:
             import sys
             sys.path.insert(0, str(Path(__file__).parent))
+            import similarity
 
-            info = MODEL_INFO[model]
-            if model == "siglip2":
-                from similarity import compute_siglip2_embeddings
-                print("Computing SigLIP 2 embeddings...")
-                embs, valid_indices = compute_siglip2_embeddings(df["image"].tolist(), local=True)
-            elif model == "clip":
-                from similarity import compute_clip_embeddings
-                print("Computing CLIP embeddings...")
-                embs, valid_indices = compute_clip_embeddings(df["image"].tolist(), local=True)
-            else:
-                from similarity import compute_dinov2_embeddings
-                print("Computing DINOv2 embeddings...")
-                embs, valid_indices = compute_dinov2_embeddings(df["image"].tolist())
+            compute_fn = getattr(similarity, info["fn"])
+            print(f"Computing {info['desc']}...")
+            embs, valid_indices = compute_fn(df["image"].tolist(), local=True, **info["kwargs"])
 
             df = df.iloc[valid_indices].reset_index(drop=True)
             df[info["col"]] = embs
-            print(f"Computed {model} embeddings for {len(df)} items ({len(embs[0])}-dim)")
+            print(f"Computed embeddings for {len(df)} items ({len(embs[0])}-dim)")
 
         df.to_parquet(cache_path)
         print(f"Saved cache to {cache_path}")
 
     import clusterfun as clt
 
-    info = MODEL_INFO.get(model, MODEL_INFO["siglip2"])
     emb_col = info["col"] if info["col"] in df.columns else None
 
     kwargs = dict(
