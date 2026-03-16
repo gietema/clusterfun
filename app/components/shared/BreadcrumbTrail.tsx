@@ -67,12 +67,42 @@ export default function BreadcrumbTrail() {
   // Build the list of active chips
   const chips: Chip[] = [];
 
-  // Selection chips — one per stack level (skip the "All" base)
+  // Collect labels already shown to avoid duplicates
+  const shownLabels = new Set<string>();
+
+  // Active filters — show as amber chips (primary source of truth)
+  const completeFilters = filters.filter(
+    (f) => f.column && f.comparison && f.values.length > 0,
+  );
+  for (let i = 0; i < completeFilters.length; i++) {
+    const f = completeFilters[i];
+    const fLabel = f.values.length === 1
+      ? `${f.column} ${f.comparison} ${f.values[0]}`
+      : `${f.column} ${f.comparison} (${f.values.length})`;
+    shownLabels.add(fLabel);
+
+    chips.push({
+      id: `filter-${i}`,
+      label: fLabel,
+      type: "filter",
+      onRemove: () => {
+        // Check if this filter came from a breadcrumb
+        const currentCrumb = crumbs[crumbs.length - 1];
+        if (currentCrumb?.filters?.length) {
+          popSelection();
+        } else {
+          setFilters((prev) => prev.filter((pf) => pf !== f));
+        }
+      },
+    });
+  }
+
+  // Selection chips — from stack levels (skip "All" base)
   for (let i = 1; i < crumbs.length; i++) {
     const crumb = crumbs[i];
-    // Skip filter-based crumbs — they show as filter chips below
+    // Skip if already shown as a filter or search chip
+    if (shownLabels.has(crumb.label)) continue;
     if (crumb.filters && crumb.filters.length > 0) continue;
-    // Skip search-based crumbs — they show as search chip below
     if (crumb.label.startsWith("Search: ")) continue;
 
     const stackLen = stack[i]?.length ?? 0;
@@ -84,35 +114,6 @@ export default function BreadcrumbTrail() {
       type: "selection",
       count,
       onRemove: popSelection,
-    });
-  }
-
-  // Filter chips — from filtersAtom (both user-created and breadcrumb-driven)
-  const currentCrumb = crumbs.length > 0 ? crumbs[crumbs.length - 1] : null;
-  const breadcrumbFilters = currentCrumb?.filters ?? [];
-  const activeFilters = filters.length > 0 ? filters : breadcrumbFilters;
-
-  for (let i = 0; i < activeFilters.length; i++) {
-    const f = activeFilters[i];
-    if (!f.column || !f.comparison || f.values.length === 0) continue;
-    const fLabel = f.values.length === 1
-      ? `${f.column} ${f.comparison} ${f.values[0]}`
-      : `${f.column} ${f.comparison} (${f.values.length})`;
-
-    chips.push({
-      id: `filter-${i}`,
-      label: fLabel,
-      type: "filter",
-      count: currentCrumb?.filterCount,
-      onRemove: () => {
-        if (breadcrumbFilters.length > 0) {
-          // This was a breadcrumb-driven filter — pop the whole level
-          popSelection();
-        } else {
-          // User-created filter — just remove this one
-          setFilters((prev) => prev.filter((_, j) => j !== i));
-        }
-      },
     });
   }
 
