@@ -112,6 +112,7 @@ describe("GridView", () => {
         0,
         undefined,
         true,
+        undefined,
       );
     });
   });
@@ -180,8 +181,8 @@ describe("GridView", () => {
       [mediaIndicesStackAtom, [manyIndices]],
       [mediaItemsAtom, mediaItems],
     ]);
-    expect(screen.getByText("1 / 3")).toBeInTheDocument();
-    const paginationArea = screen.getByText("1 / 3").closest(".flex")!;
+    expect(screen.getByText("1 / 2")).toBeInTheDocument();
+    const paginationArea = screen.getByText("1 / 2").closest(".flex")!;
     const paginationButtons = paginationArea.querySelectorAll("button");
     fireEvent.click(paginationButtons[paginationButtons.length - 1]); // Next button (last button)
     await waitFor(() => {

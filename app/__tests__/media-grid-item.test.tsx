@@ -85,19 +85,17 @@ describe("MediaGridItem", () => {
     expect(preview.getAttribute("data-bbox-col")).toBe("bboxes");
   });
 
-  it("renders label checkboxes from config", () => {
-    renderItem();
+  it("renders label badges when media has labels", () => {
+    renderItem({ media: makeMedia({ labels: ["good", "bad"] }) });
     // testConfig has labels: ["good", "bad"]
     expect(screen.getByText("good")).toBeInTheDocument();
     expect(screen.getByText("bad")).toBeInTheDocument();
   });
 
-  it("calls onLabelToggle when label checkbox is clicked", () => {
-    const onLabelToggle = vi.fn();
-    renderItem({ onLabelToggle });
-    const goodLabel = screen.getByText("good").closest("label")!;
-    fireEvent.click(goodLabel);
-    expect(onLabelToggle).toHaveBeenCalledWith("good");
+  it("does not render label badges when media has no labels", () => {
+    renderItem();
+    expect(screen.queryByText("good")).not.toBeInTheDocument();
+    expect(screen.queryByText("bad")).not.toBeInTheDocument();
   });
 
   it("triggers label toggle via number key shortcut", () => {

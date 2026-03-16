@@ -113,7 +113,7 @@ describe("PlotPage multi-panel isolation", () => {
     // The API should only be called with panel 1's new config
     expect(mockFetchDynamicPlotData).toHaveBeenCalledWith("test-uuid", expect.objectContaining({
       type: "histogram",
-    }));
+    }), expect.any(AbortSignal));
   });
 
   it("does not refetch panel 2 when panel 1 changes", async () => {
