@@ -88,6 +88,9 @@ export const insightsWeirdestAtom = atom<{
   media: import("@/app/types").Media[];
 }>({ ids: [], media: [] });
 
+// Persisted outlier settings so they survive tab switches
+export const insightsOutlierGroupByAtom = atom<string | null>(null);
+
 // Background task queue — persists across page switches
 export interface BackgroundTask {
   id: string;

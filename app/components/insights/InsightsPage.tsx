@@ -2,9 +2,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
-  configAtom, uuidAtom, dataAtom, columnsAtom,
-  currentMediaIndicesAtom,
-  embeddingsCacheAtom,
+  configAtom, uuidAtom, columnsAtom,
+  embeddingsCacheAtom, insightsOutlierGroupByAtom,
   insightsColumnStatsAtom, insightsOutliersAtom,
   insightsDuplicatesAtom, insightsWeirdestAtom,
   backgroundTasksAtom,
@@ -320,9 +319,8 @@ function ThumbnailStrip({
 export default function InsightsPage() {
   const config = useAtomValue(configAtom);
   const uuid = useAtomValue(uuidAtom);
-  const data = useAtomValue(dataAtom);
   const [columns, setColumns] = useAtom(columnsAtom);
-  const mediaIndices = useAtomValue(currentMediaIndicesAtom);
+  // Insights always operate on the full dataset (not a grid selection)
   const { pushSelection, pushFilter } = useBreadcrumbNav();
   const embeddingsCache = useAtomValue(embeddingsCacheAtom);
 
@@ -348,21 +346,13 @@ export default function InsightsPage() {
   const [dupThreshold, setDupThreshold] = useState(0.95);
   const [outlierK, setOutlierK] = useState(15);
   const [outlierThreshold, setOutlierThreshold] = useState(1.5);
-  const [outlierGroupBy, setOutlierGroupBy] = useState<string | null>(null);
+  const [outlierGroupBy, setOutlierGroupBy] = useAtom(insightsOutlierGroupByAtom);
 
-  // Derived
-  const allMediaIds = useMemo(() => {
-    if (mediaIndices.length > 0) return mediaIndices;
-    if (data) {
-      const ids = data.flatMap((d) => d.id ?? []);
-      if (ids.length > 0) return ids;
-    }
-    // Grid views don't have IDs in data — generate from total_count
-    if (config?.total_count) {
-      return Array.from({ length: config.total_count }, (_, i) => i);
-    }
-    return [];
-  }, [mediaIndices, data, config?.total_count]);
+  // Always operate on the entire dataset — pass empty array to the backend
+  // which means "all items". This avoids sending millions of IDs and ensures
+  // insights (outliers, duplicates, etc.) reflect the full dataset, not just
+  // the current grid selection.
+  const allMediaIds: number[] = useMemo(() => [], []);
 
   const visibleColumns = useMemo(
     () => columns.filter((c) => c.name !== "id" && !c.name.startsWith("_")),
@@ -484,7 +474,10 @@ export default function InsightsPage() {
 
   // ── Embedding helpers ──
 
-  const USE_BROWSER = allMediaIds.length <= 5000 && embeddingsCache != null;
+  // Always use server-side computation — it handles large datasets efficiently
+  // via FAISS and background tasks. Browser-side is only viable for tiny datasets.
+  const totalItems = config?.total_count ?? 0;
+  const USE_BROWSER = totalItems <= 5000 && totalItems > 0 && embeddingsCache != null;
 
   const isTaskResponse = (data: any): data is InsightsTaskResponse =>
     data && typeof data === "object" && "task_id" in data;
@@ -514,8 +507,11 @@ export default function InsightsPage() {
 
   const ensureEmbeddings = async (): Promise<EmbeddingData | null> => {
     if (embeddingsCache) return embeddingsCache;
+    // Only fetch embeddings for small datasets (browser-side computation).
+    // For large datasets the server handles everything via FAISS.
+    if (totalItems > 5000) return null;
     try {
-      const resp: EmbeddingsResponse = await fetchEmbeddings(uuid, allMediaIds.slice(0, 5000));
+      const resp: EmbeddingsResponse = await fetchEmbeddings(uuid, []);
       const flat = new Float32Array(resp.embeddings.flat());
       const idToIndex = new Map(resp.media_ids.map((id, idx) => [id, idx]));
       return { mediaIds: resp.media_ids, embeddings: flat, dimension: resp.dimension, idToIndex };
@@ -678,10 +674,7 @@ export default function InsightsPage() {
         <div className="mb-6">
           <h1 className="text-lg font-semibold text-gray-900">Dataset Insights</h1>
           <p className="mt-1 text-sm text-gray-500">
-            {allMediaIds.length.toLocaleString()} items
-            {mediaIndices.length > 0 && mediaIndices.length < (data?.flatMap((d) => d.id ?? []).length ?? 0)
-              ? " in current selection"
-              : ""}
+            {(config.total_count ?? 0).toLocaleString()} items
             {" \u00b7 "}
             {visibleColumns.length} columns
             ({numericCols.length} numeric, {categoricalCols.length} categorical)
