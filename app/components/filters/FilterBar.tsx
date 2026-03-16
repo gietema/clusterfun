@@ -75,5 +75,6 @@ export default function FilterBar() {
     };
   }, [filters, filtersFromBreadcrumb]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return <FiltersManager hidePills={!!filtersFromBreadcrumb} />;
+  // Always hide pills — the constraint bar (BreadcrumbTrail) shows active filters
+  return <FiltersManager hidePills />;
 }
