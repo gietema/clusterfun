@@ -1,11 +1,12 @@
 """Load Imagenette (10-class ImageNet subset) and launch with embeddings.
 
-Downloads from fastai's official URL, computes CLIP embeddings,
+Downloads from fastai's official URL, computes embeddings (CLIP or DINOv2),
 and opens a grid view with similarity search and active learning.
 
 Usage:
     uv run --with click scripts/load_imagenette.py --no-embeddings
     uv run --with click --with torch --with transformers scripts/load_imagenette.py
+    uv run --with click --with torch --with transformers scripts/load_imagenette.py --model dinov2
 """
 
 import tarfile
@@ -72,12 +73,25 @@ def load_imagenette(split: str = "train", size: str = "320px") -> pd.DataFrame:
     return df
 
 
+MODEL_INFO = {
+    "clip": {
+        "col": "clip_embedding",
+        "hf_name": "openai/clip-vit-base-patch32",
+    },
+    "dinov2": {
+        "col": "dinov2_embedding",
+        "hf_name": "facebook/dinov2-base",
+    },
+}
+
+
 @click.command()
 @click.option("--split", type=click.Choice(["train", "validation"]), default="train")
 @click.option("--size", type=click.Choice(["full_size", "320px", "160px"]), default="320px")
-@click.option("--embeddings/--no-embeddings", default=True, help="Compute CLIP embeddings")
-def main(split, size, embeddings):
-    suffix = "with_embeddings" if embeddings else "no_embeddings"
+@click.option("--model", type=click.Choice(["clip", "dinov2"]), default="clip", help="Embedding model")
+@click.option("--embeddings/--no-embeddings", default=True, help="Compute embeddings")
+def main(split, size, model, embeddings):
+    suffix = f"{model}_embeddings" if embeddings else "no_embeddings"
     cache_path = CACHE_DIR / f"imagenette_{split}_{suffix}.parquet"
 
     if cache_path.exists():
@@ -89,29 +103,39 @@ def main(split, size, embeddings):
         if embeddings:
             import sys
             sys.path.insert(0, str(Path(__file__).parent))
-            from similarity import compute_clip_embeddings
 
-            print("Computing CLIP embeddings...")
-            embs, valid_indices = compute_clip_embeddings(df["image"].tolist(), local=True)
+            info = MODEL_INFO[model]
+            if model == "clip":
+                from similarity import compute_clip_embeddings
+                print("Computing CLIP embeddings...")
+                embs, valid_indices = compute_clip_embeddings(df["image"].tolist(), local=True)
+            else:
+                from similarity import compute_dinov2_embeddings
+                print("Computing DINOv2 embeddings...")
+                embs, valid_indices = compute_dinov2_embeddings(df["image"].tolist())
+
             df = df.iloc[valid_indices].reset_index(drop=True)
-            df["clip_embedding"] = embs
-            print(f"Computed embeddings for {len(df)} items ({len(embs[0])}-dim)")
+            df[info["col"]] = embs
+            print(f"Computed {model} embeddings for {len(df)} items ({len(embs[0])}-dim)")
 
         df.to_parquet(cache_path)
         print(f"Saved cache to {cache_path}")
 
     import clusterfun as clt
 
+    info = MODEL_INFO.get(model, MODEL_INFO["clip"])
+    emb_col = info["col"] if info["col"] in df.columns else None
+
     kwargs = dict(
         media="image",
-        title=f"Imagenette ({split})",
+        title=f"Imagenette ({split}, {model})",
         show=False,
-        project="imagenette",
+        project=f"imagenette-{model}",
     )
 
-    if "clip_embedding" in df.columns:
-        kwargs["embeddings"] = "clip_embedding"
-        kwargs["embeddings_model"] = "openai/clip-vit-base-patch32"
+    if emb_col:
+        kwargs["embeddings"] = emb_col
+        kwargs["embeddings_model"] = info["hf_name"]
 
     print(clt.grid(df, **kwargs))
 

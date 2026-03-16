@@ -93,6 +93,76 @@ def compute_clip_embeddings(
     return embeddings, valid_indices
 
 
+def compute_dinov2_embeddings(
+    image_paths: list[str], batch_size: int = 32, local: bool = True,
+    model_name: str = "facebook/dinov2-base",
+) -> tuple[list[list[float]], list[int]]:
+    """Compute DINOv2 embeddings for a list of image paths or URLs.
+
+    DINOv2 captures fine-grained visual features (texture, orientation,
+    spatial layout) better than CLIP, making it more suitable for
+    within-class distinctions like left-facing vs right-facing fish.
+    """
+    device = (
+        "mps"
+        if torch.backends.mps.is_available()
+        else "cuda"
+        if torch.cuda.is_available()
+        else "cpu"
+    )
+
+    from transformers import AutoImageProcessor, AutoModel
+    processor = AutoImageProcessor.from_pretrained(model_name)
+    model = AutoModel.from_pretrained(model_name).to(device)
+    model.eval()
+
+    embeddings: list[list[float]] = []
+    valid_indices: list[int] = []
+    failed_indices: list[int] = []
+
+    for start in range(0, len(image_paths), batch_size):
+        batch_paths = image_paths[start : start + batch_size]
+        batch_images = []
+        batch_valid = []
+
+        for i, path in enumerate(batch_paths):
+            try:
+                if local:
+                    img = Image.open(path).convert("RGB")
+                else:
+                    img = load_image(path)
+                if img is not None:
+                    batch_images.append(img)
+                    batch_valid.append(start + i)
+                else:
+                    failed_indices.append(start + i)
+            except Exception:
+                failed_indices.append(start + i)
+
+        if not batch_images:
+            continue
+
+        inputs = processor(images=batch_images, return_tensors="pt").to(device)
+        with torch.no_grad():
+            outputs = model(**inputs)
+            # Use CLS token embedding
+            cls_embeddings = outputs.last_hidden_state[:, 0]
+            cls_embeddings = cls_embeddings / cls_embeddings.norm(dim=-1, keepdim=True)
+
+        for idx, emb in zip(batch_valid, cls_embeddings.cpu().tolist()):
+            embeddings.append(emb)
+            valid_indices.append(idx)
+
+        print(
+            f"  Processed {min(start + batch_size, len(image_paths))}/{len(image_paths)} images"
+        )
+
+    if failed_indices:
+        print(f"  Skipped {len(failed_indices)} images that failed to load")
+
+    return embeddings, valid_indices
+
+
 @click.command()
 @dataset_option
 def main(dataset):
