@@ -86,9 +86,13 @@ export default function BreadcrumbTrail() {
       label: fLabel,
       type: "filter",
       onRemove: () => {
-        // Remove the filter and pop any crumb it created
-        setFilters((prev) => prev.filter((pf) => pf !== f));
-        popSelection();
+        const remaining = completeFilters.filter((pf) => pf !== f);
+        setFilters(remaining);
+        // If this was a breadcrumb-driven filter, also pop the stack level
+        const currentCrumb = crumbs[crumbs.length - 1];
+        if (currentCrumb?.filters?.length && remaining.length === 0) {
+          popSelection();
+        }
       },
     });
   }
