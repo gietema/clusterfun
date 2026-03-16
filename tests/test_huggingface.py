@@ -26,9 +26,11 @@ from clusterfun.huggingface import (
     _detect_image_column,
     _detect_vqa_columns,
     _discover_parquet_urls,
+    _is_charxiv_schema,
     _read_metadata,
     _resolve_labels,
     _synthesize_mmbench_choices,
+    _transform_charxiv,
     from_huggingface,
     search_datasets,
 )
@@ -986,3 +988,235 @@ class TestFromHuggingfaceVqa:
         cfg_data = local_backend.load_json(path.name, "config.json")
         assert cfg_data.get("vqa") is None
         assert cfg_data.get("display") is None
+
+
+# ---------------------------------------------------------------------------
+# Unit tests: CharXiv schema detection and transformation
+# ---------------------------------------------------------------------------
+
+
+class TestCharXivDetection:
+    def test_is_charxiv_schema_positive(self):
+        cols = [
+            "category", "year", "descriptive_q1", "descriptive_a1",
+            "descriptive_q2", "descriptive_a2", "descriptive_q3", "descriptive_a3",
+            "descriptive_q4", "descriptive_a4", "reasoning_q", "reasoning_a",
+        ]
+        assert _is_charxiv_schema(cols) is True
+
+    def test_is_charxiv_schema_negative(self):
+        assert _is_charxiv_schema(["question", "answer", "options"]) is False
+        assert _is_charxiv_schema(["descriptive_q1", "descriptive_a1"]) is False
+        assert _is_charxiv_schema(["label", "split"]) is False
+
+    def test_charxiv_not_detected_as_standard_vqa(self):
+        """CharXiv columns should NOT be detected by standard VQA detection."""
+        cols = [
+            "category", "year", "descriptive_q1", "descriptive_a1",
+            "reasoning_q", "reasoning_a",
+        ]
+        assert _detect_vqa_columns(cols) is None
+
+
+class TestTransformCharXiv:
+    def _make_charxiv_df(self):
+        return pd.DataFrame({
+            "image": ["0", "1"],
+            "category": ["line", "bar"],
+            "year": ["2023", "2024"],
+            "descriptive_q1": [1, 2],
+            "descriptive_a1": ["My Title", "X-axis label"],
+            "descriptive_q2": [10, 16],
+            "descriptive_a2": ["3", "increasing"],
+            "descriptive_q3": [11, 12],
+            "descriptive_a3": ["Yes", "4"],
+            "descriptive_q4": [19, 18],
+            "descriptive_a4": ["2", "2 by 3"],
+            "reasoning_q": ["What trend?", "Compare bars"],
+            "reasoning_a": ["Upward", "A > B"],
+        })
+
+    def test_explodes_rows(self):
+        df = self._make_charxiv_df()
+        other_cols = [
+            "category", "year",
+            "descriptive_q1", "descriptive_a1", "descriptive_q2", "descriptive_a2",
+            "descriptive_q3", "descriptive_a3", "descriptive_q4", "descriptive_a4",
+            "reasoning_q", "reasoning_a",
+        ]
+        new_df, new_cols = _transform_charxiv(df, "image", other_cols)
+        # 2 charts * 5 questions each = 10 rows
+        assert len(new_df) == 10
+
+    def test_preserves_metadata(self):
+        df = self._make_charxiv_df()
+        other_cols = [
+            "category", "year",
+            "descriptive_q1", "descriptive_a1", "descriptive_q2", "descriptive_a2",
+            "descriptive_q3", "descriptive_a3", "descriptive_q4", "descriptive_a4",
+            "reasoning_q", "reasoning_a",
+        ]
+        new_df, _ = _transform_charxiv(df, "image", other_cols)
+        # All rows for first chart should have category="line"
+        chart0 = new_df[new_df["image"] == "0"]
+        assert (chart0["category"] == "line").all()
+        assert (chart0["year"] == "2023").all()
+
+    def test_maps_question_ids(self):
+        df = self._make_charxiv_df()
+        other_cols = [
+            "category", "year",
+            "descriptive_q1", "descriptive_a1", "descriptive_q2", "descriptive_a2",
+            "descriptive_q3", "descriptive_a3", "descriptive_q4", "descriptive_a4",
+            "reasoning_q", "reasoning_a",
+        ]
+        new_df, _ = _transform_charxiv(df, "image", other_cols)
+        # First row: descriptive_q1=1 → "What is the title of the plot?"
+        first = new_df.iloc[0]
+        assert first["question"] == "What is the title of the plot?"
+        assert first["answer"] == "My Title"
+        assert first["question_type"] == "descriptive"
+        assert first["question_id"] == 1
+
+    def test_reasoning_questions(self):
+        df = self._make_charxiv_df()
+        other_cols = [
+            "category", "year",
+            "descriptive_q1", "descriptive_a1", "descriptive_q2", "descriptive_a2",
+            "descriptive_q3", "descriptive_a3", "descriptive_q4", "descriptive_a4",
+            "reasoning_q", "reasoning_a",
+        ]
+        new_df, _ = _transform_charxiv(df, "image", other_cols)
+        reasoning = new_df[new_df["question_type"] == "reasoning"]
+        assert len(reasoning) == 2
+        assert reasoning.iloc[0]["question"] == "What trend?"
+        assert reasoning.iloc[0]["answer"] == "Upward"
+        assert pd.isna(reasoning.iloc[0]["question_id"])
+
+    def test_output_columns(self):
+        df = self._make_charxiv_df()
+        other_cols = [
+            "category", "year",
+            "descriptive_q1", "descriptive_a1", "descriptive_q2", "descriptive_a2",
+            "descriptive_q3", "descriptive_a3", "descriptive_q4", "descriptive_a4",
+            "reasoning_q", "reasoning_a",
+        ]
+        _, new_cols = _transform_charxiv(df, "image", other_cols)
+        assert "question" in new_cols
+        assert "answer" in new_cols
+        assert "question_type" in new_cols
+        assert "question_id" in new_cols
+        assert "category" in new_cols
+        assert "year" in new_cols
+        # Original charxiv columns should be removed
+        assert "descriptive_q1" not in new_cols
+        assert "reasoning_q" not in new_cols
+
+    def test_vqa_detected_after_transform(self):
+        """After CharXiv transform, standard VQA detection should pick up question/answer."""
+        df = self._make_charxiv_df()
+        other_cols = [
+            "category", "year",
+            "descriptive_q1", "descriptive_a1", "descriptive_q2", "descriptive_a2",
+            "descriptive_q3", "descriptive_a3", "descriptive_q4", "descriptive_a4",
+            "reasoning_q", "reasoning_a",
+        ]
+        _, new_cols = _transform_charxiv(df, "image", other_cols)
+        vqa = _detect_vqa_columns(new_cols)
+        assert vqa is not None
+        assert vqa["question"] == "question"
+        assert vqa["answer"] == "answer"
+
+
+# ---------------------------------------------------------------------------
+# Integration: from_huggingface with CharXiv dataset
+# ---------------------------------------------------------------------------
+
+
+class TestFromHuggingfaceCharXiv:
+    def test_charxiv_pipeline(self, local_backend):
+        """CharXiv schema is detected, transformed, and saved with VQA config."""
+        parquet_resp = MagicMock()
+        parquet_resp.status_code = 200
+        parquet_resp.json.return_value = _make_parquet_response(
+            [("default", "validation")]
+        )
+
+        info_resp = MagicMock()
+        info_resp.status_code = 200
+        info_resp.raise_for_status = MagicMock()
+        info_resp.json.return_value = {
+            "dataset_info": {"features": {"image": {"_type": "Image"}}}
+        }
+
+        mock_requests_get = MagicMock(side_effect=[parquet_resp, info_resp])
+
+        schema = [
+            ("image", "STRUCT(bytes BLOB, path VARCHAR)", None, None, None, None),
+            ("category", "VARCHAR", None, None, None, None),
+            ("year", "VARCHAR", None, None, None, None),
+            ("descriptive_q1", "TINYINT", None, None, None, None),
+            ("descriptive_a1", "VARCHAR", None, None, None, None),
+            ("descriptive_q2", "TINYINT", None, None, None, None),
+            ("descriptive_a2", "VARCHAR", None, None, None, None),
+            ("descriptive_q3", "TINYINT", None, None, None, None),
+            ("descriptive_a3", "VARCHAR", None, None, None, None),
+            ("descriptive_q4", "TINYINT", None, None, None, None),
+            ("descriptive_a4", "VARCHAR", None, None, None, None),
+            ("reasoning_q", "VARCHAR", None, None, None, None),
+            ("reasoning_a", "VARCHAR", None, None, None, None),
+        ]
+
+        metadata_df = pd.DataFrame({
+            "image": ["0", "1"],
+            "category": ["line", "bar"],
+            "year": ["2023", "2024"],
+            "descriptive_q1": [1, 2],
+            "descriptive_a1": ["My Title", "X Label"],
+            "descriptive_q2": [10, 16],
+            "descriptive_a2": ["3", "up"],
+            "descriptive_q3": [11, 12],
+            "descriptive_a3": ["Yes", "4"],
+            "descriptive_q4": [19, 18],
+            "descriptive_a4": ["2", "2x3"],
+            "reasoning_q": ["What trend?", "Compare bars"],
+            "reasoning_a": ["Upward", "A > B"],
+        })
+        other_columns = [
+            "category", "year",
+            "descriptive_q1", "descriptive_a1", "descriptive_q2", "descriptive_a2",
+            "descriptive_q3", "descriptive_a3", "descriptive_q4", "descriptive_a4",
+            "reasoning_q", "reasoning_a",
+        ]
+
+        with (
+            patch("clusterfun.huggingface.requests.get", mock_requests_get),
+            patch("clusterfun.huggingface._get_schema", return_value=schema),
+            patch(
+                "clusterfun.huggingface._read_metadata",
+                return_value=(metadata_df, other_columns),
+            ),
+        ):
+            path = from_huggingface(
+                "princeton-nlp/CharXiv", split="validation", show=False
+            )
+
+        cfg_data = local_backend.load_json(path.name, "config.json")
+        # Should have VQA config after CharXiv transform
+        assert cfg_data["vqa"] is not None
+        assert cfg_data["vqa"]["question"] == "question"
+        assert cfg_data["vqa"]["answer"] == "answer"
+        assert cfg_data["display"] == ["question"]
+
+        # Should have 10 rows (2 charts * 5 questions)
+        from clusterfun.storage.query import get_connection
+
+        con = get_connection(path.name, local_backend)
+        count = con.execute("SELECT COUNT(*) FROM database").fetchone()[0]
+        assert count == 10
+
+        # Verify question text was mapped from IDs
+        rows = con.execute(
+            "SELECT question FROM database WHERE question_type = 'descriptive' ORDER BY id LIMIT 1"
+        ).fetchone()
+        assert "title" in rows[0].lower() or "label" in rows[0].lower()

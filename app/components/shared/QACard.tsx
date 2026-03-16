@@ -100,7 +100,7 @@ export default function QACard({
             Answer
           </div>
           <div className="text-sm font-medium text-gray-900">
-            {String(answer)}
+            {Array.isArray(answer) ? answer.join(" / ") : String(answer)}
           </div>
         </div>
       )}
