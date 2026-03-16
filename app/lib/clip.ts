@@ -1,7 +1,22 @@
 // Browser-side CLIP text encoding using Transformers.js (ONNX/WASM)
 // Lazily loaded via dynamic import to avoid Next.js webpack issues with ONNX binaries.
+//
+// Only works with models that have ONNX text encoder exports on HuggingFace
+// (currently: OpenAI CLIP models via the Xenova/ mirror).
 
 export type ProgressCallback = (progress: number) => void;
+
+/** Models that support browser-side text search (have ONNX text encoders). */
+const TEXT_SEARCH_MODELS: Record<string, string> = {
+  "openai/clip-vit-base-patch32": "Xenova/clip-vit-base-patch32",
+  "openai/clip-vit-base-patch16": "Xenova/clip-vit-base-patch16",
+  "openai/clip-vit-large-patch14": "Xenova/clip-vit-large-patch14",
+};
+
+/** Check if a model supports text search in the browser. */
+export function supportsTextSearch(modelName: string | undefined): boolean {
+  return !!modelName && modelName in TEXT_SEARCH_MODELS;
+}
 
 let tokenizer: any = null;
 let textModel: any = null;
@@ -11,9 +26,13 @@ async function ensureLoaded(modelName: string, onProgress?: ProgressCallback): P
   if (tokenizer && textModel) return;
   if (loadingPromise) return loadingPromise;
 
+  const onnxModel = TEXT_SEARCH_MODELS[modelName];
+  if (!onnxModel) {
+    throw new Error(`Text search not available for ${modelName}. Use a CLIP model for text search.`);
+  }
+
   loadingPromise = (async () => {
     const { AutoTokenizer, CLIPTextModelWithProjection } = await import("@huggingface/transformers");
-    const onnxModel = modelName.replace("openai/", "Xenova/");
 
     const progress_callback = onProgress
       ? (event: { status: string; progress?: number }) => {

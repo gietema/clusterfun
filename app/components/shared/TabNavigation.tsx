@@ -6,7 +6,7 @@ import {
   similarityResultsAtom, textSearchQueryAtom,
 } from "@/app/store/atoms";
 import { fetchSimilarVector } from "@/app/lib/api";
-import { encodeText } from "@/app/lib/clip";
+import { encodeText, supportsTextSearch } from "@/app/lib/clip";
 import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
 import TaskQueueIndicator from "./TaskQueueIndicator";
 
@@ -43,7 +43,7 @@ export default function TabNavigation() {
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const hasEmbeddingsModel = !!config?.embeddings_model;
+  const hasEmbeddingsModel = supportsTextSearch(config?.embeddings_model);
   const hasActiveSearch = searchQuery.length > 0;
 
   // Sync input with persisted query on mount

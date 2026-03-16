@@ -8,7 +8,7 @@ import {
   similarityResultsAtom,
 } from "@/app/store/atoms";
 import { fetchSimilarVector } from "@/app/lib/api";
-import { encodeText } from "@/app/lib/clip";
+import { encodeText, supportsTextSearch } from "@/app/lib/clip";
 import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
 
 function ProgressCircle({ progress }: { progress: number }) {
@@ -56,7 +56,7 @@ export default function TextSearchBar() {
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  if (!config?.embeddings_model) return null;
+  if (!supportsTextSearch(config?.embeddings_model)) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

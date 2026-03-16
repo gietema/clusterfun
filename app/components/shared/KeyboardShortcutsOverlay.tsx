@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useAtomValue } from "jotai";
 import { configAtom, showPageAtom } from "@/app/store/atoms";
+import { supportsTextSearch } from "@/app/lib/clip";
 
 interface ShortcutGroup {
   title: string;
@@ -37,7 +38,7 @@ export default function KeyboardShortcutsOverlay() {
       shortcuts: [
         { keys: ["?"], description: "Toggle this help" },
         { keys: ["Esc"], description: "Go back / close overlay" },
-        ...(config?.embeddings_model
+        ...(supportsTextSearch(config?.embeddings_model)
           ? [{ keys: ["\u2318", "K"], description: "Focus text search" }]
           : []),
       ],
