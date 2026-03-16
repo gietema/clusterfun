@@ -86,6 +86,8 @@ def compute_siglip2_embeddings(
         inputs = processor(images=images, return_tensors="pt", padding=True).to(device)
         with torch.no_grad():
             image_features = model.get_image_features(**inputs)
+            if not isinstance(image_features, torch.Tensor):
+                image_features = image_features.pooler_output
             image_features = image_features / image_features.norm(dim=-1, keepdim=True)
 
         for idx, emb in zip(valid, image_features.cpu().tolist()):
