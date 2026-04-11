@@ -299,30 +299,30 @@ class TestBackendRegistry:
 class TestDuckDBQueryEdgeCases:
     """Edge cases for run_query / get_connection error handling."""
 
-    def test_run_query_no_results_raises(self, backend):
+    def test_run_query_no_results_returns_empty(self, backend):
         table = pa.table({"id": [0, 1, 2], "val": [10, 20, 30]})
         backend.save_parquet("edge-no-results", table)
         try:
-            with pytest.raises(ValueError, match="no results"):
-                run_query(
-                    "edge-no-results",
-                    backend,
-                    "SELECT val FROM database WHERE val > 999",
-                )
+            rows = run_query(
+                "edge-no-results",
+                backend,
+                "SELECT val FROM database WHERE val > 999",
+            )
+            assert rows == []
         finally:
             invalidate_cache("edge-no-results")
 
-    def test_run_query_fetch_one_no_results_raises(self, backend):
+    def test_run_query_fetch_one_no_results_returns_none(self, backend):
         table = pa.table({"id": [0, 1], "val": [1, 2]})
         backend.save_parquet("edge-fetch-one-empty", table)
         try:
-            with pytest.raises(ValueError, match="no results"):
-                run_query(
-                    "edge-fetch-one-empty",
-                    backend,
-                    "SELECT val FROM database WHERE val > 999",
-                    fetch_one=True,
-                )
+            result = run_query(
+                "edge-fetch-one-empty",
+                backend,
+                "SELECT val FROM database WHERE val > 999",
+                fetch_one=True,
+            )
+            assert result is None
         finally:
             invalidate_cache("edge-fetch-one-empty")
 

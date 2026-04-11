@@ -112,6 +112,8 @@ class DataLoader:
             params=[media_id],
             fetch_one=True,
         )
+        if result is None:
+            raise ValueError(f"Media item {media_id} not found")
         if as_base64:
             src, height, width = load_media(
                 result[1],
@@ -164,7 +166,10 @@ class DataLoader:
 
     def get_rows_metadata(self, media_indices: MediaIndices) -> List[Dict[str, Any]]:
         """Get metadata for a list of media items."""
-        query, params = get_media_query(media_indices, paginate=False)
+        con, config = None, self._load_base_config()
+        if media_indices.filters:
+            con = get_connection(self.uuid, self.backend)
+        query, params = get_media_query(media_indices, paginate=False, config=config, con=con)
         result = run_query(self.uuid, self.backend, query, params=params)
         columns = self._load_base_config().columns
         return [

@@ -62,16 +62,6 @@ export async function fetchMediaMetadata(
   return data;
 }
 
-export async function fetchMediaSrcs(
-  uuid: string,
-  mediaIds: number[],
-): Promise<{ id: number; src: string }[]> {
-  const { data } = await axios.post(`${API_URL}/views/${uuid}/media-srcs`, {
-    media_ids: mediaIds,
-  });
-  return data;
-}
-
 export async function fetchMediaThumbnails(
   uuid: string,
   mediaIds: number[],

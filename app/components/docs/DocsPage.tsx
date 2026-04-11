@@ -584,6 +584,68 @@ cfu.grid(df, media="image_path", embeddings="embedding_col")`}
           </section>
 
           {/* ---------------------------------------------------------------- */}
+          {/* Python API Reference */}
+          {/* ---------------------------------------------------------------- */}
+          <section ref={registerRef("python-api")} id="python-api" className="mb-12 scroll-mt-6">
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">Python API Reference</h2>
+            <p className="mb-4 text-sm leading-relaxed text-gray-600">
+              All plot functions share a common signature. Each returns the path to the saved
+              view data.
+            </p>
+
+            <CodeBlock title="Full scatter signature">
+{`cfu.scatter(
+    df: pd.DataFrame,
+    x: str,                          # X-axis column
+    y: str,                          # Y-axis column
+    media: str,                      # Media file path column
+    color: Optional[str] = None,     # Color-by column
+    title: Optional[str] = None,     # Plot title
+    show: bool = True,               # Open browser automatically
+    bounding_box: Optional[str] = None,
+    display: Optional[Union[str, List[str]]] = None,
+    embeddings: Optional[str] = None,
+    embeddings_model: Optional[str] = None,
+    hline: Optional[float] = None,
+    vline: Optional[float] = None,
+    color_is_categorical: bool = True,
+    project: Optional[str] = None,   # Share labels across views
+)`}
+            </CodeBlock>
+
+            <h3 className="mb-2 mt-6 text-sm font-semibold text-gray-900">All plot functions</h3>
+            <div className="overflow-hidden rounded-lg border border-gray-200">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-gray-200 bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-2 font-medium text-gray-600">Function</th>
+                    <th className="px-4 py-2 font-medium text-gray-600">Required Params</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">cfu.scatter(df, x, y, media)</td><td className="px-4 py-2 text-gray-600">x, y, media</td></tr>
+                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">cfu.histogram(df, x, media)</td><td className="px-4 py-2 text-gray-600">x, media</td></tr>
+                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">cfu.bar_chart(df, x, media)</td><td className="px-4 py-2 text-gray-600">x, media</td></tr>
+                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">cfu.violin(df, y, media)</td><td className="px-4 py-2 text-gray-600">y, media</td></tr>
+                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">cfu.confusion_matrix(df, y_true, y_pred, media)</td><td className="px-4 py-2 text-gray-600">y_true, y_pred, media</td></tr>
+                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">cfu.pie_chart(df, color, media)</td><td className="px-4 py-2 text-gray-600">color, media</td></tr>
+                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">cfu.grid(df, media)</td><td className="px-4 py-2 text-gray-600">media</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h3 className="mb-2 mt-6 text-sm font-semibold text-gray-900">Data sources</h3>
+            <p className="mb-3 text-sm leading-relaxed text-gray-600">
+              The <code className="rounded bg-gray-100 px-1 text-xs">media</code> column can contain:
+            </p>
+            <ul className="list-inside list-disc space-y-1 text-sm text-gray-600">
+              <li>Local file paths (absolute or relative)</li>
+              <li>S3 URLs (<code className="rounded bg-gray-100 px-1 text-xs">s3://bucket/key</code>)</li>
+              <li>GCS URLs (<code className="rounded bg-gray-100 px-1 text-xs">gs://bucket/path</code>)</li>
+            </ul>
+          </section>
+
+          {/* ---------------------------------------------------------------- */}
           {/* Plot Types */}
           {/* ---------------------------------------------------------------- */}
           <section ref={registerRef("plot-types")} id="plot-types" className="mb-12 scroll-mt-6">
@@ -719,6 +781,31 @@ cfu.grid(df, media="image_path", embeddings="embedding_col")`}
           </section>
 
           {/* ---------------------------------------------------------------- */}
+          {/* Media Viewer */}
+          {/* ---------------------------------------------------------------- */}
+          <section ref={registerRef("media-viewer")} id="media-viewer" className="mb-12 scroll-mt-6">
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">Media Viewer</h2>
+            <p className="mb-4 text-sm leading-relaxed text-gray-600">
+              Click any item in the grid to open it in the full media viewer.
+              Supports images, video, and audio.
+            </p>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <FeatureCard title="Navigation" description="Use ← and → arrow keys to move between items in the current list. Press Escape to return to the grid." />
+              <FeatureCard title="Image Adjustments">
+                <p className="text-sm leading-relaxed text-gray-600">
+                  Toggle the adjustments panel to control:
+                </p>
+                <ul className="mt-1 list-inside list-disc text-sm text-gray-600">
+                  <li>Brightness</li>
+                  <li>Contrast (gamma correction)</li>
+                  <li>Rotation (90° increments)</li>
+                </ul>
+              </FeatureCard>
+            </div>
+          </section>
+
+          {/* ---------------------------------------------------------------- */}
           {/* Selection Tools */}
           {/* ---------------------------------------------------------------- */}
           <section ref={registerRef("selection")} id="selection" className="mb-12 scroll-mt-6">
@@ -761,6 +848,29 @@ cfu.grid(df, media="image_path", embeddings="embedding_col")`}
               After selecting points on a plot, click the <strong>Grid</strong> tab to view
               the selected items as a gallery. Use <Kbd>Escape</Kbd> to go back.
             </p>
+          </section>
+
+          {/* ---------------------------------------------------------------- */}
+          {/* Filtering */}
+          {/* ---------------------------------------------------------------- */}
+          <section ref={registerRef("filtering")} id="filtering" className="mb-12 scroll-mt-6">
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">Filtering</h2>
+            <p className="mb-4 text-sm leading-relaxed text-gray-600">
+              Add column-based filters to narrow down your data. Filters appear in the
+              toolbar at the top of the plot or grid view.
+            </p>
+
+            <div className="space-y-3">
+              <FeatureCard title="Adding Filters" description="Click the filter area in the toolbar to add a filter. Select a column, choose an operator (equals, not equals, greater than, less than, contains), and pick values." />
+              <FeatureCard title="Multiple Filters" description="Add as many filters as you need. They combine with AND logic, progressively narrowing your view." />
+              <FeatureCard title="Filter Stacking">
+                <p className="text-sm leading-relaxed text-gray-600">
+                  Each filter or selection creates a new level in the navigation stack.
+                  Click the back button or press <Kbd>Escape</Kbd> to pop back to the
+                  previous level. This lets you drill down and back up fluidly.
+                </p>
+              </FeatureCard>
+            </div>
           </section>
 
           {/* ---------------------------------------------------------------- */}
@@ -901,26 +1011,59 @@ clusterfun abc123-def456`}
           </section>
 
           {/* ---------------------------------------------------------------- */}
-          {/* Filtering */}
+          {/* Export & Download */}
           {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("filtering")} id="filtering" className="mb-12 scroll-mt-6">
-            <h2 className="mb-4 text-lg font-semibold text-gray-900">Filtering</h2>
+          <section ref={registerRef("export")} id="export" className="mb-12 scroll-mt-6">
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">Export & Download</h2>
             <p className="mb-4 text-sm leading-relaxed text-gray-600">
-              Add column-based filters to narrow down your data. Filters appear in the
-              toolbar at the top of the plot or grid view.
+              Export your work in several ways from the sidebar&apos;s Labels section.
             </p>
 
-            <div className="space-y-3">
-              <FeatureCard title="Adding Filters" description="Click the filter area in the toolbar to add a filter. Select a column, choose an operator (equals, not equals, greater than, less than, contains), and pick values." />
-              <FeatureCard title="Multiple Filters" description="Add as many filters as you need. They combine with AND logic, progressively narrowing your view." />
-              <FeatureCard title="Filter Stacking">
-                <p className="text-sm leading-relaxed text-gray-600">
-                  Each filter or selection creates a new level in the navigation stack.
-                  Click the back button or press <Kbd>Escape</Kbd> to pop back to the
-                  previous level. This lets you drill down and back up fluidly.
-                </p>
-              </FeatureCard>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <FeatureCard title="Download CSV" description="Download labeled items as a CSV file. Includes all original dataframe columns merged with your labels. Download per-label or all labels at once." />
+              <FeatureCard title="Save as Grid" description="Create a new clusterfun grid view from labeled items. A toast notification shows the command to open it." />
+              <FeatureCard title="Scope" description="Downloads can include items from the current selection or from the entire dataset." />
+              <FeatureCard title="Grid Data" description="Download the current grid view as CSV including all visible items and their metadata." />
             </div>
+          </section>
+
+          {/* ---------------------------------------------------------------- */}
+          {/* Similarity Search */}
+          {/* ---------------------------------------------------------------- */}
+          <section ref={registerRef("similarity")} id="similarity" className="mb-12 scroll-mt-6">
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">Similarity Search</h2>
+            <p className="mb-4 text-sm leading-relaxed text-gray-600">
+              When embeddings are available, click the <strong>Find similar</strong> button in
+              the sidebar while previewing any item. This searches for the most similar items
+              in embedding space and displays them in the grid.
+            </p>
+            <Tip>
+              Similarity search uses cosine similarity on the embedding vectors. For best
+              results, use high-quality embeddings like CLIP, DINOv2, or domain-specific models.
+            </Tip>
+          </section>
+
+          {/* ---------------------------------------------------------------- */}
+          {/* Text Search */}
+          {/* ---------------------------------------------------------------- */}
+          <section ref={registerRef("text-search")} id="text-search" className="mb-12 scroll-mt-6">
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">Text Search</h2>
+            <p className="mb-4 text-sm leading-relaxed text-gray-600">
+              When an <code className="rounded bg-gray-100 px-1 text-xs">embeddings_model</code> is
+              provided (e.g., a CLIP model), you can search your dataset by typing natural language
+              descriptions. The model runs entirely in the browser using ONNX.
+            </p>
+
+            <CodeBlock title="Enable text search">
+{`cfu.grid(df, media="path",
+         embeddings="clip_embeddings",
+         embeddings_model="openai/clip-vit-large-patch14")`}
+            </CodeBlock>
+
+            <p className="mt-4 text-sm leading-relaxed text-gray-600">
+              A progress indicator shows while the model loads for the first time. Once loaded,
+              type any text in the search bar and press Enter to rank items by text-image similarity.
+            </p>
           </section>
 
           {/* ---------------------------------------------------------------- */}
@@ -1043,87 +1186,6 @@ clusterfun abc123-def456`}
           </section>
 
           {/* ---------------------------------------------------------------- */}
-          {/* Similarity Search */}
-          {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("similarity")} id="similarity" className="mb-12 scroll-mt-6">
-            <h2 className="mb-4 text-lg font-semibold text-gray-900">Similarity Search</h2>
-            <p className="mb-4 text-sm leading-relaxed text-gray-600">
-              When embeddings are available, click the <strong>Find similar</strong> button in
-              the sidebar while previewing any item. This searches for the most similar items
-              in embedding space and displays them in the grid.
-            </p>
-            <Tip>
-              Similarity search uses cosine similarity on the embedding vectors. For best
-              results, use high-quality embeddings like CLIP, DINOv2, or domain-specific models.
-            </Tip>
-          </section>
-
-          {/* ---------------------------------------------------------------- */}
-          {/* Text Search */}
-          {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("text-search")} id="text-search" className="mb-12 scroll-mt-6">
-            <h2 className="mb-4 text-lg font-semibold text-gray-900">Text Search</h2>
-            <p className="mb-4 text-sm leading-relaxed text-gray-600">
-              When an <code className="rounded bg-gray-100 px-1 text-xs">embeddings_model</code> is
-              provided (e.g., a CLIP model), you can search your dataset by typing natural language
-              descriptions. The model runs entirely in the browser using ONNX.
-            </p>
-
-            <CodeBlock title="Enable text search">
-{`cfu.grid(df, media="path",
-         embeddings="clip_embeddings",
-         embeddings_model="openai/clip-vit-large-patch14")`}
-            </CodeBlock>
-
-            <p className="mt-4 text-sm leading-relaxed text-gray-600">
-              A progress indicator shows while the model loads for the first time. Once loaded,
-              type any text in the search bar and press Enter to rank items by text-image similarity.
-            </p>
-          </section>
-
-          {/* ---------------------------------------------------------------- */}
-          {/* Export & Download */}
-          {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("export")} id="export" className="mb-12 scroll-mt-6">
-            <h2 className="mb-4 text-lg font-semibold text-gray-900">Export & Download</h2>
-            <p className="mb-4 text-sm leading-relaxed text-gray-600">
-              Export your work in several ways from the sidebar&apos;s Labels section.
-            </p>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <FeatureCard title="Download CSV" description="Download labeled items as a CSV file. Includes all original dataframe columns merged with your labels. Download per-label or all labels at once." />
-              <FeatureCard title="Save as Grid" description="Create a new clusterfun grid view from labeled items. A toast notification shows the command to open it." />
-              <FeatureCard title="Scope" description="Downloads can include items from the current selection or from the entire dataset." />
-              <FeatureCard title="Grid Data" description="Download the current grid view as CSV including all visible items and their metadata." />
-            </div>
-          </section>
-
-          {/* ---------------------------------------------------------------- */}
-          {/* Media Viewer */}
-          {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("media-viewer")} id="media-viewer" className="mb-12 scroll-mt-6">
-            <h2 className="mb-4 text-lg font-semibold text-gray-900">Media Viewer</h2>
-            <p className="mb-4 text-sm leading-relaxed text-gray-600">
-              Click any item in the grid to open it in the full media viewer.
-              Supports images, video, and audio.
-            </p>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <FeatureCard title="Navigation" description="Use ← and → arrow keys to move between items in the current list. Press Escape to return to the grid." />
-              <FeatureCard title="Image Adjustments">
-                <p className="text-sm leading-relaxed text-gray-600">
-                  Toggle the adjustments panel to control:
-                </p>
-                <ul className="mt-1 list-inside list-disc text-sm text-gray-600">
-                  <li>Brightness</li>
-                  <li>Contrast (gamma correction)</li>
-                  <li>Rotation (90° increments)</li>
-                </ul>
-              </FeatureCard>
-            </div>
-          </section>
-
-          {/* ---------------------------------------------------------------- */}
           {/* Keyboard Shortcuts */}
           {/* ---------------------------------------------------------------- */}
           <section ref={registerRef("shortcuts")} id="shortcuts" className="mb-12 scroll-mt-6">
@@ -1197,68 +1259,6 @@ clusterfun abc123-def456`}
                 </tbody>
               </table>
             </div>
-          </section>
-
-          {/* ---------------------------------------------------------------- */}
-          {/* Python API Reference */}
-          {/* ---------------------------------------------------------------- */}
-          <section ref={registerRef("python-api")} id="python-api" className="mb-12 scroll-mt-6">
-            <h2 className="mb-4 text-lg font-semibold text-gray-900">Python API Reference</h2>
-            <p className="mb-4 text-sm leading-relaxed text-gray-600">
-              All plot functions share a common signature. Each returns the path to the saved
-              view data.
-            </p>
-
-            <CodeBlock title="Full scatter signature">
-{`cfu.scatter(
-    df: pd.DataFrame,
-    x: str,                          # X-axis column
-    y: str,                          # Y-axis column
-    media: str,                      # Media file path column
-    color: Optional[str] = None,     # Color-by column
-    title: Optional[str] = None,     # Plot title
-    show: bool = True,               # Open browser automatically
-    bounding_box: Optional[str] = None,
-    display: Optional[Union[str, List[str]]] = None,
-    embeddings: Optional[str] = None,
-    embeddings_model: Optional[str] = None,
-    hline: Optional[float] = None,
-    vline: Optional[float] = None,
-    color_is_categorical: bool = True,
-    project: Optional[str] = None,   # Share labels across views
-)`}
-            </CodeBlock>
-
-            <h3 className="mb-2 mt-6 text-sm font-semibold text-gray-900">All plot functions</h3>
-            <div className="overflow-hidden rounded-lg border border-gray-200">
-              <table className="w-full text-left text-sm">
-                <thead className="border-b border-gray-200 bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-2 font-medium text-gray-600">Function</th>
-                    <th className="px-4 py-2 font-medium text-gray-600">Required Params</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">cfu.scatter(df, x, y, media)</td><td className="px-4 py-2 text-gray-600">x, y, media</td></tr>
-                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">cfu.histogram(df, x, media)</td><td className="px-4 py-2 text-gray-600">x, media</td></tr>
-                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">cfu.bar_chart(df, x, media)</td><td className="px-4 py-2 text-gray-600">x, media</td></tr>
-                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">cfu.violin(df, y, media)</td><td className="px-4 py-2 text-gray-600">y, media</td></tr>
-                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">cfu.confusion_matrix(df, y_true, y_pred, media)</td><td className="px-4 py-2 text-gray-600">y_true, y_pred, media</td></tr>
-                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">cfu.pie_chart(df, color, media)</td><td className="px-4 py-2 text-gray-600">color, media</td></tr>
-                  <tr><td className="px-4 py-2 font-mono text-xs text-gray-800">cfu.grid(df, media)</td><td className="px-4 py-2 text-gray-600">media</td></tr>
-                </tbody>
-              </table>
-            </div>
-
-            <h3 className="mb-2 mt-6 text-sm font-semibold text-gray-900">Data sources</h3>
-            <p className="mb-3 text-sm leading-relaxed text-gray-600">
-              The <code className="rounded bg-gray-100 px-1 text-xs">media</code> column can contain:
-            </p>
-            <ul className="list-inside list-disc space-y-1 text-sm text-gray-600">
-              <li>Local file paths (absolute or relative)</li>
-              <li>S3 URLs (<code className="rounded bg-gray-100 px-1 text-xs">s3://bucket/key</code>)</li>
-              <li>GCS URLs (<code className="rounded bg-gray-100 px-1 text-xs">gs://bucket/path</code>)</li>
-            </ul>
           </section>
 
           {/* Footer */}

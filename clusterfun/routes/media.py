@@ -23,7 +23,6 @@ from clusterfun.models.media_item import MediaItem
 from clusterfun.storage.backends import get_backend
 from clusterfun.storage.data_loader import _config_cache
 from clusterfun.storage.factory import get_loader
-from clusterfun.storage.storer import load_media
 from clusterfun.storage.query import invalidate_cache, run_query
 from clusterfun.storage.client import get_storage_client
 
@@ -82,7 +81,10 @@ def _generate_thumbnail_bytes(media_path: str, common_media_path: Optional[str],
 @router.get("/api/views/{view_uuid}/media/{media_id}")
 def read_media(view_uuid: str, media_id: int, as_base64: bool = False) -> MediaItem:
     """Retrieve a media item associated with a specific plot by its UUID and media ID."""
-    return get_loader(view_uuid).get_row(media_id, as_base64=as_base64)
+    try:
+        return get_loader(view_uuid).get_row(media_id, as_base64=as_base64)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Media not found")
 
 
 @router.get("/api/views/{view_uuid}/media/{media_id}/thumbnail")

@@ -141,14 +141,8 @@ def run_query(
     result = con.execute(query, params or [])
     if fetch_one:
         row = result.fetchone()
-        if row is None:
-            raise ValueError(f"Query returned no results: {query}")
-        return list(row)
-    else:
-        rows = result.fetchall()
-        if not rows:
-            raise ValueError(f"Query returned no results: {query}")
-        return rows
+        return list(row) if row is not None else None
+    return result.fetchall()
 
 
 _invalidation_hooks: list = []
