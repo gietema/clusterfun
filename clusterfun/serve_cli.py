@@ -3,8 +3,6 @@
 Usage:
     clusterfun                          # serve most recent view
     clusterfun serve <uuid>             # serve a specific view
-    clusterfun hf <dataset>             # browse a HuggingFace dataset
-    clusterfun hf <dataset> -e openai/clip-vit-base-patch32
 """
 
 import os
@@ -81,31 +79,3 @@ def serve(location):
     _serve(location)
 
 
-@main.command()
-@click.argument("dataset")
-@click.option("--split", "-s", default="train", help="Dataset split.")
-@click.option("--config", "-c", default="default", help="Dataset config name.")
-@click.option("--max-rows", "-n", type=int, default=None, help="Max rows to load.")
-@click.option(
-    "--embeddings", "-e", default=None,
-    help='Model for embeddings, e.g. "openai/clip-vit-base-patch32". '
-    "Enables similarity search. Requires torch + transformers.",
-)
-@click.option("--title", "-t", default=None, help="View title.")
-@click.option("--project", "-p", default=None, help="Project name.")
-def hf(dataset, split, config, max_rows, embeddings, title, project):
-    """Browse a HuggingFace dataset.
-
-    DATASET is the HuggingFace dataset ID, e.g. "ethz/food101" or "lmms-lab/MMMU".
-    """
-    from clusterfun.huggingface import from_huggingface
-
-    from_huggingface(
-        dataset=dataset,
-        split=split,
-        config_name=config,
-        max_rows=max_rows,
-        embeddings_model=embeddings,
-        title=title,
-        project=project,
-    )

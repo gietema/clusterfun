@@ -449,7 +449,7 @@ export async function exportAnnotations(uuid: string, mediaIds?: number[]): Prom
 
 // ── ML Export ──
 
-export type ExportFormat = "coco" | "yolo" | "huggingface" | "classification";
+export type ExportFormat = "coco" | "yolo" | "classification";
 
 export interface ExportRequest {
   format: ExportFormat;

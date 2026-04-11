@@ -14,19 +14,18 @@ from pydantic import BaseModel
 from clusterfun.export.base import ExportItem, gather_export_items
 from clusterfun.export.coco import build_coco
 from clusterfun.export.yolo import build_yolo
-from clusterfun.export.huggingface import build_huggingface
 from clusterfun.export.classification import build_classification_mapping
 from clusterfun.storage.client import get_storage_client
 from clusterfun.storage.factory import get_loader
 
 router = APIRouter()
 
-_FORMATS = {"coco", "yolo", "huggingface", "classification"}
+_FORMATS = {"coco", "yolo", "classification"}
 _dim_pool = ThreadPoolExecutor(max_workers=8)
 
 
 class ExportRequest(BaseModel):
-    format: str  # "coco", "yolo", "huggingface", "classification"
+    format: str  # "coco", "yolo", "classification"
     media_ids: Optional[List[int]] = None
     label_filter: Optional[str] = None
 
@@ -134,10 +133,6 @@ def export_data(view_uuid: str, request: ExportRequest):
         dims = _load_dimensions(items, config.common_media_path)
         yolo_files = build_yolo(items, dims)
         zip_bytes = _build_zip(yolo_files)
-
-    elif fmt == "huggingface":
-        hf_files = build_huggingface(items)
-        zip_bytes = _build_zip(hf_files)
 
     elif fmt == "classification":
         mapping = build_classification_mapping(items)

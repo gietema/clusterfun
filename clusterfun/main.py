@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse
 
 from clusterfun.app import APP, FRONTEND_DIR
 from clusterfun.faiss_index import invalidate_index
-from clusterfun.routes import views, media, labels, columns, similarity, active_learning, embeddings, plot_builder, insights, projects, image_stats, annotations, export, huggingface
+from clusterfun.routes import views, media, labels, columns, similarity, active_learning, embeddings, plot_builder, insights, projects, image_stats, annotations, export
 from clusterfun.storage.query import register_invalidation_hook
 
 # Clear FAISS index cache when DuckDB cache is invalidated
@@ -26,7 +26,6 @@ APP.include_router(projects.router)
 APP.include_router(image_stats.router)
 APP.include_router(annotations.router)
 APP.include_router(export.router)
-APP.include_router(huggingface.router)
 
 _media_dirs: set[str] = set()
 

@@ -33,49 +33,16 @@ _thumb_pool = ThreadPoolExecutor(max_workers=8)
 
 
 @lru_cache(maxsize=32)
-def _get_view_media_config(view_uuid: str) -> tuple[str, Optional[str], bool]:
-    """Cache media column name, common_media_path, and HF status for a view."""
+def _get_view_media_config(view_uuid: str) -> tuple[str, Optional[str]]:
+    """Cache media column name and common_media_path for a view."""
     loader = get_loader(view_uuid)
     config = loader.load_config()
-    is_hf = bool(config.hf_parquet_urls)
-    return config.media, config.common_media_path, is_hf
-
-
-def _ensure_hf_cached(view_uuid: str, media_id: int) -> Optional[str]:
-    """Ensure an HF image is in the local cache, fetching if needed.
-
-    Returns the cached file path, or None on failure.
-    """
-    from clusterfun.storage.backends.local import LocalBackend
-    backend = get_backend()
-    if not isinstance(backend, LocalBackend):
-        return None
-    cache_dir = backend.cache_dir / view_uuid / "hf_image_cache"
-    for ext in (".jpg", ".png", ".webp", ".gif"):
-        cached = cache_dir / f"{media_id}{ext}"
-        if cached.exists():
-            return str(cached)
-
-    # Not cached — fetch via hf-bytes endpoint to populate cache
-    from clusterfun.routes.huggingface import get_hf_image_bytes
-    resp = get_hf_image_bytes(view_uuid, media_id)
-    if resp.status_code == 200:
-        # Re-check cache (get_hf_image_bytes writes it)
-        for ext in (".jpg", ".png", ".webp", ".gif"):
-            cached = cache_dir / f"{media_id}{ext}"
-            if cached.exists():
-                return str(cached)
-    return None
+    return config.media, config.common_media_path
 
 
 def _get_media_path(view_uuid: str, media_id: int) -> tuple[str, Optional[str]]:
     """Look up the raw media path and common_media_path for a media id."""
-    media_col, common_media_path, is_hf = _get_view_media_config(view_uuid)
-
-    # For HF views, ensure image is cached then return path
-    if is_hf:
-        cached = _ensure_hf_cached(view_uuid, media_id)
-        return (cached or ""), None
+    media_col, common_media_path = _get_view_media_config(view_uuid)
 
     backend = get_backend()
     rows = run_query(
@@ -167,8 +134,6 @@ def get_media_thumbnails(
     max_size = req.max_size
     common_media_path = config.common_media_path
 
-    is_hf = bool(config.hf_parquet_urls)
-
     placeholders = ",".join("?" for _ in req.media_ids)
     rows = run_query(
         view_uuid,
@@ -179,24 +144,13 @@ def get_media_thumbnails(
 
     def process_row(row: tuple) -> Optional[Dict[str, Any]]:
         media_path = row[1]
-        cmp = common_media_path
-        if is_hf:
-            cached = _ensure_hf_cached(view_uuid, row[0])
-            if not cached:
-                return None
-            media_path = cached
-            cmp = None
-        data = _generate_thumbnail_bytes(media_path, cmp, max_size)
+        data = _generate_thumbnail_bytes(media_path, common_media_path, max_size)
         if data is None:
             return None
         src = f"data:image/jpeg;base64,{base64.b64encode(data).decode('ascii')}"
         return {"id": row[0], "src": src}
 
-    if is_hf:
-        # Sequential for HF views to avoid hammering remote with concurrent connections
-        results = [process_row(row) for row in rows]
-    else:
-        results = list(_thumb_pool.map(process_row, rows))
+    results = list(_thumb_pool.map(process_row, rows))
     return [r for r in results if r is not None]
 
 

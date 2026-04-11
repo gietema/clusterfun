@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   configAtom, mediaItemsAtom, uuidAtom,
@@ -7,14 +7,12 @@ import {
 } from "@/app/store/atoms";
 import { fetchSimilar, updateMetadata, addColumn } from "@/app/lib/api";
 import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
-import { buildExtraImageUrls } from "@/app/lib/media-utils";
 import type { InformationValue } from "@/app/types";
 import { getLabelColor } from "@/app/lib/label-colors";
 import { saveLabel, deleteLabel } from "@/app/lib/api";
 import { useLabelUndo } from "@/app/lib/use-label-undo";
 import PreviewMedia from "../shared/PreviewMedia";
 import InformationItem from "../shared/InformationItem";
-import QACard from "../shared/QACard";
 import Section from "../shared/Section";
 import LabelsSection from "./LabelsSection";
 import ActiveLearningSection from "./ActiveLearningSection";
@@ -135,24 +133,12 @@ export default function GridWorkspaceSidebar() {
     setNewColumn("");
   };
 
-  const [previewOverride, setPreviewOverride] = useState<string | null>(null);
-
-  const vqaColumnSet = useMemo(
-    () => {
-      const s = new Set(config.vqa ? Object.values(config.vqa) : []);
-      s.add("_extra_images");
-      return s;
-    },
-    [config.vqa],
-  );
-
   const info = media?.information;
   const entries = info
     ? Object.entries(info).filter(
-        ([key]) => key !== config.bounding_box && !vqaColumnSet.has(key),
+        ([key]) => key !== config.bounding_box,
       )
     : [];
-  const extras = media ? buildExtraImageUrls(uuid, media.index, info) : undefined;
 
   return (
     <div className="flex h-full flex-col overflow-y-auto border-l border-gray-200">
@@ -162,7 +148,7 @@ export default function GridWorkspaceSidebar() {
           <div className="flex flex-col gap-2">
             <div className="rounded [&_img]:max-h-[200px] [&_img]:w-auto [&_img]:object-contain [&_video]:max-h-[200px] [&_video]:w-auto [&_video]:object-contain">
               <PreviewMedia
-                media={previewOverride ? { ...media, src: previewOverride } : media}
+                media={media}
                 boundingBoxColumn={config.bounding_box}
                 displayLabel
               />
@@ -177,21 +163,6 @@ export default function GridWorkspaceSidebar() {
               </button>
             )}
             <div>
-              {config.vqa?.question && info?.[config.vqa.question] != null && (
-                <div className="pt-2">
-                  <QACard
-                    question={String(info[config.vqa.question])}
-                    answer={config.vqa.answer ? info[config.vqa.answer] : undefined}
-                    choices={config.vqa.choices ? info[config.vqa.choices] : undefined}
-                    explanation={config.vqa.explanation ? info[config.vqa.explanation] : undefined}
-                    extraImages={extras}
-                    onImageClick={(url) => setPreviewOverride(
-                      previewOverride === url ? null : url,
-                    )}
-                    activeImageUrl={previewOverride}
-                  />
-                </div>
-              )}
               {entries.map(([key, value]) => (
                 <InformationItem
                   key={key}

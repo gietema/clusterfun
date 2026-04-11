@@ -26,4 +26,3 @@ from clusterfun.plot_types.pie_chart import pie_chart  # noqa: F401
 from clusterfun.plot_types.scatter import scatter  # noqa: F401
 from clusterfun.plot_types.violin import violin  # noqa: F401
 from clusterfun.project import get_labels, get_labels_df, list_projects  # noqa: F401
-from clusterfun.huggingface import from_huggingface, search_datasets  # noqa: F401

@@ -14,7 +14,6 @@ import Section from "../shared/Section";
 const FORMAT_OPTIONS: { value: ExportFormat; label: string; description: string }[] = [
   { value: "coco", label: "COCO", description: "JSON with images, annotations, and categories" },
   { value: "yolo", label: "YOLO", description: "Label files with normalized coordinates" },
-  { value: "huggingface", label: "HuggingFace", description: "metadata.jsonl for imagefolder datasets" },
   { value: "classification", label: "Folders", description: "Images organized into label-named folders" },
 ];
 

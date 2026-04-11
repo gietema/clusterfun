@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useAtomValue, useSetAtom, useAtom } from "jotai";
 import {
   configAtom, mediaAtom, uuidAtom,
@@ -8,10 +8,8 @@ import {
 } from "@/app/store/atoms";
 import { fetchSimilar, updateMetadata } from "@/app/lib/api";
 import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
-import { buildExtraImageUrls } from "@/app/lib/media-utils";
 import PreviewMedia from "./PreviewMedia";
 import InformationItem from "./InformationItem";
-import QACard from "./QACard";
 
 export default function SideBar() {
   const [media, setMedia] = useAtom(mediaAtom);
@@ -20,17 +18,7 @@ export default function SideBar() {
   const setShowPage = useSetAtom(showPageAtom);
   const setSimilarityResults = useSetAtom(similarityResultsAtom);
   const [loading, setLoading] = useState(false);
-  const [previewOverride, setPreviewOverride] = useState<string | null>(null);
   const { replaceTop } = useBreadcrumbNav();
-
-  const vqaColumnSet = useMemo(
-    () => {
-      const s = new Set(config?.vqa ? Object.values(config.vqa) : []);
-      s.add("_extra_images");
-      return s;
-    },
-    [config?.vqa],
-  );
 
   if (!media || !config) return <div />;
 
@@ -38,10 +26,8 @@ export default function SideBar() {
   if (!info) return <div />;
 
   const entries = Object.entries(info).filter(
-    ([key]) => key !== config.bounding_box && !vqaColumnSet.has(key),
+    ([key]) => key !== config.bounding_box,
   );
-
-  const extras = buildExtraImageUrls(uuid, media.index, info);
 
   const handleFindSimilar = async () => {
     if (!media || !config?.embeddings) return;
@@ -61,16 +47,12 @@ export default function SideBar() {
     }
   };
 
-  const previewMedia = previewOverride
-    ? { ...media, src: previewOverride }
-    : media;
-
   return (
     <div className="w-full border-l border-gray-200 pl-3">
       <div className="flex w-full flex-col" style={{ maxHeight: "calc(100vh - 35px)" }}>
         <div style={{ maxHeight: "300px" }}>
           <PreviewMedia
-            media={previewMedia}
+            media={media}
             boundingBoxColumn={config.bounding_box}
             displayLabel
           />
@@ -85,21 +67,6 @@ export default function SideBar() {
           </button>
         )}
         <div className="overflow-y-auto" style={{ flexGrow: 1 }}>
-          {config.vqa?.question && info[config.vqa.question] != null && (
-            <div className="pt-2">
-              <QACard
-                question={String(info[config.vqa.question])}
-                answer={config.vqa.answer ? info[config.vqa.answer] : undefined}
-                choices={config.vqa.choices ? info[config.vqa.choices] : undefined}
-                explanation={config.vqa.explanation ? info[config.vqa.explanation] : undefined}
-                extraImages={extras}
-                onImageClick={(url) => setPreviewOverride(
-                  previewOverride === url ? null : url,
-                )}
-                activeImageUrl={previewOverride}
-              />
-            </div>
-          )}
           {entries.map(([key, value]) => (
             <InformationItem
               key={key}
