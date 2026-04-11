@@ -9,7 +9,6 @@ import threading
 
 import pandas as pd
 import pyarrow as pa
-import pyarrow.parquet as pq
 import pytest
 
 import clusterfun.storage.backends as backends_module
@@ -18,7 +17,7 @@ from clusterfun.storage.backends import create_backend, get_backend, set_backend
 from clusterfun.storage.backends.local import LocalBackend
 from clusterfun.storage.data_loader import DataLoader, _config_cache
 from clusterfun.storage.local.storer import LocalStorer
-from clusterfun.storage.query import _local, get_connection, invalidate_cache, run_query
+from clusterfun.storage.query import get_connection, invalidate_cache, run_query
 
 
 # ---------------------------------------------------------------------------
@@ -71,11 +70,13 @@ class TestDuckDBRoundTrip:
     URI generation and DuckDB configuration are correct end-to-end."""
 
     def test_query_parquet_via_duckdb(self, backend):
-        table = pa.table({
-            "id": [0, 1, 2, 3, 4],
-            "name": ["alice", "bob", "carol", "dave", "eve"],
-            "score": [90.0, 85.0, 92.0, 78.0, 95.0],
-        })
+        table = pa.table(
+            {
+                "id": [0, 1, 2, 3, 4],
+                "name": ["alice", "bob", "carol", "dave", "eve"],
+                "score": [90.0, 85.0, 92.0, 78.0, 95.0],
+            }
+        )
         backend.save_parquet("duckdb-test", table)
 
         try:
@@ -103,7 +104,13 @@ class TestDuckDBRoundTrip:
         backend.save_parquet("param-test", table)
 
         try:
-            rows = run_query("param-test", backend, "SELECT val FROM database WHERE id = ?", params=[1], fetch_one=True)
+            rows = run_query(
+                "param-test",
+                backend,
+                "SELECT val FROM database WHERE id = ?",
+                params=[1],
+                fetch_one=True,
+            )
             assert rows == [20]
         finally:
             invalidate_cache("param-test")
@@ -118,11 +125,13 @@ class TestStorerLoaderIntegration:
     """Full save → load → query flow using the LocalStorer and DataLoader."""
 
     def test_full_round_trip(self, backend):
-        df = pd.DataFrame({
-            "img_path": ["a.jpg", "b.jpg", "c.jpg"],
-            "x_val": [1.0, 2.0, 3.0],
-            "y_val": [10.0, 20.0, 30.0],
-        })
+        df = pd.DataFrame(
+            {
+                "img_path": ["a.jpg", "b.jpg", "c.jpg"],
+                "x_val": [1.0, 2.0, 3.0],
+                "y_val": [10.0, 20.0, 30.0],
+            }
+        )
         cfg = Config(
             type="scatter",
             media="img_path",
@@ -149,11 +158,13 @@ class TestStorerLoaderIntegration:
         assert isinstance(data, (dict, list))
 
     def test_query_after_save(self, backend):
-        df = pd.DataFrame({
-            "img_path": ["a.jpg", "b.jpg", "c.jpg", "d.jpg"],
-            "category": ["cat", "dog", "cat", "dog"],
-            "score": [0.9, 0.8, 0.7, 0.6],
-        })
+        df = pd.DataFrame(
+            {
+                "img_path": ["a.jpg", "b.jpg", "c.jpg", "d.jpg"],
+                "category": ["cat", "dog", "cat", "dog"],
+                "score": [0.9, 0.8, 0.7, 0.6],
+            }
+        )
         cfg = Config(
             type="scatter",
             media="img_path",
@@ -167,7 +178,8 @@ class TestStorerLoaderIntegration:
 
         try:
             rows = run_query(
-                "query-uuid", backend,
+                "query-uuid",
+                backend,
                 "SELECT * FROM database WHERE score > ? ORDER BY id",
                 params=[0.75],
             )
@@ -179,10 +191,12 @@ class TestStorerLoaderIntegration:
             invalidate_cache("query-uuid")
 
     def test_labels_round_trip(self, backend):
-        df = pd.DataFrame({
-            "img_path": ["a.jpg", "b.jpg"],
-            "val": [1, 2],
-        })
+        df = pd.DataFrame(
+            {
+                "img_path": ["a.jpg", "b.jpg"],
+                "val": [1, 2],
+            }
+        )
         cfg = Config(
             type="histogram",
             media="img_path",
@@ -285,30 +299,30 @@ class TestBackendRegistry:
 class TestDuckDBQueryEdgeCases:
     """Edge cases for run_query / get_connection error handling."""
 
-    def test_run_query_no_results_raises(self, backend):
+    def test_run_query_no_results_returns_empty(self, backend):
         table = pa.table({"id": [0, 1, 2], "val": [10, 20, 30]})
         backend.save_parquet("edge-no-results", table)
         try:
-            with pytest.raises(ValueError, match="no results"):
-                run_query(
-                    "edge-no-results",
-                    backend,
-                    "SELECT val FROM database WHERE val > 999",
-                )
+            rows = run_query(
+                "edge-no-results",
+                backend,
+                "SELECT val FROM database WHERE val > 999",
+            )
+            assert rows == []
         finally:
             invalidate_cache("edge-no-results")
 
-    def test_run_query_fetch_one_no_results_raises(self, backend):
+    def test_run_query_fetch_one_no_results_returns_none(self, backend):
         table = pa.table({"id": [0, 1], "val": [1, 2]})
         backend.save_parquet("edge-fetch-one-empty", table)
         try:
-            with pytest.raises(ValueError, match="no results"):
-                run_query(
-                    "edge-fetch-one-empty",
-                    backend,
-                    "SELECT val FROM database WHERE val > 999",
-                    fetch_one=True,
-                )
+            result = run_query(
+                "edge-fetch-one-empty",
+                backend,
+                "SELECT val FROM database WHERE val > 999",
+                fetch_one=True,
+            )
+            assert result is None
         finally:
             invalidate_cache("edge-fetch-one-empty")
 
@@ -328,7 +342,7 @@ class TestDuckDBQueryEdgeCases:
                 "SELECT COUNT(*), AVG(val) FROM database",
                 fetch_one=True,
             )
-            assert row[0] == 3          # COUNT(*) includes NULL row
+            assert row[0] == 3  # COUNT(*) includes NULL row
             assert abs(row[1] - 20.0) < 0.01  # AVG of 10 and 30
         finally:
             invalidate_cache("edge-nulls")
@@ -436,6 +450,7 @@ class TestCacheInvalidation:
 
         # Wait until worker has warmed its connection
         import time
+
         while not results.get("ready"):
             time.sleep(0.001)
 
@@ -637,6 +652,7 @@ class TestS3BackendSpecific:
 
         endpoint = "http://localhost:4566"
         import os
+
         bucket = f"test-s3spec-{os.urandom(4).hex()}"
         s3 = boto3.client(
             "s3",
@@ -690,7 +706,9 @@ class TestS3BackendSpecific:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.skipif(not _gcs_available, reason="GCS/fake-gcs-server service not available")
+@pytest.mark.skipif(
+    not _gcs_available, reason="GCS/fake-gcs-server service not available"
+)
 class TestGCSBackendSpecific:
     """GCS-specific tests — only run when fake-gcs-server is reachable."""
 

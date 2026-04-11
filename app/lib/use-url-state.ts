@@ -5,6 +5,7 @@ import {
   gridValuesAtom,
   filtersAtom,
   mediaIndexAtom,
+  labelFilterAtom,
 } from "@/app/store/atoms";
 import type { Filter } from "@/app/types";
 
@@ -31,6 +32,7 @@ export function useUrlState() {
   const [gridValues, setGridValues] = useAtom(gridValuesAtom);
   const [filters, setFilters] = useAtom(filtersAtom);
   const [mediaIndex, setMediaIndex] = useAtom(mediaIndexAtom);
+  const [labelFilter, setLabelFilter] = useAtom(labelFilterAtom);
   const initialized = useRef(false);
 
   // Read from URL on mount
@@ -41,7 +43,7 @@ export function useUrlState() {
     const params = new URLSearchParams(window.location.search);
 
     const view = params.get("view");
-    if (view === "grid" || view === "media" || view === "plot") {
+    if (view === "grid" || view === "media" || view === "plot" || view === "projects") {
       setShowPage(view);
     }
 
@@ -67,6 +69,9 @@ export function useUrlState() {
       const idx = parseInt(media);
       if (!isNaN(idx)) setMediaIndex(idx);
     }
+
+    const label = params.get("label");
+    if (label) setLabelFilter(label);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Write to URL on state changes
@@ -81,9 +86,10 @@ export function useUrlState() {
     if (!gridValues.asc) params.set("asc", "false");
     if (filters.length > 0) params.set("filters", JSON.stringify(filters));
     if (showPage === "media" && mediaIndex != null) params.set("media", String(mediaIndex));
+    if (labelFilter) params.set("label", labelFilter);
 
     const search = params.toString();
     const url = search ? `${window.location.pathname}?${search}` : window.location.pathname;
     window.history.replaceState(null, "", url);
-  }, [showPage, gridValues.page, gridValues.sortBy, gridValues.asc, filters, mediaIndex]);
+  }, [showPage, gridValues.page, gridValues.sortBy, gridValues.asc, filters, mediaIndex, labelFilter]);
 }

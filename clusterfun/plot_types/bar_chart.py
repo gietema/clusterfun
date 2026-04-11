@@ -26,23 +26,34 @@ def bar_chart(
     show: bool = True,
     color_is_categorical: bool = True,
     display: Optional[Union[str, List[str]]] = None,
+    embeddings: Optional[str] = None,
+    embeddings_model: Optional[str] = None,
+    project: Optional[str] = None,
 ):  # pylint: disable=too-many-arguments,missing-function-docstring,too-many-locals
     if color is None or not color_is_categorical:
         start_index = 0
         for index, (value, count) in enumerate(df[x].value_counts().items()):
-            df.loc[df[x] == value, "_x"] = np.random.uniform(low=start_index + index, high=0.7 + index, size=count)
-            df.loc[df[x] == value, "_y"] = np.random.uniform(low=0, high=count, size=count)
+            df.loc[df[x] == value, "_x"] = np.random.uniform(
+                low=start_index + index, high=0.7 + index, size=count
+            )
+            df.loc[df[x] == value, "_y"] = np.random.uniform(
+                low=0, high=count, size=count
+            )
     else:
         start_index = 0
         for x_index, (x_value, _) in enumerate(df[x].value_counts().items()):
             data = df[df[x] == x_value]
             stacked_y_ref = 0
             for y_value, y_count in data[color].value_counts().items():
-                df.loc[(df[x] == x_value) & (df[color] == y_value), "_x"] = np.random.uniform(
-                    low=start_index + x_index, high=0.7 + x_index, size=y_count
+                df.loc[(df[x] == x_value) & (df[color] == y_value), "_x"] = (
+                    np.random.uniform(
+                        low=start_index + x_index, high=0.7 + x_index, size=y_count
+                    )
                 )
-                df.loc[(df[x] == x_value) & (df[color] == y_value), "_y"] = np.random.uniform(
-                    low=stacked_y_ref, high=y_count + stacked_y_ref, size=y_count
+                df.loc[(df[x] == x_value) & (df[color] == y_value), "_y"] = (
+                    np.random.uniform(
+                        low=stacked_y_ref, high=y_count + stacked_y_ref, size=y_count
+                    )
                 )
                 stacked_y_ref += y_count
 
@@ -53,13 +64,18 @@ def bar_chart(
         x="_x",
         y="_y",
         media=media,
-        columns=get_columns_for_db(df, media, "bar_chart", "_y", "_x"),
+        columns=get_columns_for_db(
+            df, media, "bar_chart", "_y", "_x", embeddings=embeddings
+        ),
         color=color,
         bounding_box=bounding_box,
         title=title,
         x_names=x_names,
         color_is_categorical=color_is_categorical,
         display=display,
+        embeddings=embeddings,
+        embeddings_model=embeddings_model,
+        project=project,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

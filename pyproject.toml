@@ -15,11 +15,15 @@ dependencies = [
     "boto3>=1.26.0",
     "requests",
     "pillow",
+    "click>=8.0",
     "urllib3<2",
+    "umap-learn>=0.5.11",
+    "faiss-cpu>=1.7.4",
 ]
 
 [project.optional-dependencies]
 gcs = ["google-cloud-storage>=2.0.0"]
+ml = ["scikit-learn>=1.0"]
 
 [project.scripts]
 clusterfun = "clusterfun.serve_cli:main"
@@ -62,6 +66,8 @@ pie = "python scripts/pie.py"
 violin = "python scripts/violin.py"
 grid = "python scripts/grid.py"
 audio = "python scripts/audio.py"
+imagenette = "python scripts/load_imagenette.py"
+imagenet = "python scripts/load_imagenet.py"
 
 [tool.pylint."MESSAGES CONTROL"]
 good-names = [

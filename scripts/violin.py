@@ -1,12 +1,18 @@
-import pandas as pd
+import click
 
 import clusterfun as clt
+from demo_datasets import dataset_option, load_dataset
 
 
-def main():
-    df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main/wiki-art.csv")
-    df = df[df.painter.isin(["Pablo Picasso", "Juan Gris", "Georges Braque", "Fernand Leger"])]
-    print(clt.violin(df, y="brightness", media="img_path", show=False, color="painter"))
+@click.command()
+@dataset_option
+@click.option("--max-groups", default=6, help="Max number of groups to show.")
+def main(dataset, max_groups):
+    df, ds = load_dataset(dataset)
+    # Limit to top N groups by frequency to keep the plot readable
+    top = df[ds.color].value_counts().nlargest(max_groups).index
+    df = df[df[ds.color].isin(top)]
+    print(clt.violin(df, y=ds.numeric, media=ds.media, color=ds.color, show=False))
 
 
 if __name__ == "__main__":

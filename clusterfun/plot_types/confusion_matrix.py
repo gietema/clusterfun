@@ -25,6 +25,9 @@ def confusion_matrix(
     title: Optional[str] = None,
     show: bool = True,
     display: Optional[Union[str, List[str]]] = None,
+    embeddings: Optional[str] = None,
+    embeddings_model: Optional[str] = None,
+    project: Optional[str] = None,
 ):  # pylint: disable=too-many-arguments,missing-function-docstring,too-many-locals
 
     labels = sorted(df[y_true].unique().tolist())
@@ -35,7 +38,9 @@ def confusion_matrix(
 
             # Generate random angles and radii
             angles = np.random.uniform(0, 2 * np.pi, number_of_dots_in_square)
-            max_radius = 0.3  # Adjust max_radius to change the size of the filled circle
+            max_radius = (
+                0.3  # Adjust max_radius to change the size of the filled circle
+            )
             radii = np.sqrt(
                 np.random.uniform(0, max_radius**2, number_of_dots_in_square)
             )  # sqrt for uniform distribution
@@ -45,8 +50,12 @@ def confusion_matrix(
             y_offsets = radii * np.sin(angles)
 
             # Calculate the final positions of the dots
-            df.loc[mask, "_label"] = np.repeat(index_label, number_of_dots_in_square) + x_offsets + 1
-            df.loc[mask, "_prediction"] = np.repeat(index_pred, number_of_dots_in_square) + y_offsets + 1
+            df.loc[mask, "_label"] = (
+                np.repeat(index_label, number_of_dots_in_square) + x_offsets + 1
+            )
+            df.loc[mask, "_prediction"] = (
+                np.repeat(index_pred, number_of_dots_in_square) + y_offsets + 1
+            )
 
     df = df.sort_values(by=["_label", "_prediction"], ascending=True)
 
@@ -55,12 +64,22 @@ def confusion_matrix(
         x="_label",
         y="_prediction",
         media=media,
-        columns=get_columns_for_db(df, media, "confusion_matrix", "_prediction", "_label"),
+        columns=get_columns_for_db(
+            df,
+            media,
+            "confusion_matrix",
+            "_prediction",
+            "_label",
+            embeddings=embeddings,
+        ),
         color=y_true,
         bounding_box=bounding_box,
         title=title,
         x_names=labels,
         display=display,
+        embeddings=embeddings,
+        embeddings_model=embeddings_model,
+        project=project,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

@@ -10,6 +10,11 @@ from typing import Any, Dict, List, Optional, Tuple
 from clusterfun.config import Config
 from clusterfun.constants import COLORS
 
+# Maximum number of points to send to the browser for plot rendering.
+# Beyond this, a deterministic sample is used. Does not affect grid views,
+# filtering accuracy, export, or any non-plot functionality.
+PLOT_SAMPLE_LIMIT = 500_000
+
 
 def get_data_dict(
     con: Any,
@@ -94,6 +99,10 @@ def get_data_standard(
         query += f" WHERE {query_addition}"
         if query_params:
             params.extend(query_params)
+
+    # Sample large datasets to keep the browser responsive
+    query += f" ORDER BY hash(id) LIMIT {PLOT_SAMPLE_LIMIT}"
+
     if params:
         res = con.execute(query, params).fetchall()
     else:
@@ -111,7 +120,11 @@ def get_data_standard(
         data[0]["y"] = [x[2] for x in res]
     if cfg.color is not None and not cfg.color_is_categorical:
         # Color is always categorical here, index always the last column
-        data[0]["marker"] = {"color": [x[-1] for x in res], "colorscale": "Viridis", "showscale": True}
+        data[0]["marker"] = {
+            "color": [x[-1] for x in res],
+            "colorscale": "Viridis",
+            "showscale": True,
+        }
     return data
 
 
@@ -119,9 +132,13 @@ def get_grid_data(
     con: Any,
     query_addition: Optional[str] = None,
     query_params: Optional[List] = None,
-) -> List[Dict[str, List[int]]]:
+) -> List[Dict[str, Any]]:
     """Get data for the grid. The grid is a special case as it does not have x and y values,
     so we can be more efficient here.
+
+    When filtering (query_addition is set), returns the matching IDs so the
+    frontend can navigate to those items. Without a filter, returns only the
+    count to avoid transferring large ID arrays.
 
     Parameters
     ----------
@@ -135,21 +152,21 @@ def get_grid_data(
 
     Returns
     -------
-    List[Dict[str, List[int]]]
+    List[Dict[str, Any]]
         Data for the grid
     """
-    query = "SELECT id FROM database"
+    query = "SELECT COUNT(*) FROM database"
     params: List = []
     if query_addition:
         query += f" WHERE {query_addition}"
         if query_params:
             params.extend(query_params)
     if params:
-        res = con.execute(query, params).fetchall()
+        res = con.execute(query, params).fetchone()
     else:
-        res = con.execute(query).fetchall()
-    data = [{"id": [x[0] for x in res]}]
-    return data
+        res = con.execute(query).fetchone()
+    count = res[0] if res else 0
+    return [{"count": count}]
 
 
 def get_data_per_color(
@@ -192,6 +209,9 @@ def get_data_per_color(
         query += f" WHERE {where}"
         if query_params:
             params.extend(query_params)
+
+    # Sample large datasets to keep the browser responsive
+    query += f" ORDER BY hash(id) LIMIT {PLOT_SAMPLE_LIMIT}"
 
     if params:
         all_rows: List[Any] = con.execute(query, params).fetchall()

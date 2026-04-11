@@ -1,11 +1,14 @@
-import pandas as pd
+import click
 
 import clusterfun as clt
+from demo_datasets import dataset_option, load_dataset
 
 
-def main():
-    df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main/wiki-art.csv")
-    print(clt.scatter(df, x="x", y="y", media="img_path", color="painter", show=False))
+@click.command()
+@dataset_option
+def main(dataset):
+    df, ds = load_dataset(dataset)
+    print(clt.scatter(df, x=ds.x, y=ds.y, media=ds.media, color=ds.color, show=False))
 
 
 if __name__ == "__main__":

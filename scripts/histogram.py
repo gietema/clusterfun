@@ -1,11 +1,14 @@
-import pandas as pd
+import click
 
 import clusterfun as clt
+from demo_datasets import dataset_option, load_dataset
 
 
-def main():
-    df = pd.read_csv("https://raw.githubusercontent.com/gietema/clusterfun-data/main/wiki-art.csv")
-    print(clt.histogram(df, x="brightness", media="img_path", show=False))
+@click.command()
+@dataset_option
+def main(dataset):
+    df, ds = load_dataset(dataset)
+    print(clt.histogram(df, x=ds.numeric, media=ds.media, show=False))
 
 
 if __name__ == "__main__":

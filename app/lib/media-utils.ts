@@ -1,5 +1,5 @@
 import type { MediaType, BoundingBox, Dimension, HeightWidth } from "@/app/types";
-import { IMAGE_EXTENSIONS, AUDIO_EXTENSIONS } from "./constants";
+import { IMAGE_EXTENSIONS, AUDIO_EXTENSIONS, BACKEND_URL } from "./constants";
 import type { Media } from "@/app/types";
 
 export function determineMediaType(filename: string): MediaType {
@@ -17,9 +17,18 @@ export function determineMediaType(filename: string): MediaType {
 }
 
 export function createMedia(data: Record<string, unknown>): Media {
+  let src = data.src as string;
+  // In dev mode, /media/ and /api/ paths need the backend URL prefix since the
+  // Next.js dev server doesn't serve them.
+  if (src?.startsWith("/media/") && BACKEND_URL) {
+    src = `${BACKEND_URL}${src}`;
+  }
+  if (src?.startsWith("/api/") && BACKEND_URL) {
+    src = `${BACKEND_URL}${src}`;
+  }
   const media: Media = {
     index: data.index as number,
-    src: data.src as string,
+    src,
     information: data.information as Media["information"],
     height: data.height as number | undefined,
     width: data.width as number | undefined,

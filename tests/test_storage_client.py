@@ -29,7 +29,10 @@ def test_get_storage_client_local() -> None:
 
 def test_local_client_error() -> None:
     fake_path = "/media/fake_path"
-    with pytest.raises(ValueError, match="In case of Local storage the common media path should be defined"):
+    with pytest.raises(
+        ValueError,
+        match="In case of Local storage the common media path should be defined",
+    ):
         get_storage_client(fake_path, None)
 
 

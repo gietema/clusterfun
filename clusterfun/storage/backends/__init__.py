@@ -19,7 +19,9 @@ def get_backend() -> StorageBackend:
 def set_backend(backend: Union[str, StorageBackend]) -> None:
     """Set the storage backend."""
     global _backend
-    _backend = backend if isinstance(backend, StorageBackend) else create_backend(backend)
+    _backend = (
+        backend if isinstance(backend, StorageBackend) else create_backend(backend)
+    )
 
 
 def create_backend(url: str) -> StorageBackend:

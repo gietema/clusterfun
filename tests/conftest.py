@@ -4,6 +4,7 @@ import socket
 import pytest
 
 import clusterfun.storage.backends as backends_module
+from clusterfun.storage import label_db
 
 
 @pytest.fixture()
@@ -11,6 +12,8 @@ def cache_dir(tmp_path, monkeypatch):
     monkeypatch.setenv("CLUSTERFUN_CACHE_DIR", str(tmp_path))
     # Reset the global backend so each test gets a fresh LocalBackend with the tmp_path
     backends_module._backend = None
+    # Reset label DB so each test gets a fresh SQLite database
+    label_db.reset()
     return tmp_path
 
 
@@ -87,7 +90,9 @@ def backend(request, tmp_path, monkeypatch):
     """
     name = request.param
     if not _SERVICE_CHECKS[name]():
-        pytest.skip(f"{name} service not available (start with: docker compose -f docker-compose.test.yml up -d)")
+        pytest.skip(
+            f"{name} service not available (start with: docker compose -f docker-compose.test.yml up -d)"
+        )
 
     if name == "s3":
         monkeypatch.setenv("AWS_ACCESS_KEY_ID", "test")
@@ -96,8 +101,10 @@ def backend(request, tmp_path, monkeypatch):
 
     from clusterfun.storage.query import invalidate_cache
 
+    label_db.reset()
     backend = _BACKEND_FACTORIES[name](tmp_path)
     backends_module._backend = backend
     yield backend
     invalidate_cache()
+    label_db.reset()
     backends_module._backend = None

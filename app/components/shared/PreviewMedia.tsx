@@ -29,9 +29,11 @@ export default function PreviewMedia({
   const [dims, setDims] = useState<Dimension>({
     width: 0, height: 0, naturalWidth: 0, naturalHeight: 0,
   });
+  const [loaded, setLoaded] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const prevSrcRef = useRef<string | undefined>(undefined);
 
   const measureImage = () => {
     const img = imageRef.current;
@@ -44,6 +46,21 @@ export default function PreviewMedia({
       naturalHeight: img.naturalHeight || 0,
     });
   };
+
+  // Reset loaded state when the image source changes
+  useEffect(() => {
+    if (media?.src !== prevSrcRef.current) {
+      prevSrcRef.current = media?.src;
+      setLoaded(false);
+      // If the image is already cached by the browser, onLoad fires synchronously
+      // before React commits — handle that by checking complete after a tick
+      const img = imageRef.current;
+      if (img?.complete && img.naturalWidth > 0) {
+        setLoaded(true);
+        measureImage();
+      }
+    }
+  }, [media?.src]);
 
   useEffect(() => { measureImage(); }, []);
 
@@ -79,17 +96,27 @@ export default function PreviewMedia({
   const scaleX = dims.naturalWidth > 0 ? dims.width / dims.naturalWidth : 0;
   const scaleY = dims.naturalHeight > 0 ? dims.height / dims.naturalHeight : 0;
 
+  const handleImageLoad = () => {
+    setLoaded(true);
+    measureImage();
+  };
+
   return (
-    <div className="image--preview" ref={containerRef}>
+    <div className="image--preview" ref={containerRef} style={{ backgroundColor: loaded ? "transparent" : "#f3f4f6", transition: "background-color 0.3s ease-in-out" }}>
       <img
         src={media.src}
         ref={imageRef}
         loading="lazy"
-        style={{ objectFit: "contain", width: "100%" }}
-        onLoad={measureImage}
+        style={{
+          objectFit: "contain",
+          width: "100%",
+          opacity: loaded ? 1 : 0,
+          transition: "opacity 0.3s ease-in-out",
+        }}
+        onLoad={handleImageLoad}
         alt=""
       />
-      {dims.width > 0 && dims.height > 0 && boundingBoxes.length > 0 && (
+      {loaded && dims.width > 0 && dims.height > 0 && boundingBoxes.length > 0 && (
         <div
           style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
           className="flex items-center justify-center"

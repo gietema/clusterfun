@@ -1,73 +1,141 @@
 "use client";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { faSquare } from "@fortawesome/free-regular-svg-icons";
-import { faBarChart, faCaretDown, faTableCells } from "@fortawesome/free-solid-svg-icons";
+import { faTableCells, faFloppyDisk, faCrosshairs } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { saveAs } from "file-saver";
 import {
   configAtom, gridValuesAtom, mediaAtom,
   currentMediaIndicesAtom, mediaItemsAtom, uuidAtom,
+  mediaIndicesStackAtom,
+  filtersAtom, similarityResultsAtom, showPageAtom,
+  selectedMediaAtom,
 } from "@/app/store/atoms";
-import { fetchMediaItems, downloadGridCsv, saveLabel, deleteLabel } from "@/app/lib/api";
+import { fetchMediaItems, fetchFilteredCount, saveLabel, deleteLabel, saveView, fetchSimilar } from "@/app/lib/api";
 import type { Media } from "@/app/types";
-import BackButton from "../shared/BackButton";
-import SideBar from "../shared/SideBar";
+import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
+import BreadcrumbTrail from "../shared/BreadcrumbTrail";
 import ResizableLayout from "../shared/ResizableLayout";
 import FilterBar from "../filters/FilterBar";
-import MediaGridItem from "./MediaGridItem";
+import MediaGridItem, { EXCLUDE_LABEL } from "./MediaGridItem";
+import SelectionActionBar from "./SelectionActionBar";
 import Pagination from "./Pagination";
 import SortDropdown from "./SortDropdown";
 import ShowValueDropdown from "./ShowValueDropdown";
 import BoundingBoxCheckbox from "./BoundingBoxCheckbox";
-import LabelPanel from "../labels/LabelPanel";
-import MediaVisualization from "./MediaVisualization";
+import GridWorkspaceSidebar from "./GridWorkspaceSidebar";
+import FocusMode from "./FocusMode";
 import { useLabelUndo } from "@/app/lib/use-label-undo";
 import { useMediaPreview } from "@/app/lib/use-media-preview";
+import { useActiveLearning } from "@/app/lib/use-active-learning";
+import { useState } from "react";
 
 interface GridViewProps {
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 export default function GridView({ onBack }: GridViewProps) {
   const mediaIndices = useAtomValue(currentMediaIndicesAtom);
+  const mediaIndicesStack = useAtomValue(mediaIndicesStackAtom);
   const uuid = useAtomValue(uuidAtom);
   const config = useAtomValue(configAtom);
   const setSideMedia = useSetAtom(mediaAtom);
   const [mediaItems, setMediaItems] = useAtom(mediaItemsAtom);
   const [gridValues, setGridValues] = useAtom(gridValuesAtom);
-  const [showStats, setShowStats] = useState(false);
-  const [showLabelPanel, setShowLabelPanel] = useState(false);
-  const { pushAction, undo } = useLabelUndo();
+  const setUuid = useSetAtom(uuidAtom);
+  const setShowPage = useSetAtom(showPageAtom);
+  const [filters, setFilters] = useAtom(filtersAtom);
+  const setSimilarityResults = useSetAtom(similarityResultsAtom);
+  const { reset: resetBreadcrumbs, replaceTop } = useBreadcrumbNav();
+  const [selectedMedia, setSelectedMedia] = useAtom(selectedMediaAtom);
+  const [focusMode, setFocusMode] = useState(false);
+  const lastClickedRef = useRef<number | null>(null);
+  const [filteredCount, setFilteredCount] = useState<number | null>(null);
+
+  const [showSaveForm, setShowSaveForm] = useState(false);
+  const [saveTitle, setSaveTitle] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [savedViewUuid, setSavedViewUuid] = useState<string | null>(null);
+  const { pushAction, undo, redo } = useLabelUndo();
   const { openMedia } = useMediaPreview();
+  const { isActive } = useActiveLearning();
+
+  const canGoBack = onBack && mediaIndicesStack.length > 1;
+
+  // Subsample media indices client-side with a stable shuffle
+  const effectiveIndices = useMemo(() => {
+    if (gridValues.subsample <= 0) return mediaIndices;
+
+    const total = mediaIndices.length > 0 ? mediaIndices.length : (config?.total_count ?? 0);
+    if (total === 0) return mediaIndices;
+
+    const count = Math.max(1, Math.round(total * gridValues.subsample / 100));
+    if (count >= total) return mediaIndices;
+
+    // Seeded LCG for deterministic sampling
+    let seed = 42;
+    const lcg = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 0x100000000; };
+
+    if (mediaIndices.length > 0) {
+      // Shuffle a copy of the explicit ID list
+      const arr = [...mediaIndices];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(lcg() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr.slice(0, count);
+    }
+
+    // No explicit IDs (empty = all items): generate random indices
+    // without allocating the full array
+    const selected = new Set<number>();
+    while (selected.size < count) {
+      selected.add(Math.floor(lcg() * total));
+    }
+    return Array.from(selected).sort((a, b) => a - b);
+  }, [mediaIndices, gridValues.subsample, config?.total_count]);
 
   const loadMedia = (sortCol?: string, asc?: boolean) => {
     if (!uuid) return;
     fetchMediaItems(
       uuid,
-      mediaIndices,
+      effectiveIndices,
       gridValues.page,
       sortCol ?? (gridValues.sortBy || undefined),
       asc ?? gridValues.asc,
+      filters.length > 0 ? filters : undefined,
     ).then(setMediaItems);
   };
 
-  useEffect(() => { loadMedia(); }, [mediaIndices]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { loadMedia(); }, [effectiveIndices, filters]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch filtered count when filters change
+  useEffect(() => {
+    if (!uuid || filters.length === 0) { setFilteredCount(null); return; }
+    fetchFilteredCount(uuid, filters).then(setFilteredCount).catch(() => setFilteredCount(null));
+  }, [uuid, filters]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      const isInput = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT";
-      if ((e.metaKey || e.ctrlKey) && e.key === "z") {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "z") {
+        e.preventDefault();
+        redo();
+      } else if ((e.metaKey || e.ctrlKey) && e.key === "z") {
         e.preventDefault();
         undo();
-      } else if (e.key === "Escape" && config?.type !== "grid") {
-        onBack();
-      } else if (e.key === "l" && !isInput && !e.metaKey && !e.ctrlKey) {
-        setShowLabelPanel((s) => !s);
+      } else if (e.key === "Escape" && selectedMedia.size > 0) {
+        setSelectedMedia(new Set());
+      } else if (e.key === "Escape" && canGoBack) {
+        onBack!();
+      } else if (e.key === "f" && !e.metaKey && !e.ctrlKey && config?.labels && config.labels.length > 0) {
+        // Don't trigger if typing in an input
+        const tag = (e.target as HTMLElement)?.tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+        e.preventDefault();
+        setFocusMode(true);
       }
     },
-    [undo, onBack, config?.type],
+    [undo, redo, canGoBack, onBack, config?.labels, selectedMedia.size, setSelectedMedia],
   );
 
   useEffect(() => {
@@ -75,8 +143,40 @@ export default function GridView({ onBack }: GridViewProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-  const handleClick = (index: number) => {
+  const handleClick = (index: number, e: React.MouseEvent) => {
+    // Cmd/Ctrl+click or click while items are selected → toggle selection
+    if (e.metaKey || e.ctrlKey) {
+      handleSelect(index, e);
+      return;
+    }
+    if (selectedMedia.size > 0) {
+      setSelectedMedia(new Set());
+    }
     openMedia(index);
+  };
+
+  const handleSelect = (index: number, e: React.MouseEvent) => {
+    setSelectedMedia((prev) => {
+      const next = new Set(prev);
+      if (e.shiftKey && lastClickedRef.current != null) {
+        // Shift+click: range select between last clicked and current
+        const pageIndices = mediaItems.map((m) => m.index);
+        const from = pageIndices.indexOf(lastClickedRef.current);
+        const to = pageIndices.indexOf(index);
+        if (from !== -1 && to !== -1) {
+          const [start, end] = from < to ? [from, to] : [to, from];
+          for (let i = start; i <= end; i++) {
+            next.add(pageIndices[i]);
+          }
+        }
+      } else {
+        // Toggle single item
+        if (next.has(index)) next.delete(index);
+        else next.add(index);
+      }
+      return next;
+    });
+    lastClickedRef.current = index;
   };
 
   const handleHover = (index: number) => {
@@ -92,12 +192,9 @@ export default function GridView({ onBack }: GridViewProps) {
 
   const handlePageChange = (newPage: number) => {
     setGridValues((prev) => ({ ...prev, page: newPage }));
-    fetchMediaItems(uuid, mediaIndices, newPage, gridValues.sortBy || undefined, gridValues.asc)
+    setSelectedMedia(new Set());
+    fetchMediaItems(uuid, effectiveIndices, newPage, gridValues.sortBy || undefined, gridValues.asc)
       .then(setMediaItems);
-  };
-
-  const handleDownload = () => {
-    downloadGridCsv(uuid, mediaIndices).then((blob) => saveAs(blob, "data.csv"));
   };
 
   const handleLabelToggle = (media: Media, label: string) => {
@@ -122,31 +219,97 @@ export default function GridView({ onBack }: GridViewProps) {
     );
   };
 
+  const handleExclude = (media: Media) => {
+    const isAlreadyExcluded = media.labels?.includes(EXCLUDE_LABEL);
+    if (isAlreadyExcluded) {
+      deleteLabel(uuid, [media.index], EXCLUDE_LABEL).catch(console.error);
+      pushAction({ type: "remove", label: EXCLUDE_LABEL, mediaIds: [media.index] });
+    } else {
+      saveLabel(uuid, [media.index], EXCLUDE_LABEL).catch(console.error);
+      pushAction({ type: "add", label: EXCLUDE_LABEL, mediaIds: [media.index] });
+    }
+    setMediaItems((items) =>
+      items.map((m) => {
+        if (m.index !== media.index) return m;
+        const labels = m.labels ? [...m.labels] : [];
+        if (isAlreadyExcluded) {
+          return { ...m, labels: labels.filter((l) => l !== EXCLUDE_LABEL) };
+        }
+        if (!labels.includes(EXCLUDE_LABEL)) labels.push(EXCLUDE_LABEL);
+        return { ...m, labels };
+      }),
+    );
+  };
+
+  // ── Selection action handlers ──
+  const handleSelectionLabel = (label: string) => {
+    const ids = [...selectedMedia];
+    saveLabel(uuid, ids, label).catch(console.error);
+    pushAction({ type: "add", label, mediaIds: ids });
+    setMediaItems((items) =>
+      items.map((m) => {
+        if (!selectedMedia.has(m.index)) return m;
+        const labels = m.labels ? [...m.labels] : [];
+        if (!labels.includes(label)) labels.push(label);
+        return { ...m, labels };
+      }),
+    );
+    setSelectedMedia(new Set());
+  };
+
+  const handleSelectionRemoveLabel = (label: string) => {
+    const ids = [...selectedMedia];
+    deleteLabel(uuid, ids, label).catch(console.error);
+    pushAction({ type: "remove", label, mediaIds: ids });
+    setMediaItems((items) =>
+      items.map((m) => {
+        if (!selectedMedia.has(m.index)) return m;
+        return { ...m, labels: (m.labels ?? []).filter((l) => l !== label) };
+      }),
+    );
+    setSelectedMedia(new Set());
+  };
+
+  const handleSelectionFindSimilar = async () => {
+    if (!config?.embeddings || selectedMedia.size === 0) return;
+    const firstId = [...selectedMedia][0];
+    const results = await fetchSimilar(uuid, firstId);
+    const ids = results.map((r) => r.media_id);
+    const scores: Record<number, number> = {};
+    for (const r of results) scores[r.media_id] = r.similarity;
+    setSimilarityResults(scores);
+    replaceTop(ids, `Similar to #${firstId}`);
+    setSelectedMedia(new Set());
+  };
+
   if (!config) return null;
 
-  const sidebarContent = (
-    <div className="pl-2">
-      <button
-        className="mb-2 w-full cursor-pointer rounded-md bg-gray-800 px-3 py-1.5 text-center text-xs font-medium text-white transition-colors hover:bg-gray-700"
-        onClick={handleDownload}
-      >
-        Download grid as csv
-      </button>
-      <SideBar />
-    </div>
-  );
-
   return (
-    <ResizableLayout sidebar={sidebarContent}>
-      {config.title && <div className="mb-2 text-sm font-medium text-gray-900">{config.title}</div>}
+    <ResizableLayout sidebar={<GridWorkspaceSidebar />}>
+      <div className="flex h-full flex-col">
+      {config.title && <div className="mb-2 shrink-0 px-3 pt-2 text-sm font-medium text-gray-900">{config.title}</div>}
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 px-3 py-2">
-        {config.type !== "grid" && (
-          <div className="flex items-center gap-2">
-            <BackButton onClick={onBack} />
-            <span className="text-xs text-gray-500">{mediaIndices.length} selected</span>
-          </div>
-        )}
+      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-gray-200 px-3 py-2">
+        <span className="text-xs text-gray-500">
+          {gridValues.subsample > 0
+            ? `${effectiveIndices.length.toLocaleString()} of ${mediaIndices.length.toLocaleString()}`
+            : (filteredCount != null ? filteredCount : (mediaIndices.length > 0 ? mediaIndices.length : (config.total_count ?? 0))).toLocaleString()}{" "}
+          items
+        </span>
+        <select
+          value={gridValues.subsample}
+          onChange={(e) => {
+            setGridValues((prev) => ({ ...prev, subsample: parseInt(e.target.value), page: 0 }));
+          }}
+          className="rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
+        >
+          <option value={0}>All data</option>
+          <option value={1}>1% sample</option>
+          <option value={5}>5% sample</option>
+          <option value={10}>10% sample</option>
+          <option value={25}>25% sample</option>
+          <option value={50}>50% sample</option>
+        </select>
         <SortDropdown
           columns={config.columns}
           gridValues={gridValues}
@@ -178,69 +341,151 @@ export default function GridView({ onBack }: GridViewProps) {
         <div className="ml-auto flex items-center gap-2">
           <Pagination
             page={gridValues.page}
-            maxPage={Math.floor(mediaIndices.length / 50)}
+            maxPage={Math.max(0, Math.ceil((effectiveIndices.length > 0 ? effectiveIndices.length : (filteredCount ?? config.total_count ?? 0)) / 50) - 1)}
             onPageChange={handlePageChange}
           />
-          <button
-            onClick={() => setShowStats((s) => !s)}
-            className="rounded-md px-2 py-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900"
-          >
-            <FontAwesomeIcon icon={faBarChart} title="Show stats" />
-          </button>
+          {config.labels && config.labels.length > 0 && (
+            <button
+              onClick={() => setFocusMode(true)}
+              className="rounded-md px-2 py-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900"
+              title="Focus mode (F)"
+            >
+              <FontAwesomeIcon icon={faCrosshairs} />
+            </button>
+          )}
         </div>
       </div>
 
-      {showStats && (
-        <div className="border-b border-gray-200">
-          <MediaVisualization mediaIndices={mediaIndices} />
-        </div>
-      )}
-
-      <div className="px-3 pt-2"><FilterBar /></div>
-
-      {/* Label panel toggle */}
-      <div
-        className={`mx-3 mt-2 w-auto text-center text-xs ${
-          showLabelPanel
-            ? "-mb-2 h-3 rounded-t-lg bg-gray-100"
-            : "cursor-pointer rounded-md bg-gray-100 py-1.5 text-gray-600 transition-colors hover:bg-gray-200"
-        }`}
-        onClick={() => setShowLabelPanel((s) => !s)}
-      >
-        {!showLabelPanel && (
-          <div>
-            <span className="mr-1.5">Labelling</span>
-            <FontAwesomeIcon icon={faCaretDown} className="text-gray-400" />
+      <div className="flex shrink-0 items-center gap-2 px-3 py-2">
+        <FilterBar />
+        <BreadcrumbTrail />
+        {mediaIndicesStack.length > 1 && !showSaveForm && (
+          <button
+            onClick={() => setShowSaveForm(true)}
+            className="flex shrink-0 items-center gap-1 rounded-md border border-gray-200 px-2 py-1 text-[11px] text-gray-600 transition-colors hover:border-gray-400 hover:text-gray-900"
+            title="Save selection as new view"
+          >
+            <FontAwesomeIcon icon={faFloppyDisk} className="h-3 w-3" />
+            Save as view
+          </button>
+        )}
+        {showSaveForm && !savedViewUuid && (
+          <form
+            className="flex shrink-0 items-center gap-1.5"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setSaving(true);
+              try {
+                const { uuid: newUuid } = await saveView(uuid, mediaIndices, saveTitle.trim() || undefined);
+                setSavedViewUuid(newUuid);
+              } catch { /* ignore */ }
+              setSaving(false);
+            }}
+          >
+            <input
+              autoFocus
+              type="text"
+              value={saveTitle}
+              onChange={(e) => setSaveTitle(e.target.value)}
+              placeholder="View name..."
+              className="w-40 rounded-md border border-gray-200 px-2 py-1 text-[11px] text-gray-700 focus:border-gray-400 focus:outline-none"
+              onKeyDown={(e) => { if (e.key === "Escape") { setShowSaveForm(false); setSaveTitle(""); } }}
+            />
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-md bg-gray-800 px-2 py-1 text-[11px] font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
+            >
+              {saving ? "Saving..." : "Save"}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setShowSaveForm(false); setSaveTitle(""); }}
+              className="rounded-md px-2 py-1 text-[11px] text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            >
+              Cancel
+            </button>
+          </form>
+        )}
+        {savedViewUuid && (
+          <div className="flex shrink-0 items-center gap-2">
+            <span className="text-[11px] text-green-600">Saved!</span>
+            <button
+              onClick={() => {
+                resetBreadcrumbs();
+                setGridValues({ sortBy: "", asc: true, page: 0, numberOfColumns: 5, showColumnValues: [], showBboxLabel: false, subsample: 0 });
+                setMediaItems([]);
+                setFilters([]);
+                setSimilarityResults({});
+                setUuid(savedViewUuid);
+                setShowPage("grid");
+                setShowSaveForm(false);
+                setSaveTitle("");
+                setSavedViewUuid(null);
+              }}
+              className="rounded-md px-2 py-1 text-[11px] text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-800"
+            >
+              Open view
+            </button>
+            <button
+              onClick={() => { setShowSaveForm(false); setSaveTitle(""); setSavedViewUuid(null); }}
+              className="rounded-md px-2 py-1 text-[11px] text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            >
+              Dismiss
+            </button>
           </div>
         )}
       </div>
-      {showLabelPanel && <div className="mx-3"><LabelPanel onHide={() => setShowLabelPanel(false)} /></div>}
 
       {/* Media grid */}
       <div
-        className="grid items-end gap-3 p-3"
-        style={{
-          maxHeight: "calc(100vh - 80px)",
-          overflowY: "scroll",
-          gridTemplateColumns: `repeat(${gridValues.numberOfColumns}, minmax(0, 1fr))`,
-        }}
+        className="min-h-0 flex-1 overflow-y-auto p-3"
       >
-        {mediaItems.map((media) => (
-          <div key={media.index} style={{ contentVisibility: "auto" }}>
-            <MediaGridItem
-              media={media}
-              columns={gridValues.numberOfColumns}
-              showColumns={gridValues.showColumnValues}
-              boundingBoxColumn={config.bounding_box}
-              showBboxLabel={gridValues.showBboxLabel}
-              display={config.display}
-              onClick={() => handleClick(media.index)}
-              onHover={() => handleHover(media.index)}
-              onLabelToggle={(label) => handleLabelToggle(media, label)}
-            />
-          </div>
-        ))}
+        <div
+          className="grid items-end gap-3"
+          style={{
+            gridTemplateColumns: `repeat(${gridValues.numberOfColumns}, minmax(0, 1fr))`,
+          }}
+        >
+          {mediaItems.map((media) => (
+            <div key={media.index} style={{ contentVisibility: "auto" }}>
+              <MediaGridItem
+                media={media}
+                columns={gridValues.numberOfColumns}
+                showColumns={gridValues.showColumnValues}
+                boundingBoxColumn={config.bounding_box}
+                showBboxLabel={gridValues.showBboxLabel}
+                display={config.display}
+                onClick={(e) => handleClick(media.index, e)}
+                onHover={() => handleHover(media.index)}
+                onLabelToggle={(label) => handleLabelToggle(media, label)}
+                onExclude={isActive ? () => handleExclude(media) : undefined}
+                selected={selectedMedia.has(media.index)}
+                anySelected={selectedMedia.size > 0}
+                onSelect={(e) => handleSelect(media.index, e)}
+              />
+            </div>
+          ))}
+        </div>
       </div>
+      </div>
+      <SelectionActionBar
+        count={selectedMedia.size}
+        onClear={() => setSelectedMedia(new Set())}
+        onLabel={handleSelectionLabel}
+        onRemoveLabel={handleSelectionRemoveLabel}
+        onFindSimilar={config.embeddings ? handleSelectionFindSimilar : undefined}
+      />
+      {focusMode && (
+        <FocusMode
+          mediaIndices={effectiveIndices}
+          onLabelToggle={handleLabelToggle}
+          onExit={() => {
+            setFocusMode(false);
+            loadMedia();
+          }}
+        />
+      )}
     </ResizableLayout>
   );
 }

@@ -18,6 +18,7 @@ import dataclasses
 import os
 import socket
 import webbrowser
+from datetime import datetime, timezone
 from functools import partial
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -86,6 +87,23 @@ def get_local_port() -> int:
     return sock.getsockname()[1]
 
 
+def _register_view_with_project(
+    uuid: str, cfg: Config, backend: Any
+) -> None:
+    """Register a view UUID with its project manifest."""
+    project = cfg.project
+    assert project is not None
+    now = datetime.now(timezone.utc).isoformat()
+    if backend.project_json_exists(project, "project.json"):
+        manifest = backend.load_project_json(project, "project.json")
+    else:
+        manifest = {"name": project, "created_at": now, "views": []}
+    manifest["views"].append(
+        {"uuid": uuid, "type": cfg.type, "created_at": now}
+    )
+    backend.save_project_json(project, "project.json", manifest)
+
+
 class Plot:
     """
     A class representing a plot with a unique identifier, data, and configuration.
@@ -152,17 +170,50 @@ class Plot:
         # copy dataframe to not change original input
         df = df.copy()
         uuid = str(uuid4())
-        if not str(df[cfg.media].iloc[0]).startswith("http") and not str(df[cfg.media].iloc[0]).startswith("s3://"):
-            # assume all media paths are local and replace with /media
-            common_media_path = os.path.commonpath(df[cfg.media].tolist())
+        if not str(df[cfg.media].iloc[0]).startswith("http") and not str(
+            df[cfg.media].iloc[0]
+        ).startswith("s3://"):
+            # Find common media path using a sample to avoid materializing
+            # millions of path strings into a Python list
+            step = max(1, len(df) // 1000)
+            sample_paths = df[cfg.media].iloc[::step].tolist()
+            common_media_path = os.path.commonpath(sample_paths)
             if os.path.isfile(common_media_path):
                 common_media_path = os.path.dirname(common_media_path)
             # store common media path in config
             cfg.common_media_path = common_media_path
-            df[cfg.media] = df[cfg.media].astype(str).str.replace(str(common_media_path), "/media")
+            df[cfg.media] = (
+                df[cfg.media].astype(str).str.replace(str(common_media_path), "/media")
+            )
             APP.mount("/media", StaticFiles(directory=common_media_path), name="media")
+            # Also register for the catch-all media handler
+            from clusterfun.main import register_media_directory
+            register_media_directory(common_media_path)
         LocalStorer().save(uuid, df, cfg)
-        return cls(uuid, df.to_dict(), cfg)
+
+        # If this view belongs to a project, register it and write id-to-path mapping
+        if cfg.project:
+            import pyarrow as pa
+
+            backend = get_backend()
+            _register_view_with_project(uuid, cfg, backend)
+            # Save id-to-path mapping as Parquet (compact) instead of JSON
+            # (a 10M-entry JSON would be ~1.5GB; Parquet is ~50MB).
+            # The ProjectLabelManager has a fallback that queries the DB
+            # directly if this file doesn't exist, so older code still works.
+            id_path_df = pd.DataFrame({
+                "id": range(len(df)),
+                "path": df[cfg.media].astype(str).str.replace(
+                    "/media", cfg.common_media_path or "", 1
+                ) if cfg.common_media_path else df[cfg.media].astype(str),
+            })
+            table = pa.Table.from_pandas(id_path_df, preserve_index=False)
+            backend.save_parquet_named(uuid, "id_to_path.parquet", table)
+
+        # Return with empty data dict — plot data is served from data.json
+        # on disk, not from this object. Avoids converting the entire
+        # DataFrame to a Python dict (which would be ~5GB at 10M rows).
+        return cls(uuid, {}, cfg)
 
     @classmethod
     def load(cls, uuid: str, cache_dir: Optional[Path] = None) -> "Plot":
@@ -215,7 +266,9 @@ class Plot:
             "config": dataclasses.asdict(self.cfg),
         }
 
-    def show(self, open_browser: bool = True, common_media_path: Optional[str] = None) -> Path:
+    def show(
+        self, open_browser: bool = True, common_media_path: Optional[str] = None
+    ) -> Path:
         """
         Display the plot in a web browser and return the cache directory path.
 

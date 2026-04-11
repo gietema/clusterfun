@@ -9,7 +9,13 @@ const OPERATOR_OPTIONS: DropdownOption[] = [
   { value: "<=", label: "≤" },
   { value: "IN", label: "IN" },
   { value: "NOT IN", label: "NOT IN" },
+  { value: "COL =", label: "= column" },
+  { value: "COL !=", label: "≠ column" },
 ];
+
+function isColumnComparison(comparison: string): boolean {
+  return comparison === "COL =" || comparison === "COL !=";
+}
 
 interface FilterRowProps {
   filter: Filter;
@@ -19,6 +25,8 @@ interface FilterRowProps {
 }
 
 export default function FilterRow({ filter, columns, onChange, onRemove }: FilterRowProps) {
+  const colComparison = isColumnComparison(filter.comparison);
+
   return (
     <div className="mb-2 rounded-lg border border-gray-200 p-3">
       <div className="mb-2 text-right">
@@ -36,14 +44,22 @@ export default function FilterRow({ filter, columns, onChange, onRemove }: Filte
           <ColumnDropdown
             options={OPERATOR_OPTIONS}
             selected={filter.comparison}
-            onChange={(op) => onChange({ ...filter, comparison: op })}
+            onChange={(op) => onChange({ ...filter, comparison: op, values: [] })}
           />
         </div>
         <div className="flex-grow">
-          <FilterValueInput
-            filter={filter}
-            onValueChange={(values) => onChange({ ...filter, values })}
-          />
+          {colComparison ? (
+            <ColumnDropdown
+              options={columns.filter((c) => c.value !== filter.column)}
+              selected={filter.values[0] ?? ""}
+              onChange={(col) => onChange({ ...filter, values: [col] })}
+            />
+          ) : (
+            <FilterValueInput
+              filter={filter}
+              onValueChange={(values) => onChange({ ...filter, values })}
+            />
+          )}
         </div>
       </div>
     </div>

@@ -1,35 +1,46 @@
 "use client";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
-  dataAtom, filtersAtom, gridValuesAtom,
-  mediaIndicesStackAtom, showPageAtom, uuidAtom,
+  dataAtom, filtersAtom, gridValuesAtom, uuidAtom,
 } from "@/app/store/atoms";
 import { fetchFilteredPlotData } from "@/app/lib/api";
+import type { Filter } from "@/app/types";
 import FiltersManager from "./FiltersManager";
+
+function isComplete(f: Filter): boolean {
+  return f.column !== "" && f.comparison !== "" && f.values.length > 0;
+}
 
 export default function FilterBar() {
   const [filters] = useAtom(filtersAtom);
   const uuid = useAtomValue(uuidAtom);
   const setPlotData = useSetAtom(dataAtom);
-  const showPage = useAtomValue(showPageAtom);
   const setGridValues = useSetAtom(gridValuesAtom);
-  const [mediaIndices, setMediaIndices] = useAtom(mediaIndicesStackAtom);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
+  // When filters change, update the plot data (for plot view) and reset page.
+  // The grid view passes filters server-side via fetchMediaItems — no need
+  // to push IDs or crumbs here. The constraint bar handles display.
   useEffect(() => {
-    fetchFilteredPlotData(uuid, filters)
-      .then((data) => {
-        if (!data) return;
-        setPlotData(data);
-        const indices = data.flatMap((d) => d.id ?? []);
-        if (mediaIndices.length > 0) {
-          const filtered = indices.filter((i: number) => mediaIndices[0].includes(i));
-          setMediaIndices((prev) => [...prev, filtered]);
-        }
-        setGridValues((prev) => ({ ...prev, page: 0 }));
-      })
-      .catch(console.error);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    const completeFilters = filters.filter(isComplete);
+
+    debounceRef.current = setTimeout(() => {
+      fetchFilteredPlotData(uuid, completeFilters)
+        .then((data) => {
+          if (data) setPlotData(data);
+        })
+        .catch(console.error);
+      setGridValues((prev) => ({ ...prev, page: 0 }));
+    }, 300);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return <FiltersManager />;
+  // Always hide pills — the constraint bar shows active filters
+  return <FiltersManager hidePills />;
 }

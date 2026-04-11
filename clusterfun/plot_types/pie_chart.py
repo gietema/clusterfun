@@ -32,7 +32,9 @@ from clusterfun.storage.local.helpers import get_columns_for_db
 from clusterfun.validation import validate
 
 
-def generate_polar_coordinates(count: int, start: float, ratio: float) -> Tuple[np.ndarray, np.ndarray]:
+def generate_polar_coordinates(
+    count: int, start: float, ratio: float
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Generate polar coordinates for a given number of points, start angle, and ratio.
 
@@ -85,7 +87,9 @@ def update_coordinates(
     return df
 
 
-def compute_pie_chart_coordinates(df: pd.DataFrame, color: str, counts: Dict[str, float]):
+def compute_pie_chart_coordinates(
+    df: pd.DataFrame, color: str, counts: Dict[str, float]
+):
     """
     Compute the pie chart coordinates for a given DataFrame, color column, and counts dictionary.
 
@@ -116,7 +120,9 @@ def compute_pie_chart_coordinates(df: pd.DataFrame, color: str, counts: Dict[str
     return df
 
 
-def format_color(df: pd.DataFrame, color: str, counts: Dict[str, float]) -> pd.DataFrame:
+def format_color(
+    df: pd.DataFrame, color: str, counts: Dict[str, float]
+) -> pd.DataFrame:
     """
     Format the 'color' column in the DataFrame based on the provided counts dictionary.
     The color column values are replaced with formatted strings containing the group index, the original group name,
@@ -136,7 +142,12 @@ def format_color(df: pd.DataFrame, color: str, counts: Dict[str, float]) -> pd.D
     pd.DataFrame
         The updated DataFrame with the formatted 'color' column.
     """
-    df[color] = df[color].map({name: f"{i} - {name} ({count:.01%})" for i, (name, count) in enumerate(counts.items())})
+    df[color] = df[color].map(
+        {
+            name: f"{i} - {name} ({count:.01%})"
+            for i, (name, count) in enumerate(counts.items())
+        }
+    )
     df = df.sort_values(color)
     return df
 
@@ -149,6 +160,9 @@ def pie_chart(  # pylint: disable=too-many-arguments,missing-function-docstring
     title: Optional[str] = None,
     show: bool = True,
     display: Optional[Union[str, List[str]]] = None,
+    embeddings: Optional[str] = None,
+    embeddings_model: Optional[str] = None,
+    project: Optional[str] = None,
 ) -> Path:
     counts = df[color].value_counts(True).to_dict()
     df = compute_pie_chart_coordinates(df, color, counts)
@@ -159,11 +173,21 @@ def pie_chart(  # pylint: disable=too-many-arguments,missing-function-docstring
         x="pie_chart_x",
         y="pie_chart_y",
         media=media,
-        columns=get_columns_for_db(df=df, media=media, plot_type="pie_chart", x="pie_chart_x", y="pie_chart_y"),
+        columns=get_columns_for_db(
+            df=df,
+            media=media,
+            plot_type="pie_chart",
+            x="pie_chart_x",
+            y="pie_chart_y",
+            embeddings=embeddings,
+        ),
         color=color,
         bounding_box=bounding_box,
         title=title,
         display=display,
+        embeddings=embeddings,
+        embeddings_model=embeddings_model,
+        project=project,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

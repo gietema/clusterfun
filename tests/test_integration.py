@@ -35,8 +35,10 @@ def local_backend(tmp_path, monkeypatch):
     backends_module._backend = None
     # Clear filter validation caches to prevent stale data between tests
     from clusterfun.models.filter import _column_values_cache
+
     _column_values_cache.clear()
     from clusterfun.storage.data_loader import _config_cache
+
     _config_cache.clear()
 
 
@@ -48,16 +50,19 @@ def client():
 def _save_scatter(backend, uuid=None, n=50):
     if uuid is None:
         import uuid as _uuid
+
         uuid = str(_uuid.uuid4())
     """Helper: save a scatter plot with numeric + categorical columns."""
     np.random.seed(42)
-    df = pd.DataFrame({
-        "img_path": [f"https://example.com/img_{i}.jpg" for i in range(n)],
-        "x_val": np.random.uniform(0, 100, n).tolist(),
-        "y_val": np.random.uniform(0, 100, n).tolist(),
-        "category": np.random.choice(["cat", "dog", "bird"], n).tolist(),
-        "score": np.random.uniform(0, 1, n).tolist(),
-    })
+    df = pd.DataFrame(
+        {
+            "img_path": [f"https://example.com/img_{i}.jpg" for i in range(n)],
+            "x_val": np.random.uniform(0, 100, n).tolist(),
+            "y_val": np.random.uniform(0, 100, n).tolist(),
+            "category": np.random.choice(["cat", "dog", "bird"], n).tolist(),
+            "score": np.random.uniform(0, 1, n).tolist(),
+        }
+    )
     cfg = Config(
         type="scatter",
         media="img_path",
@@ -78,12 +83,21 @@ def _save_scatter(backend, uuid=None, n=50):
 class TestPlotCreation:
     def test_scatter_creates_parquet(self, local_backend):
         path = scatter(
-            pd.DataFrame({
-                "x": [1.0, 2.0, 3.0],
-                "y": [4.0, 5.0, 6.0],
-                "media": ["https://example.com/a.jpg", "https://example.com/b.jpg", "https://example.com/c.jpg"],
-            }),
-            x="x", y="y", media="media", show=False,
+            pd.DataFrame(
+                {
+                    "x": [1.0, 2.0, 3.0],
+                    "y": [4.0, 5.0, 6.0],
+                    "media": [
+                        "https://example.com/a.jpg",
+                        "https://example.com/b.jpg",
+                        "https://example.com/c.jpg",
+                    ],
+                }
+            ),
+            x="x",
+            y="y",
+            media="media",
+            show=False,
         )
         assert (path / "data.parquet").exists()
         assert (path / "config.json").exists()
@@ -91,8 +105,17 @@ class TestPlotCreation:
 
     def test_grid_creates_parquet(self, local_backend):
         path = grid(
-            pd.DataFrame({"media": ["https://example.com/a.jpg", "https://example.com/b.jpg", "https://example.com/c.jpg"]}),
-            media="media", show=False,
+            pd.DataFrame(
+                {
+                    "media": [
+                        "https://example.com/a.jpg",
+                        "https://example.com/b.jpg",
+                        "https://example.com/c.jpg",
+                    ]
+                }
+            ),
+            media="media",
+            show=False,
         )
         assert (path / "data.parquet").exists()
         assert (path / "config.json").exists()
@@ -100,23 +123,34 @@ class TestPlotCreation:
 
     def test_histogram_creates_parquet(self, local_backend):
         path = histogram(
-            pd.DataFrame({
-                "x": np.random.normal(size=100).tolist(),
-                "media": [f"https://example.com/img_{i}.jpg" for i in range(100)],
-            }),
-            x="x", media="media", show=False,
+            pd.DataFrame(
+                {
+                    "x": np.random.normal(size=100).tolist(),
+                    "media": [f"https://example.com/img_{i}.jpg" for i in range(100)],
+                }
+            ),
+            x="x",
+            media="media",
+            show=False,
         )
         assert (path / "data.parquet").exists()
         assert (path / "config.json").exists()
         assert (path / "data.json").exists()
 
     def test_scatter_with_color(self, local_backend):
-        df = pd.DataFrame({
-            "x": [1.0, 2.0, 3.0, 4.0],
-            "y": [4.0, 5.0, 6.0, 7.0],
-            "color": ["a", "b", "a", "b"],
-            "media": ["https://example.com/a.jpg", "https://example.com/b.jpg", "https://example.com/c.jpg", "https://example.com/d.jpg"],
-        })
+        df = pd.DataFrame(
+            {
+                "x": [1.0, 2.0, 3.0, 4.0],
+                "y": [4.0, 5.0, 6.0, 7.0],
+                "color": ["a", "b", "a", "b"],
+                "media": [
+                    "https://example.com/a.jpg",
+                    "https://example.com/b.jpg",
+                    "https://example.com/c.jpg",
+                    "https://example.com/d.jpg",
+                ],
+            }
+        )
         path = scatter(df, x="x", y="y", media="media", color="color", show=False)
         assert (path / "data.parquet").exists()
 
@@ -161,10 +195,11 @@ class TestGridBrowsing:
         assert "x_val" in item.information
 
     def test_empty_media_ids(self, local_backend):
+        """Empty media_ids means 'all items' (paginated)."""
         uuid, _ = _save_scatter(local_backend, n=10)
         loader = DataLoader(uuid, local_backend)
         items = loader.get_rows(MediaIndices(media_ids=[]))
-        assert items == []
+        assert len(items) == 10
 
     def test_get_rows_metadata(self, local_backend):
         uuid, _ = _save_scatter(local_backend, n=10)
@@ -187,6 +222,90 @@ class TestGridBrowsing:
         items = loader.get_rows(indices)
         x_vals = [item.information["x_val"] for item in items]
         assert x_vals == sorted(x_vals)
+
+
+class TestSubsample:
+    """Test that grid sampling (via subsample of IDs) works correctly."""
+
+    def test_subsample_returns_subset(self, local_backend, client):
+        """Fetching a random subset of IDs returns only those items."""
+        uuid, _ = _save_scatter(local_backend, n=200)
+        # Simulate a 5% subsample: pick 10 random IDs
+        import random
+        random.seed(42)
+        subset = sorted(random.sample(range(200), 10))
+
+        resp = client.post(
+            f"/api/views/{uuid}/media",
+            json={"media_ids": subset, "page": 0},
+        )
+        assert resp.status_code == 200
+        items = resp.json()
+        assert len(items) == 10
+        returned_ids = {item["index"] for item in items}
+        assert returned_ids == set(subset)
+
+    def test_subsample_preserves_order(self, local_backend, client):
+        """Subsampled IDs should be returned in the requested order."""
+        uuid, _ = _save_scatter(local_backend, n=100)
+        subset = [50, 10, 90, 30, 70]
+
+        resp = client.post(
+            f"/api/views/{uuid}/media",
+            json={"media_ids": subset, "page": 0},
+        )
+        assert resp.status_code == 200
+        items = resp.json()
+        returned_ids = [item["index"] for item in items]
+        assert returned_ids == subset
+
+    def test_subsample_with_pagination(self, local_backend, client):
+        """Large subsamples should be paginated correctly."""
+        uuid, _ = _save_scatter(local_backend, n=200)
+        subset = list(range(0, 200, 2))  # 100 even IDs
+
+        page0 = client.post(
+            f"/api/views/{uuid}/media",
+            json={"media_ids": subset, "page": 0},
+        ).json()
+        page1 = client.post(
+            f"/api/views/{uuid}/media",
+            json={"media_ids": subset, "page": 1},
+        ).json()
+
+        assert len(page0) == 50
+        assert len(page1) == 50
+        page0_ids = {item["index"] for item in page0}
+        page1_ids = {item["index"] for item in page1}
+        assert page0_ids.isdisjoint(page1_ids)
+        assert page0_ids | page1_ids == set(subset)
+
+    def test_grid_total_count_in_config(self, local_backend, client):
+        """Grid views should include total_count in config."""
+        uuid, _ = _save_scatter(local_backend, n=75)
+        resp = client.get(f"/api/views/{uuid}/config")
+        assert resp.status_code == 200
+        config = resp.json()
+        assert config["total_count"] == 75
+
+    def test_filtered_count(self, local_backend, client):
+        """Filtered count endpoint returns correct count."""
+        uuid, _ = _save_scatter(local_backend, n=50)
+        # Filter to category = "cat"
+        resp = client.post(
+            f"/api/views/{uuid}/count",
+            json={"filters": [{"column": "category", "comparison": "=", "values": ["cat"]}]},
+        )
+        assert resp.status_code == 200
+        count = resp.json()["count"]
+        assert 0 < count < 50  # some items match, not all
+
+    def test_filtered_count_no_filters(self, local_backend, client):
+        """Count with no filters returns total count."""
+        uuid, _ = _save_scatter(local_backend, n=50)
+        resp = client.post(f"/api/views/{uuid}/count", json={"filters": []})
+        assert resp.status_code == 200
+        assert resp.json()["count"] == 50
 
 
 # ---------------------------------------------------------------------------
@@ -215,7 +334,9 @@ class TestFiltering:
         loader = DataLoader(uuid, local_backend)
         from clusterfun.models.filter import Filter
 
-        result = loader.filter([Filter(column="category", comparison="=", values=["cat"])])
+        result = loader.filter(
+            [Filter(column="category", comparison="=", values=["cat"])]
+        )
         all_ids = []
         for trace in result:
             all_ids.extend(trace.get("id", []))
@@ -278,7 +399,7 @@ class TestLabels:
     def test_save_and_read_labels(self, local_backend, client):
         uuid, _ = _save_scatter(local_backend, n=10)
         # Save label
-        resp = client.post(
+        client.post(
             f"/api/views/{uuid}/label",
             json={"title": "good"},
             params={"media_indices": ""},  # not used this way
@@ -546,13 +667,14 @@ class TestErrorHandling:
         assert len(all_ids) == 0
 
     def test_empty_media_ids_via_api(self, local_backend, client):
+        """Empty media_ids returns all items (paginated)."""
         uuid, _ = _save_scatter(local_backend, n=10)
         resp = client.post(
             f"/api/views/{uuid}/media",
             json={"media_ids": [], "page": 0},
         )
         assert resp.status_code == 200
-        assert resp.json() == []
+        assert len(resp.json()) == 10
 
 
 # ---------------------------------------------------------------------------
@@ -565,13 +687,15 @@ class TestDataEdgeCases:
         import uuid as _uuid
 
         uid = str(_uuid.uuid4())
-        df = pd.DataFrame({
-            "img_path": ["https://example.com/img_0.jpg"],
-            "x_val": [42.0],
-            "y_val": [7.0],
-            "category": ["cat"],
-            "score": [0.9],
-        })
+        df = pd.DataFrame(
+            {
+                "img_path": ["https://example.com/img_0.jpg"],
+                "x_val": [42.0],
+                "y_val": [7.0],
+                "category": ["cat"],
+                "score": [0.9],
+            }
+        )
         cfg = Config(
             type="scatter",
             media="img_path",
@@ -595,13 +719,15 @@ class TestDataEdgeCases:
 
         uid = str(_uuid.uuid4())
         x_vals = [float("nan") if i % 5 == 0 else float(i) for i in range(20)]
-        df = pd.DataFrame({
-            "img_path": [f"https://example.com/img_{i}.jpg" for i in range(20)],
-            "x_val": x_vals,
-            "y_val": [float(i) for i in range(20)],
-            "category": ["cat"] * 20,
-            "score": [0.5] * 20,
-        })
+        df = pd.DataFrame(
+            {
+                "img_path": [f"https://example.com/img_{i}.jpg" for i in range(20)],
+                "x_val": x_vals,
+                "y_val": [float(i) for i in range(20)],
+                "category": ["cat"] * 20,
+                "score": [0.5] * 20,
+            }
+        )
         cfg = Config(
             type="scatter",
             media="img_path",
@@ -625,13 +751,15 @@ class TestDataEdgeCases:
 
         uid = str(_uuid.uuid4())
         categories = ["cat", None, "dog", None, "bird"] * 4
-        df = pd.DataFrame({
-            "img_path": [f"https://example.com/img_{i}.jpg" for i in range(20)],
-            "x_val": [float(i) for i in range(20)],
-            "y_val": [float(i) for i in range(20)],
-            "category": categories,
-            "score": [0.5] * 20,
-        })
+        df = pd.DataFrame(
+            {
+                "img_path": [f"https://example.com/img_{i}.jpg" for i in range(20)],
+                "x_val": [float(i) for i in range(20)],
+                "y_val": [float(i) for i in range(20)],
+                "category": categories,
+                "score": [0.5] * 20,
+            }
+        )
         cfg = Config(
             type="scatter",
             media="img_path",
@@ -654,13 +782,15 @@ class TestDataEdgeCases:
         import uuid as _uuid
 
         uid = str(_uuid.uuid4())
-        df = pd.DataFrame({
-            "img_path": [f"https://example.com/img_{i}.jpg" for i in range(10)],
-            "x_val": [5.0] * 10,
-            "y_val": [float(i) for i in range(10)],
-            "category": ["cat"] * 10,
-            "score": [0.5] * 10,
-        })
+        df = pd.DataFrame(
+            {
+                "img_path": [f"https://example.com/img_{i}.jpg" for i in range(10)],
+                "x_val": [5.0] * 10,
+                "y_val": [float(i) for i in range(10)],
+                "category": ["cat"] * 10,
+                "score": [0.5] * 10,
+            }
+        )
         cfg = Config(
             type="scatter",
             media="img_path",
@@ -685,11 +815,13 @@ class TestDataEdgeCases:
         import uuid as _uuid
 
         uid = str(_uuid.uuid4())
-        df = pd.DataFrame({
-            "img_path": [f"https://example.com/img_{i}.jpg" for i in range(5)],
-            "my column": [float(i) for i in range(5)],
-            "score": [0.1 * i for i in range(5)],
-        })
+        df = pd.DataFrame(
+            {
+                "img_path": [f"https://example.com/img_{i}.jpg" for i in range(5)],
+                "my column": [float(i) for i in range(5)],
+                "score": [0.1 * i for i in range(5)],
+            }
+        )
         # Use a grid plot type so the column with a space is not referenced by
         # name in the save-time SQL (grid only selects id at save time).
         cfg = Config(
@@ -787,9 +919,49 @@ class TestFactoryAndRecent:
 # ---------------------------------------------------------------------------
 
 
+class TestLocalMediaServing:
+    """Images stored on local disk should be served via /media/ static mount."""
+
+    def test_local_images_served_via_media_route(self, local_backend, client, tmp_path):
+        # Create local image files in two subdirs (to get common_media_path as parent)
+        img_dir_a = tmp_path / "test_images" / "classA"
+        img_dir_b = tmp_path / "test_images" / "classB"
+        img_dir_a.mkdir(parents=True)
+        img_dir_b.mkdir(parents=True)
+        img_a = img_dir_a / "dog.jpg"
+        img_a.write_bytes(b"\xff\xd8\xff\xe0" + b"\x00" * 100)
+        img_b = img_dir_b / "cat.jpg"
+        img_b.write_bytes(b"\xff\xd8\xff\xe0" + b"\x00" * 50)
+
+        # Reset media dirs from previous tests
+        from clusterfun.main import _media_dirs
+        _media_dirs.clear()
+
+        # Create a grid view pointing to local images
+        df = pd.DataFrame({"image": [str(img_a), str(img_b)]})
+        path = grid(df, media="image", show=False)
+        uuid = path.stem
+
+        # Verify common_media_path is the parent "test_images" dir
+        cfg = local_backend.load_json(uuid, "config.json")
+        assert cfg["common_media_path"].endswith("test_images")
+
+        # Load the view
+        resp = client.get(f"/api/views/{uuid}")
+        assert resp.status_code == 200
+
+        # Images should be accessible via /media/<class>/<file>
+        resp = client.get("/media/classA/dog.jpg")
+        assert resp.status_code == 200, f"Expected 200, got {resp.status_code}"
+        assert len(resp.content) == 104
+
+        resp = client.get("/media/classB/cat.jpg")
+        assert resp.status_code == 200
+        assert len(resp.content) == 54
+
+
 class TestConfigCaching:
     def test_config_cache_returns_same_object(self, local_backend):
-        from clusterfun.storage.data_loader import _config_cache
 
         uuid, _ = _save_scatter(local_backend, n=5)
         loader = DataLoader(uuid, local_backend)

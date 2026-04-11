@@ -30,13 +30,16 @@ def scatter(
     display: Optional[Union[str, List[str]]] = None,
     hline: Optional[float] = None,
     vline: Optional[float] = None,
+    embeddings: Optional[str] = None,
+    embeddings_model: Optional[str] = None,
+    project: Optional[str] = None,
 ):  # pylint: disable=too-many-arguments,missing-function-docstring
     cfg = Config(
         type="scatter",
         x=x,
         y=y,
         media=media,
-        columns=get_columns_for_db(df, media, "scatter", x, y),
+        columns=get_columns_for_db(df, media, "scatter", x, y, embeddings=embeddings),
         color=color,
         bounding_box=bounding_box,
         title=title,
@@ -44,6 +47,9 @@ def scatter(
         display=display,
         vline=vline,
         hline=hline,
+        embeddings=embeddings,
+        embeddings_model=embeddings_model,
+        project=project,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

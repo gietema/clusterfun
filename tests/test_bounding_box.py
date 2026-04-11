@@ -25,4 +25,12 @@ def test_bounding_box():
         for _ in range(len(df))
     ]
 
-    print(clt.grid(df, media="image", bounding_box="bbox_1", title="test bounding box", show=False))
+    print(
+        clt.grid(
+            df,
+            media="image",
+            bounding_box="bbox_1",
+            title="test bounding box",
+            show=False,
+        )
+    )

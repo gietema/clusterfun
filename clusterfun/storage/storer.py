@@ -41,6 +41,7 @@ def image_to_base64(image: Image.Image) -> str:
     return str(base64.b64encode(buffered.getvalue()).decode("utf-8"))
 
 
+
 def load_media(
     url: str, as_base64: bool = False, common_media_path: Optional[str] = None
 ) -> Tuple[str, Optional[int], Optional[int]]:
@@ -70,7 +71,11 @@ def load_media(
         try:
             image_bytes_or_str = storage_client.get_media_to_local(url)
             image = Image.open(image_bytes_or_str)
-            return f"data:image/png;base64, {image_to_base64(image)}", image.height, image.width
+            return (
+                f"data:image/png;base64, {image_to_base64(image)}",
+                image.height,
+                image.width,
+            )
         except Exception:
             # Fall back to URL if image can't be loaded (e.g. unreachable URL,
             # non-image response, unsupported format)

@@ -30,14 +30,20 @@ def grid(  # pylint: disable=missing-function-docstring, too-many-arguments
     bounding_box: Optional[str] = None,
     show: bool = True,
     display: Optional[Union[str, List[str]]] = None,
+    embeddings: Optional[str] = None,
+    embeddings_model: Optional[str] = None,
+    project: Optional[str] = None,
 ) -> Path:  # pylint: disable=too-many-arguments
     cfg = Config(
         type="grid",
         media=media,
         bounding_box=bounding_box,
-        columns=get_columns_for_db(df, media, "grid"),
+        columns=get_columns_for_db(df, media, "grid", embeddings=embeddings),
         title=title,
         display=display,
+        embeddings=embeddings,
+        embeddings_model=embeddings_model,
+        project=project,
     )
     validate(df, cfg)
     return Plot.save(df, cfg).show(show)

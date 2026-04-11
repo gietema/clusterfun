@@ -37,5 +37,7 @@ def get_storage_client(uri: str, common_media_path: Optional[str]) -> BaseStorag
 
     """
     start_uri = uri.split(":")[0]
-    storage_client = CLIENT_REGISTRY.get(start_uri, LocalStorageClient)(common_media_path)
+    storage_client = CLIENT_REGISTRY.get(start_uri, LocalStorageClient)(
+        common_media_path
+    )
     return cast(BaseStorageClient, storage_client)

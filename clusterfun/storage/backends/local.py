@@ -16,7 +16,9 @@ class LocalBackend(StorageBackend):
     def __init__(self, cache_dir: Optional[Path] = None):
         if cache_dir is None:
             cache_dir = Path(
-                os.environ.get("CLUSTERFUN_CACHE_DIR", os.path.expanduser("~/.cache/clusterfun"))
+                os.environ.get(
+                    "CLUSTERFUN_CACHE_DIR", os.path.expanduser("~/.cache/clusterfun")
+                )
             )
         self.cache_dir = cache_dir
 
@@ -35,7 +37,11 @@ class LocalBackend(StorageBackend):
         path = self.cache_dir / uuid / filename
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "wb") as f:
-            f.write(orjson.dumps(data, option=orjson.OPT_NAIVE_UTC | orjson.OPT_SERIALIZE_NUMPY))
+            f.write(
+                orjson.dumps(
+                    data, option=orjson.OPT_NAIVE_UTC | orjson.OPT_SERIALIZE_NUMPY
+                )
+            )
 
     def load_json(self, uuid: str, filename: str) -> Any:
         with open(self.cache_dir / uuid / filename, "rb") as f:
@@ -51,3 +57,43 @@ class LocalBackend(StorageBackend):
         if not self.cache_dir.exists():
             return []
         return [d.name for d in self.cache_dir.iterdir() if d.is_dir()]
+
+    def save_parquet_named(self, uuid: str, filename: str, table: Any) -> None:
+        path = self.cache_dir / uuid / filename
+        path.parent.mkdir(parents=True, exist_ok=True)
+        pq.write_table(table, path, row_group_size=10_000, compression="snappy")
+
+    def get_parquet_uri_named(self, uuid: str, filename: str) -> str:
+        return str(self.cache_dir / uuid / filename)
+
+    # ── Project-level storage ──
+
+    @property
+    def projects_dir(self) -> Path:
+        return self.cache_dir / "projects"
+
+    def save_project_json(self, project: str, filename: str, data: Any) -> None:
+        path = self.projects_dir / project / filename
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "wb") as f:
+            f.write(
+                orjson.dumps(
+                    data, option=orjson.OPT_NAIVE_UTC | orjson.OPT_SERIALIZE_NUMPY
+                )
+            )
+
+    def load_project_json(self, project: str, filename: str) -> Any:
+        with open(self.projects_dir / project / filename, "rb") as f:
+            return orjson.loads(f.read())
+
+    def project_json_exists(self, project: str, filename: str) -> bool:
+        return (self.projects_dir / project / filename).exists()
+
+    def list_projects(self) -> List[str]:
+        if not self.projects_dir.exists():
+            return []
+        return [
+            d.name
+            for d in self.projects_dir.iterdir()
+            if d.is_dir() and (d / "project.json").exists()
+        ]
