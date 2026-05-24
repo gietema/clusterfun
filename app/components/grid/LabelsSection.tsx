@@ -145,7 +145,7 @@ export default function LabelsSection() {
                   style={{ backgroundColor: color }}
                 />
                 <span className="flex-grow truncate text-xs font-medium text-gray-800">{label}</span>
-                <span className="text-[10px] text-gray-400">{idx + 1}</span>
+                <span className="text-[10px] text-gray-500">{idx + 1}</span>
                 {inSel === 0 && inAll === 0 && (
                   <button
                     className="text-gray-300 hover:text-red-500"
@@ -172,7 +172,7 @@ export default function LabelsSection() {
                         Yes
                       </button>
                       <button
-                        className="rounded px-1 py-px text-[10px] text-gray-400 transition-colors hover:text-gray-700"
+                        className="rounded px-1 py-px text-[10px] text-gray-500 transition-colors hover:text-gray-700"
                         onClick={() => setConfirmAction(null)}
                       >
                         No
@@ -180,7 +180,7 @@ export default function LabelsSection() {
                     </span>
                   ) : (
                     <button
-                      className="rounded px-1 py-px text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700"
+                      className="rounded px-1 py-px text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-700"
                       onClick={() => setConfirmAction({ label, action: allOnPageHave ? "remove" : "add" })}
                       title={allOnPageHave ? "Remove from all on page" : "Apply to all on page"}
                     >
@@ -189,7 +189,7 @@ export default function LabelsSection() {
                   )}
                   {inAll > 0 && (
                     <button
-                      className="flex items-center gap-0.5 rounded px-1 py-px text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700"
+                      className="flex items-center gap-0.5 rounded px-1 py-px text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-700"
                       onClick={() => handleShowLabel(label)}
                       title={`Show all ${inAll} items with "${label}"`}
                     >
@@ -220,12 +220,12 @@ export default function LabelsSection() {
         </button>
       </div>
       <div className="mt-1.5 flex items-center justify-between">
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-gray-500">
           Keys 1-9 to label. Ctrl+Z undo. Ctrl+Shift+Z redo.
         </p>
         {totalDataset > 0 && (
           <button
-            className="flex items-center gap-1 text-[10px] text-gray-400 transition-colors hover:text-gray-700"
+            className="flex items-center gap-1 text-[10px] text-gray-500 transition-colors hover:text-gray-700"
             onClick={handleDownload}
             title="Download all labels as CSV"
           >

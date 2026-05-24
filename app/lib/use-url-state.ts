@@ -80,7 +80,7 @@ export function useUrlState() {
 
     const params = new URLSearchParams();
 
-    if (showPage !== "plot") params.set("view", showPage);
+    if (showPage !== "grid") params.set("view", showPage);
     if (gridValues.page > 0) params.set("page", String(gridValues.page));
     if (gridValues.sortBy) params.set("sort", gridValues.sortBy);
     if (!gridValues.asc) params.set("asc", "false");

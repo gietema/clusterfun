@@ -22,7 +22,7 @@ export default function SortDropdown({ columns, gridValues, onSort }: SortDropdo
         ))}
       </select>
       <button
-        className="text-gray-400 transition-colors hover:text-gray-900"
+        className="text-gray-500 transition-colors hover:text-gray-900"
         onClick={() => onSort(gridValues.sortBy, !gridValues.asc)}
       >
         <FontAwesomeIcon icon={gridValues.asc ? faSortAlphaAsc : faSortAlphaDesc} />

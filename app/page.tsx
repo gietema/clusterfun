@@ -21,7 +21,7 @@ export default function Home() {
   return (
     <Provider>
       <Toaster/>
-      <div className="m-2">
+      <div>
         <Previewer
           uuidProp={
             process.env.NODE_ENV === "production" &&

@@ -22,6 +22,7 @@ import {
 } from "@/app/lib/outlier-detection";
 import type { EmbeddingData } from "@/app/lib/active-learning/types";
 import toast from "react-hot-toast";
+import Highlights from "./Highlights";
 
 // ── Mini bar chart (categorical) ──
 
@@ -63,7 +64,7 @@ function MiniBarChart({
         {top.map((d) => (
           <div
             key={d.label}
-            className="min-w-0 flex-1 truncate text-center text-[8px] leading-tight text-gray-400"
+            className="min-w-0 flex-1 truncate text-center text-[8px] leading-tight text-gray-500"
             title={d.label}
           >
             {d.label}
@@ -116,7 +117,7 @@ function MiniHistogram({
         ))}
       </div>
       {min != null && max != null && (
-        <div className="mt-0.5 flex justify-between text-[8px] text-gray-400">
+        <div className="mt-0.5 flex justify-between text-[8px] text-gray-500">
           <span>{min.toFixed(1)}</span>
           <span>{max.toFixed(1)}</span>
         </div>
@@ -167,7 +168,7 @@ function ColumnDetail({
         </div>
         <div className="flex gap-1 overflow-hidden">
           {stats.data.slice(0, 20).map((d) => (
-            <div key={d.label} className="flex-1 truncate text-center text-[9px] text-gray-400" title={d.label}>
+            <div key={d.label} className="flex-1 truncate text-center text-[9px] text-gray-500" title={d.label}>
               {d.label}
             </div>
           ))}
@@ -194,9 +195,9 @@ function ColumnDetail({
                 >
                   <td className="py-1 text-gray-700">{d.label}</td>
                   <td className="py-1 text-right text-gray-600">{d.count.toLocaleString()}</td>
-                  <td className="py-1 text-right text-gray-400">{((d.count / total) * 100).toFixed(1)}%</td>
+                  <td className="py-1 text-right text-gray-500">{((d.count / total) * 100).toFixed(1)}%</td>
                   <td className="py-1 text-right">
-                    <span className="text-[10px] text-gray-400 hover:text-gray-600">view →</span>
+                    <span className="text-[10px] text-gray-500 hover:text-gray-600">view →</span>
                   </td>
                 </tr>
               ))}
@@ -207,7 +208,7 @@ function ColumnDetail({
           <button
             onClick={(e) => { e.stopPropagation(); onLoadMore?.(); }}
             disabled={loadingMore}
-            className="text-xs text-blue-500 hover:text-blue-700 disabled:text-gray-400"
+            className="text-xs text-blue-500 hover:text-blue-700 disabled:text-gray-500"
           >
             {loadingMore ? "Loading..." : `Show more (${stats.data.length} of ${totalUnique})`}
           </button>
@@ -246,15 +247,15 @@ function ColumnDetail({
       </div>
       <div className="grid grid-cols-3 gap-2 text-xs">
         <div className="rounded bg-gray-50 px-2 py-1.5">
-          <div className="text-gray-400">Min</div>
+          <div className="text-gray-500">Min</div>
           <div className="font-medium text-gray-700">{stats.min.toFixed(3)}</div>
         </div>
         <div className="rounded bg-gray-50 px-2 py-1.5">
-          <div className="text-gray-400">Max</div>
+          <div className="text-gray-500">Max</div>
           <div className="font-medium text-gray-700">{stats.max.toFixed(3)}</div>
         </div>
         <div className="rounded bg-gray-50 px-2 py-1.5">
-          <div className="text-gray-400">Range</div>
+          <div className="text-gray-500">Range</div>
           <div className="font-medium text-gray-700">{(stats.max - stats.min).toFixed(3)}</div>
         </div>
       </div>
@@ -667,65 +668,41 @@ export default function InsightsPage() {
   const categoricalCols = visibleColumns.filter((c) => !isNumeric(c.dtype));
   const hasEmbeddings = !!config.embeddings;
 
+  // Image-stats columns already present?
+  const IMG_STAT_COLUMNS = ["img_brightness", "img_contrast", "img_sharpness", "img_colorfulness", "img_saturation", "img_aspect_ratio", "img_width", "img_height"];
+  const hasImageStats = IMG_STAT_COLUMNS.some((c) => columns.some((col) => col.name === c));
+
   return (
-    <div className="h-full overflow-y-auto bg-gray-50">
+    <div className="h-full overflow-y-auto bg-gray-50/50">
       <div className="mx-auto max-w-5xl px-6 py-6">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-lg font-semibold text-gray-900">Dataset Insights</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            {(config.total_count ?? 0).toLocaleString()} items
-            {" \u00b7 "}
-            {visibleColumns.length} columns
-            ({numericCols.length} numeric, {categoricalCols.length} categorical)
-          </p>
+        {/* Header \u2014 gives the page a sense of place */}
+        <div className="mb-6 flex items-baseline justify-between border-b border-gray-200 pb-4">
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight text-gray-900">
+              {config.title || config.project || "Insights"}
+            </h1>
+            <p className="mt-1 text-[13px] text-gray-600">
+              <span className="font-medium text-gray-900">{(config.total_count ?? 0).toLocaleString()}</span> items
+              {" \u00b7 "}
+              <span className="font-medium text-gray-900">{visibleColumns.length}</span> columns
+              {" "}
+              <span className="text-gray-500">({numericCols.length} numeric, {categoricalCols.length} categorical)</span>
+            </p>
+          </div>
         </div>
 
-        {/* Image statistics */}
-        <div className="mb-6 flex items-center gap-3">
-          <button
-            onClick={async () => {
-              try {
-                const status = await computeImageStats(uuid);
-                if (status.status === "already_computed") {
-                  toast("Image statistics already computed");
-                } else {
-                  setBackgroundTasks((prev) => [
-                    ...prev,
-                    {
-                      id: `img-stats-${uuid}`,
-                      type: "image_stats" as const,
-                      viewUuid: uuid,
-                      label: "Image statistics",
-                      status: "running" as const,
-                      progress: 0,
-                      done: 0,
-                      total: 0,
-                      startedAt: Date.now(),
-                    },
-                  ]);
-                  toast("Computing image statistics in background");
-                }
-              } catch {
-                toast.error("Failed to start image stats computation");
-              }
-            }}
-            className="flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-600 transition-colors hover:bg-gray-50"
-          >
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-            </svg>
-            Compute image statistics
-          </button>
-          <span className="text-[11px] text-gray-400">
-            Adds brightness, contrast, sharpness, and other columns
-          </span>
-        </div>
+        {/* Highlights \u2014 auto-detected, hero card */}
+        <Highlights
+          stats={columnStats}
+          totalItems={config.total_count ?? 0}
+          viewByColumnValue={viewByColumnValue}
+          viewByNumericRange={viewByNumericRange}
+        />
 
         {/* Column cards */}
-        <div className="mb-8">
-          <h2 className="mb-3 text-sm font-medium text-gray-700">Column distributions</h2>
-          <p className="mb-3 text-[11px] text-gray-400">Click any bar to view those items in the grid</p>
+        <div className="mb-6">
+          <h2 className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500">Column distributions</h2>
+          <p className="mb-3 text-[11px] text-gray-500">Click any bar to drill into those items in the grid.</p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {visibleColumns.map((col) => {
               const stats = columnStats[col.name];
@@ -767,7 +744,7 @@ export default function InsightsPage() {
                         {isNumeric(col.dtype) ? "num" : "cat"}
                       </span>
                       <svg
-                        className={`h-3 w-3 text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                        className={`h-3 w-3 text-gray-500 transition-transform ${isExpanded ? "rotate-180" : ""}`}
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -777,7 +754,7 @@ export default function InsightsPage() {
                       </svg>
                     </div>
                   </div>
-                  <div className="mb-1 text-[10px] text-gray-400">
+                  <div className="mb-1 text-[10px] text-gray-500">
                     {col.n_unique.toLocaleString()} unique
                   </div>
 
@@ -824,250 +801,82 @@ export default function InsightsPage() {
           </div>
         </div>
 
-        {/* Embedding-powered tools */}
-        {hasEmbeddings && (
-          <div className="mb-8">
-            <h2 className="mb-3 text-sm font-medium text-gray-700">Embedding analysis</h2>
-            <div className="space-y-4">
-              {/* Outliers */}
-              <div className="rounded-lg border border-gray-200 bg-white p-4">
-                <div className="mb-2">
-                  <div className="text-sm font-medium text-gray-800">Outlier detection</div>
-                  <div className="text-xs text-gray-500">
-                    Find items most different from their neighbors using Local Outlier Factor
-                  </div>
+        {/* Computed columns — collapsed disclosure */}
+        <details className="mb-6 rounded-xl border border-gray-200 bg-white shadow-sm">
+          <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl px-4 py-3 hover:bg-gray-50">
+            <div className="flex items-center gap-2.5">
+              <svg className="h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+              </svg>
+              <div>
+                <div className="text-[13px] font-medium text-gray-900">Image statistics</div>
+                <div className="text-[11px] text-gray-600">
+                  {hasImageStats
+                    ? "Brightness, contrast, sharpness, and other columns are available — find them above."
+                    : "Add brightness, contrast, sharpness, colourfulness, aspect ratio, and other columns."}
                 </div>
-                <div className="mb-3 flex flex-wrap items-center gap-3">
-                  <label className="flex items-center gap-1.5 text-xs text-gray-500">
-                    group by
-                    <select
-                      value={outlierGroupBy ?? ""}
-                      onChange={(e) => setOutlierGroupBy(e.target.value || null)}
-                      className="w-28 rounded border border-gray-200 px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
-                    >
-                      <option value="">none</option>
-                      {categoricalCols.map((c) => (
-                        <option key={c.name} value={c.name}>{c.name}</option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="flex items-center gap-1.5 text-xs text-gray-500">
-                    k neighbors
-                    <input
-                      type="number"
-                      min={3}
-                      max={50}
-                      value={outlierK}
-                      onChange={(e) => setOutlierK(Math.max(3, parseInt(e.target.value) || 15))}
-                      className="w-14 rounded border border-gray-200 px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
-                    />
-                  </label>
-                  <label className="flex items-center gap-1.5 text-xs text-gray-500" title="LOF score cutoff — lower = more outliers, higher = only extreme outliers">
-                    min score
-                    <input
-                      type="number"
-                      min={1.0}
-                      max={10}
-                      step={0.1}
-                      value={outlierThreshold}
-                      onChange={(e) => setOutlierThreshold(Math.max(1.0, parseFloat(e.target.value) || 1.5))}
-                      className="w-16 rounded border border-gray-200 px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
-                    />
-                  </label>
-                  <button
-                    onClick={handleOutliers}
-                    disabled={outlierLoading}
-                    className="rounded-md bg-gray-800 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
-                  >
-                    {outlierLoading ? "Analyzing..." : outlierState.ids.length > 0 ? "Re-run" : "Run"}
-                  </button>
-                </div>
-                {outlierState.groups && outlierState.groups.length > 0 ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-gray-700">
-                        {outlierState.ids.length} outliers across {outlierState.groups.length} groups
-                      </span>
-                      <button
-                        onClick={() => viewInGrid(outlierState.ids, "Outliers")}
-                        className="rounded-md bg-gray-800 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-gray-700"
-                      >
-                        View all in grid
-                      </button>
-                    </div>
-                    {outlierState.groups.map((g) => (
-                      <div key={g.label} className="rounded border border-gray-100 p-2">
-                        <div className="mb-1.5 flex items-center justify-between">
-                          <span className="text-xs font-medium text-gray-700">
-                            {g.label} — {g.ids.length} outlier{g.ids.length !== 1 ? "s" : ""} of {g.total} items
-                          </span>
-                          <div className="flex gap-1.5">
-                            {outlierGroupBy && (
-                              <button
-                                onClick={() => viewByColumnValue(outlierGroupBy, g.label)}
-                                className="rounded border border-gray-200 px-2 py-0.5 text-[11px] text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700"
-                              >
-                                View entire group
-                              </button>
-                            )}
-                            <button
-                              onClick={() => viewInGrid(g.ids, `Outliers: ${g.label}`)}
-                              className="rounded-md bg-gray-800 px-2 py-0.5 text-[11px] font-medium text-white transition-colors hover:bg-gray-700"
-                            >
-                              View outliers
-                            </button>
-                          </div>
-                        </div>
-                        <div className="flex gap-1.5 overflow-x-auto pb-1">
-                          {g.media.slice(0, 12).map((m) => (
-                            <img
-                              key={m.index}
-                              src={m.src}
-                              alt={`Item ${m.index}`}
-                              className="h-16 w-16 shrink-0 rounded object-cover"
-                            />
-                          ))}
-                          {g.ids.length > 12 && (
-                            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded bg-gray-100 text-xs text-gray-500">
-                              +{g.ids.length - 12}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <ThumbnailStrip
-                    mediaItems={outlierState.media}
-                    loading={outlierLoading}
-                    label={`${outlierState.ids.length} outliers found`}
-                    onViewAll={() => viewInGrid(outlierState.ids, "Outliers")}
-                  />
-                )}
-              </div>
-
-              {/* Duplicates */}
-              <div className="rounded-lg border border-gray-200 bg-white p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-medium text-gray-800">Near-duplicate detection</div>
-                    <div className="text-xs text-gray-500">
-                      Find groups of items with high cosine similarity in embedding space
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <label className="flex items-center gap-1.5 text-xs text-gray-500">
-                      threshold
-                      <input
-                        type="number"
-                        min={0.5}
-                        max={1}
-                        step={0.01}
-                        value={dupThreshold}
-                        onChange={(e) => setDupThreshold(Math.min(1, Math.max(0.5, parseFloat(e.target.value) || 0.95)))}
-                        className="w-16 rounded border border-gray-200 px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
-                      />
-                    </label>
-                    <button
-                      onClick={handleDuplicates}
-                      disabled={duplicateLoading}
-                      className="rounded-md bg-gray-800 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
-                    >
-                      {duplicateLoading ? "Analyzing..." : duplicateState.groups.length > 0 ? "Re-run" : "Run"}
-                    </button>
-                  </div>
-                </div>
-                {duplicateLoading && (
-                  <div className="flex items-center gap-2 py-3">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-700" />
-                    <span className="text-xs text-gray-500">Analyzing...</span>
-                  </div>
-                )}
-                {!duplicateLoading && duplicateState.groups.length > 0 && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-gray-700">
-                        {duplicateState.groups.length} duplicate group{duplicateState.groups.length !== 1 ? "s" : ""} ({duplicateState.groups.reduce((s, g) => s + g.length, 0)} items)
-                      </span>
-                      <button
-                        onClick={() => viewInGrid(duplicateState.groups.flat(), "Duplicates")}
-                        className="rounded-md bg-gray-800 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-gray-700"
-                      >
-                        View all in grid
-                      </button>
-                    </div>
-                    <div className="space-y-2">
-                      {(showAllDupGroups ? duplicateState.groups : duplicateState.groups.slice(0, 10)).map((group, i) => {
-                        const media = duplicateState.groupMedia[i] ?? [];
-                        return (
-                          <div
-                            key={i}
-                            onClick={() => viewInGrid(group, `Dup group ${i + 1}`)}
-                            className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-150 p-2 transition-colors hover:border-gray-300 hover:bg-gray-50"
-                          >
-                            <div className="flex shrink-0 gap-1">
-                              {media.slice(0, 4).map((m) => (
-                                <img
-                                  key={m.index}
-                                  src={m.src}
-                                  alt={`Item ${m.index}`}
-                                  className="h-12 w-12 rounded object-cover"
-                                />
-                              ))}
-                              {media.length === 0 && (
-                                <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-100 text-[10px] text-gray-400">
-                                  {group.length}
-                                </div>
-                              )}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="text-xs font-medium text-gray-700">Group {i + 1}</div>
-                              <div className="text-[11px] text-gray-400">{group.length} items</div>
-                            </div>
-                            <svg className="h-4 w-4 shrink-0 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="m9 18 6-6-6-6" />
-                            </svg>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    {duplicateState.groups.length > 10 && (
-                      <button
-                        onClick={() => setShowAllDupGroups((v) => !v)}
-                        className="text-xs text-gray-500 underline decoration-gray-300 hover:text-gray-700"
-                      >
-                        {showAllDupGroups ? "Show less" : `Show ${duplicateState.groups.length - 10} more groups`}
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Weirdest */}
-              <div className="rounded-lg border border-gray-200 bg-white p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-medium text-gray-800">Farthest from centroid</div>
-                    <div className="text-xs text-gray-500">
-                      Items ranked by cosine distance from the dataset centroid — the most unusual items first
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleWeirdest}
-                    disabled={weirdLoading}
-                    className="rounded-md bg-gray-800 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
-                  >
-                    {weirdLoading ? "Analyzing..." : weirdState.ids.length > 0 ? "Re-run" : "Run"}
-                  </button>
-                </div>
-                <ThumbnailStrip
-                  mediaItems={weirdState.media}
-                  loading={weirdLoading}
-                  label={`${weirdState.ids.length} items ranked by distance`}
-                  onViewAll={() => viewInGrid(weirdState.ids, "Weirdest")}
-                />
               </div>
             </div>
+            <svg className="h-4 w-4 text-gray-500 transition-transform [details[open]_&]:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </summary>
+          <div className="border-t border-gray-100 px-4 py-3">
+            <button
+              onClick={async () => {
+                try {
+                  const status = await computeImageStats(uuid);
+                  if (status.status === "already_computed") {
+                    toast("Image statistics already computed");
+                  } else {
+                    setBackgroundTasks((prev) => [
+                      ...prev,
+                      {
+                        id: `img-stats-${uuid}`,
+                        type: "image_stats" as const,
+                        viewUuid: uuid,
+                        label: "Image statistics",
+                        status: "running" as const,
+                        progress: 0,
+                        done: 0,
+                        total: 0,
+                        startedAt: Date.now(),
+                      },
+                    ]);
+                    toast("Computing image statistics in background");
+                  }
+                } catch {
+                  toast.error("Failed to start image stats computation");
+                }
+              }}
+              disabled={hasImageStats}
+              className="rounded-md bg-teal-700 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {hasImageStats ? "Already computed" : "Compute"}
+            </button>
+            <span className="ml-2 text-[11px] text-gray-500">Runs in the background; takes a few minutes for large datasets.</span>
+          </div>
+        </details>
+
+        {hasEmbeddings && (
+          <div className="mb-6 flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <svg className="mt-0.5 h-4 w-4 shrink-0 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.997.398-.997.95v8a1 1 0 0 0 1 1h8Z" />
+              <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+            </svg>
+            <div className="min-w-0 flex-1">
+              <div className="text-[13px] font-medium text-gray-900">Outliers · Duplicates · Farthest from centroid</div>
+              <div className="mt-0.5 text-[11px] text-gray-600">
+                These embedding-driven analyses now live in the <span className="font-medium">Charts</span> panel of the main view —
+                add a chart and pick "Outliers (LOF)", "Near-duplicates", or "Farthest from centroid".
+              </div>
+            </div>
+            <a
+              href="/"
+              className="shrink-0 rounded-md bg-teal-700 px-3 py-1.5 text-[11px] font-medium text-white transition-colors hover:bg-teal-800"
+            >
+              Open Charts →
+            </a>
           </div>
         )}
       </div>

@@ -1,34 +1,37 @@
 "use client";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import { faSquare } from "@fortawesome/free-regular-svg-icons";
-import { faTableCells, faFloppyDisk, faCrosshairs } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   configAtom, gridValuesAtom, mediaAtom,
   currentMediaIndicesAtom, mediaItemsAtom, uuidAtom,
   mediaIndicesStackAtom,
-  filtersAtom, similarityResultsAtom, showPageAtom,
+  filtersAtom,
   selectedMediaAtom,
+  bottomDockVisibleAtom,
+  insightsOutliersAtom,
+  outlierHighlightAtom,
+  activeLearningAtom,
+  similarityResultsAtom,
+  focusModeAtom,
+  filteredCountAtom,
+  maxPageAtom,
+  gridCollapsedAtom,
+  sidebarCollapsedAtom,
+  cursorIndexAtom,
+  quickLookOpenAtom,
 } from "@/app/store/atoms";
-import { fetchMediaItems, fetchFilteredCount, saveLabel, deleteLabel, saveView, fetchSimilar } from "@/app/lib/api";
+import { fetchMediaItems, fetchFilteredCount, saveLabel, deleteLabel, fetchSimilar } from "@/app/lib/api";
 import type { Media } from "@/app/types";
 import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
-import BreadcrumbTrail from "../shared/BreadcrumbTrail";
 import ResizableLayout from "../shared/ResizableLayout";
-import FilterBar from "../filters/FilterBar";
 import MediaGridItem, { EXCLUDE_LABEL } from "./MediaGridItem";
 import SelectionActionBar from "./SelectionActionBar";
-import Pagination from "./Pagination";
-import SortDropdown from "./SortDropdown";
-import ShowValueDropdown from "./ShowValueDropdown";
-import BoundingBoxCheckbox from "./BoundingBoxCheckbox";
 import GridWorkspaceSidebar from "./GridWorkspaceSidebar";
 import FocusMode from "./FocusMode";
+import BottomDock from "../workspace/BottomDock";
 import { useLabelUndo } from "@/app/lib/use-label-undo";
 import { useMediaPreview } from "@/app/lib/use-media-preview";
 import { useActiveLearning } from "@/app/lib/use-active-learning";
-import { useState } from "react";
 
 interface GridViewProps {
   onBack?: () => void;
@@ -42,22 +45,26 @@ export default function GridView({ onBack }: GridViewProps) {
   const setSideMedia = useSetAtom(mediaAtom);
   const [mediaItems, setMediaItems] = useAtom(mediaItemsAtom);
   const [gridValues, setGridValues] = useAtom(gridValuesAtom);
-  const setUuid = useSetAtom(uuidAtom);
-  const setShowPage = useSetAtom(showPageAtom);
-  const [filters, setFilters] = useAtom(filtersAtom);
-  const setSimilarityResults = useSetAtom(similarityResultsAtom);
-  const { reset: resetBreadcrumbs, replaceTop } = useBreadcrumbNav();
+  const filters = useAtomValue(filtersAtom);
+  const { replaceTop } = useBreadcrumbNav();
   const [selectedMedia, setSelectedMedia] = useAtom(selectedMediaAtom);
-  const [focusMode, setFocusMode] = useState(false);
+  const [focusMode, setFocusMode] = useAtom(focusModeAtom);
   const lastClickedRef = useRef<number | null>(null);
-  const [filteredCount, setFilteredCount] = useState<number | null>(null);
+  const [filteredCount, setFilteredCount] = useAtom(filteredCountAtom);
 
-  const [showSaveForm, setShowSaveForm] = useState(false);
-  const [saveTitle, setSaveTitle] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [savedViewUuid, setSavedViewUuid] = useState<string | null>(null);
   const { pushAction, undo, redo } = useLabelUndo();
-  const { openMedia } = useMediaPreview();
+  const { previewMedia, openMedia } = useMediaPreview();
+  // setDetailIndex no longer used — click now opens Quick Look directly
+  const outlierState = useAtomValue(insightsOutliersAtom);
+  const [dockVisible, setDockVisible] = useAtom(bottomDockVisibleAtom);
+  const [gridCollapsed, setGridCollapsed] = useAtom(gridCollapsedAtom);
+  const [sidebarCollapsed, setSidebarCollapsed] = useAtom(sidebarCollapsedAtom);
+  const outlierHighlight = useAtomValue(outlierHighlightAtom);
+  const alState = useAtomValue(activeLearningAtom);
+  const similarityResults = useAtomValue(similarityResultsAtom);
+  const setSimilarityResults = useSetAtom(similarityResultsAtom);
+  const setMaxPage = useSetAtom(maxPageAtom);
+  const hasSearchResults = Object.keys(similarityResults).length > 0;
   const { isActive } = useActiveLearning();
 
   const canGoBack = onBack && mediaIndicesStack.length > 1;
@@ -95,19 +102,36 @@ export default function GridView({ onBack }: GridViewProps) {
     return Array.from(selected).sort((a, b) => a - b);
   }, [mediaIndices, gridValues.subsample, config?.total_count]);
 
-  const loadMedia = (sortCol?: string, asc?: boolean) => {
+  // Endless pagination — page=0 replaces items, page>0 appends.
+  // Two effects: reset on deps change, fetch on page change.
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const loadMedia = useCallback((page: number, append: boolean) => {
     if (!uuid) return;
+    setIsLoadingMore(true);
     fetchMediaItems(
       uuid,
       effectiveIndices,
-      gridValues.page,
-      sortCol ?? (gridValues.sortBy || undefined),
-      asc ?? gridValues.asc,
+      page,
+      gridValues.sortBy || undefined,
+      gridValues.asc,
       filters.length > 0 ? filters : undefined,
-    ).then(setMediaItems);
-  };
+    ).then((items) => {
+      setMediaItems((prev) => (append ? [...prev, ...items] : items));
+    }).finally(() => setIsLoadingMore(false));
+  }, [uuid, effectiveIndices, gridValues.sortBy, gridValues.asc, filters, setMediaItems]);
 
-  useEffect(() => { loadMedia(); }, [effectiveIndices, filters]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Reset to page 0 + replace items when deps change
+  useEffect(() => {
+    setGridValues((prev) => ({ ...prev, page: 0 }));
+    loadMedia(0, false);
+  }, [effectiveIndices, filters, gridValues.sortBy, gridValues.asc]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // When page increments past 0 (from intersection observer), append the next page
+  useEffect(() => {
+    if (gridValues.page > 0) loadMedia(gridValues.page, true);
+  }, [gridValues.page]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch filtered count when filters change
   useEffect(() => {
@@ -115,29 +139,86 @@ export default function GridView({ onBack }: GridViewProps) {
     fetchFilteredCount(uuid, filters).then(setFilteredCount).catch(() => setFilteredCount(null));
   }, [uuid, filters]);
 
+  // Publish max page (still useful for "all loaded" checks)
+  useEffect(() => {
+    const total = effectiveIndices.length > 0
+      ? effectiveIndices.length
+      : (filteredCount ?? config?.total_count ?? 0);
+    setMaxPage(Math.max(0, Math.ceil(total / 50) - 1));
+  }, [effectiveIndices, filteredCount, config?.total_count, setMaxPage]);
+
+  // Intersection observer on a bottom sentinel — auto-fetch next page
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting && !isLoadingMore) {
+          setGridValues((prev) => {
+            // Compute max page from latest atoms
+            const total = effectiveIndices.length > 0
+              ? effectiveIndices.length
+              : (filteredCount ?? config?.total_count ?? 0);
+            const max = Math.max(0, Math.ceil(total / 50) - 1);
+            if (prev.page >= max) return prev;
+            return { ...prev, page: prev.page + 1 };
+          });
+        }
+      }
+    }, { rootMargin: "300px" });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [isLoadingMore, effectiveIndices, filteredCount, config?.total_count, setGridValues]);
+
+  const [cursor, setCursor] = useAtom(cursorIndexAtom);
+  const [quickLookOpen, setQuickLookOpen] = useAtom(quickLookOpenAtom);
+
+  // Initialise cursor to first item once items load
+  useEffect(() => {
+    if (cursor == null && mediaItems.length > 0) setCursor(mediaItems[0].index);
+  }, [cursor, mediaItems, setCursor]);
+
+  // Reset cursor if it points outside the current page
+  useEffect(() => {
+    if (cursor != null && mediaItems.length > 0 && !mediaItems.some((m) => m.index === cursor)) {
+      setCursor(mediaItems[0].index);
+    }
+  }, [mediaItems, cursor, setCursor]);
+
+  // Keyboard handling
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "z") {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (quickLookOpen) return; // QuickLook owns the keyboard while it's open
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "z") { e.preventDefault(); redo(); }
+      else if ((e.metaKey || e.ctrlKey) && e.key === "z") { e.preventDefault(); undo(); }
+      else if (e.key === "Escape" && selectedMedia.size > 0) { setSelectedMedia(new Set()); }
+      else if (e.key === "f" && !e.metaKey && !e.ctrlKey && config?.labels?.length) { e.preventDefault(); setFocusMode(true); }
+      else if (e.key === " " && cursor != null) {
+        // Space → open Quick Look on the cursor item
         e.preventDefault();
-        redo();
-      } else if ((e.metaKey || e.ctrlKey) && e.key === "z") {
+        setQuickLookOpen(true);
+      }
+      else if (["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp"].includes(e.key) && cursor != null && mediaItems.length > 0) {
         e.preventDefault();
-        undo();
-      } else if (e.key === "Escape" && selectedMedia.size > 0) {
-        setSelectedMedia(new Set());
-      } else if (e.key === "Escape" && canGoBack) {
-        onBack!();
-      } else if (e.key === "f" && !e.metaKey && !e.ctrlKey && config?.labels && config.labels.length > 0) {
-        // Don't trigger if typing in an input
-        const tag = (e.target as HTMLElement)?.tagName;
-        if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-        e.preventDefault();
-        setFocusMode(true);
+        const pageIndices = mediaItems.map((m) => m.index);
+        const at = pageIndices.indexOf(cursor);
+        if (at === -1) return;
+        const cols = Math.max(1, gridValues.numberOfColumns);
+        let next = at;
+        if (e.key === "ArrowRight") next = Math.min(pageIndices.length - 1, at + 1);
+        else if (e.key === "ArrowLeft") next = Math.max(0, at - 1);
+        else if (e.key === "ArrowDown") next = Math.min(pageIndices.length - 1, at + cols);
+        else if (e.key === "ArrowUp") next = Math.max(0, at - cols);
+        setCursor(pageIndices[next]);
+        // scroll the cursored card into view
+        const el = document.querySelector(`[data-media-index="${pageIndices[next]}"]`);
+        el?.scrollIntoView({ block: "nearest", behavior: "smooth" });
       }
     },
-    [undo, redo, canGoBack, onBack, config?.labels, selectedMedia.size, setSelectedMedia],
+    [undo, redo, config?.labels, selectedMedia.size, setSelectedMedia, quickLookOpen, cursor, mediaItems, gridValues.numberOfColumns, setCursor, setQuickLookOpen, setFocusMode],
   );
-
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -152,6 +233,10 @@ export default function GridView({ onBack }: GridViewProps) {
     if (selectedMedia.size > 0) {
       setSelectedMedia(new Set());
     }
+    // Click → open full Media view (Plotly zoom + Back). Space still uses Quick Look.
+    setCursor(index);
+    // openMedia fetches the full media (with base64) BEFORE navigating to /media,
+    // so the Plotly view has the image ready. previewMedia only loads a thumbnail.
     openMedia(index);
   };
 
@@ -182,19 +267,6 @@ export default function GridView({ onBack }: GridViewProps) {
   const handleHover = (index: number) => {
     const item = mediaItems.find((m) => m.index === index);
     if (item) setSideMedia(item);
-  };
-
-  const handleSort = (column: string, ascending: boolean) => {
-    if (!config?.columns.includes(column)) return;
-    setGridValues((prev) => ({ ...prev, sortBy: column, asc: ascending }));
-    loadMedia(column, ascending);
-  };
-
-  const handlePageChange = (newPage: number) => {
-    setGridValues((prev) => ({ ...prev, page: newPage }));
-    setSelectedMedia(new Set());
-    fetchMediaItems(uuid, effectiveIndices, newPage, gridValues.sortBy || undefined, gridValues.asc)
-      .then(setMediaItems);
   };
 
   const handleLabelToggle = (media: Media, label: string) => {
@@ -282,165 +354,72 @@ export default function GridView({ onBack }: GridViewProps) {
     setSelectedMedia(new Set());
   };
 
+  // Outlier ID set for highlighting
+  const outlierSet = useMemo(() => {
+    if (!outlierHighlight || outlierState.ids.length === 0) return null;
+    return new Set(outlierState.ids);
+  }, [outlierHighlight, outlierState.ids]);
+
   if (!config) return null;
 
-  return (
-    <ResizableLayout sidebar={<GridWorkspaceSidebar />}>
-      <div className="flex h-full flex-col">
-      {config.title && <div className="mb-2 shrink-0 px-3 pt-2 text-sm font-medium text-gray-900">{config.title}</div>}
-      {/* Toolbar */}
-      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-gray-200 px-3 py-2">
-        <span className="text-xs text-gray-500">
-          {gridValues.subsample > 0
-            ? `${effectiveIndices.length.toLocaleString()} of ${mediaIndices.length.toLocaleString()}`
-            : (filteredCount != null ? filteredCount : (mediaIndices.length > 0 ? mediaIndices.length : (config.total_count ?? 0))).toLocaleString()}{" "}
-          items
-        </span>
-        <select
-          value={gridValues.subsample}
-          onChange={(e) => {
-            setGridValues((prev) => ({ ...prev, subsample: parseInt(e.target.value), page: 0 }));
-          }}
-          className="rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
+  // Charts (collapsed strip OR expanded dock) — sibling of the grid section so they
+  // collapse/expand independently. The dock always docks ABOVE the grid when expanded
+  // (regardless of the old top/bottom/right setting) so it lives next to its expand strip.
+  const chartsSection = (
+    <>
+      {!dockVisible ? (
+        <button
+          onClick={() => setDockVisible(true)}
+          className="flex h-7 shrink-0 items-center justify-center gap-1.5 border-b border-gray-200 bg-gray-50/60 text-[11px] font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800"
+          title="Show charts"
+          aria-label="Show charts"
         >
-          <option value={0}>All data</option>
-          <option value={1}>1% sample</option>
-          <option value={5}>5% sample</option>
-          <option value={10}>10% sample</option>
-          <option value={25}>25% sample</option>
-          <option value={50}>50% sample</option>
-        </select>
-        <SortDropdown
-          columns={config.columns}
-          gridValues={gridValues}
-          onSort={handleSort}
-        />
-        {config.bounding_box && (
-          <BoundingBoxCheckbox
-            checked={gridValues.showBboxLabel}
-            onChange={(checked) => setGridValues((prev) => ({ ...prev, showBboxLabel: checked }))}
-          />
-        )}
-        <ShowValueDropdown
-          columns={config.columns}
-          values={gridValues.showColumnValues}
-          onChange={(vals) => setGridValues((prev) => ({ ...prev, showColumnValues: vals }))}
-        />
-        <div className="flex items-center gap-1.5 text-xs text-gray-400">
-          <FontAwesomeIcon icon={faSquare} />
-          <input
-            type="range"
-            className="w-20"
-            min={1}
-            max={10}
-            value={gridValues.numberOfColumns}
-            onChange={(e) => setGridValues((prev) => ({ ...prev, numberOfColumns: parseInt(e.target.value) }))}
-          />
-          <FontAwesomeIcon icon={faTableCells} />
-        </div>
-        <div className="ml-auto flex items-center gap-2">
-          <Pagination
-            page={gridValues.page}
-            maxPage={Math.max(0, Math.ceil((effectiveIndices.length > 0 ? effectiveIndices.length : (filteredCount ?? config.total_count ?? 0)) / 50) - 1)}
-            onPageChange={handlePageChange}
-          />
-          {config.labels && config.labels.length > 0 && (
-            <button
-              onClick={() => setFocusMode(true)}
-              className="rounded-md px-2 py-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900"
-              title="Focus mode (F)"
-            >
-              <FontAwesomeIcon icon={faCrosshairs} />
-            </button>
-          )}
-        </div>
-      </div>
+          <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+          Charts
+        </button>
+      ) : (
+        <BottomDock position="top" />
+      )}
+    </>
+  );
 
-      <div className="flex shrink-0 items-center gap-2 px-3 py-2">
-        <FilterBar />
-        <BreadcrumbTrail />
-        {mediaIndicesStack.length > 1 && !showSaveForm && (
-          <button
-            onClick={() => setShowSaveForm(true)}
-            className="flex shrink-0 items-center gap-1 rounded-md border border-gray-200 px-2 py-1 text-[11px] text-gray-600 transition-colors hover:border-gray-400 hover:text-gray-900"
-            title="Save selection as new view"
-          >
-            <FontAwesomeIcon icon={faFloppyDisk} className="h-3 w-3" />
-            Save as view
-          </button>
-        )}
-        {showSaveForm && !savedViewUuid && (
-          <form
-            className="flex shrink-0 items-center gap-1.5"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setSaving(true);
-              try {
-                const { uuid: newUuid } = await saveView(uuid, mediaIndices, saveTitle.trim() || undefined);
-                setSavedViewUuid(newUuid);
-              } catch { /* ignore */ }
-              setSaving(false);
-            }}
-          >
-            <input
-              autoFocus
-              type="text"
-              value={saveTitle}
-              onChange={(e) => setSaveTitle(e.target.value)}
-              placeholder="View name..."
-              className="w-40 rounded-md border border-gray-200 px-2 py-1 text-[11px] text-gray-700 focus:border-gray-400 focus:outline-none"
-              onKeyDown={(e) => { if (e.key === "Escape") { setShowSaveForm(false); setSaveTitle(""); } }}
-            />
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-md bg-gray-800 px-2 py-1 text-[11px] font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
-            >
-              {saving ? "Saving..." : "Save"}
-            </button>
-            <button
-              type="button"
-              onClick={() => { setShowSaveForm(false); setSaveTitle(""); }}
-              className="rounded-md px-2 py-1 text-[11px] text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
-            >
-              Cancel
-            </button>
-          </form>
-        )}
-        {savedViewUuid && (
-          <div className="flex shrink-0 items-center gap-2">
-            <span className="text-[11px] text-green-600">Saved!</span>
-            <button
-              onClick={() => {
-                resetBreadcrumbs();
-                setGridValues({ sortBy: "", asc: true, page: 0, numberOfColumns: 5, showColumnValues: [], showBboxLabel: false, subsample: 0 });
-                setMediaItems([]);
-                setFilters([]);
-                setSimilarityResults({});
-                setUuid(savedViewUuid);
-                setShowPage("grid");
-                setShowSaveForm(false);
-                setSaveTitle("");
-                setSavedViewUuid(null);
-              }}
-              className="rounded-md px-2 py-1 text-[11px] text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-800"
-            >
-              Open view
-            </button>
-            <button
-              onClick={() => { setShowSaveForm(false); setSaveTitle(""); setSavedViewUuid(null); }}
-              className="rounded-md px-2 py-1 text-[11px] text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
-            >
-              Dismiss
-            </button>
-          </div>
-        )}
+  // Grid section — full content or just a thin "Grid ⌄" expand bar
+  const gridSection = gridCollapsed ? (
+    <button
+      onClick={() => setGridCollapsed(false)}
+      className="flex h-7 shrink-0 items-center justify-center gap-1.5 border-b border-gray-200 bg-gray-50/60 text-[11px] font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800"
+      title="Show grid"
+      aria-label="Show grid"
+    >
+      <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <path d="m6 9 6 6 6-6" />
+      </svg>
+      Grid
+    </button>
+  ) : (
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      {/* Grid pane header — sits directly above the grid content it controls */}
+      <div className="flex h-7 shrink-0 items-center justify-end border-b border-gray-100 px-2">
+        <button
+          onClick={() => {
+            // Auto-expand sidebar so the user always sees content.
+            if (sidebarCollapsed) setSidebarCollapsed(false);
+            setGridCollapsed(true);
+          }}
+          className="flex h-5 w-5 items-center justify-center rounded text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+          title="Hide grid"
+          aria-label="Hide grid"
+        >
+          <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+        </button>
       </div>
 
       {/* Media grid */}
-      <div
-        className="min-h-0 flex-1 overflow-y-auto p-3"
-      >
+      <div className="min-h-0 flex-1 overflow-y-auto p-3">
         <div
           className="grid items-end gap-3"
           style={{
@@ -448,7 +427,7 @@ export default function GridView({ onBack }: GridViewProps) {
           }}
         >
           {mediaItems.map((media) => (
-            <div key={media.index} style={{ contentVisibility: "auto" }}>
+            <div key={media.index} data-media-index={media.index} style={{ contentVisibility: "auto" }}>
               <MediaGridItem
                 media={media}
                 columns={gridValues.numberOfColumns}
@@ -459,16 +438,39 @@ export default function GridView({ onBack }: GridViewProps) {
                 onClick={(e) => handleClick(media.index, e)}
                 onHover={() => handleHover(media.index)}
                 onLabelToggle={(label) => handleLabelToggle(media, label)}
-                onExclude={isActive ? () => handleExclude(media) : undefined}
+                onExclude={(isActive || hasSearchResults) ? () => handleExclude(media) : undefined}
                 selected={selectedMedia.has(media.index)}
                 anySelected={selectedMedia.size > 0}
                 onSelect={(e) => handleSelect(media.index, e)}
+                isCursor={cursor === media.index}
+                isOutlier={outlierSet?.has(media.index) ?? false}
               />
             </div>
           ))}
         </div>
+        <div ref={sentinelRef} className="flex h-12 items-center justify-center text-[11px] text-gray-500">
+          {isLoadingMore ? (
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 animate-spin rounded-full border-2 border-gray-200 border-t-teal-700" />
+              Loading…
+            </span>
+          ) : null}
+        </div>
       </div>
-      </div>
+    </div>
+  );
+
+  // gridContent now stacks Charts (top) + Grid (bottom) as INDEPENDENT collapsible sections.
+  const gridContent = (
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      {chartsSection}
+      {gridSection}
+    </div>
+  );
+
+  return (
+    <ResizableLayout sidebar={<GridWorkspaceSidebar />}>
+      {gridContent}
       <SelectionActionBar
         count={selectedMedia.size}
         onClear={() => setSelectedMedia(new Set())}
@@ -482,7 +484,7 @@ export default function GridView({ onBack }: GridViewProps) {
           onLabelToggle={handleLabelToggle}
           onExit={() => {
             setFocusMode(false);
-            loadMedia();
+            loadMedia(0, false);
           }}
         />
       )}

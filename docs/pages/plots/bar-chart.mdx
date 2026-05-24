@@ -1,0 +1,35 @@
+# Bar chart
+
+One bar per unique category value, with the individual data points scattered inside each bar (not just an aggregate height). Lets you click straight from a category's bar into the items that make it up.
+
+```python
+import clusterfun as clt
+
+clt.bar_chart(
+    df,
+    x="category",
+    media="path",
+    color="source",
+)
+```
+
+## When to use
+
+- Class balance overviews.
+- Categorical breakdowns where you also need to inspect individual examples.
+- Comparing sub-categories via colour stacking.
+
+## Parameters
+
+| Parameter | Description |
+|---|---|
+| `x` | Categorical column for the bars. |
+| `media` | Column with the media path. Required. |
+| `color` | Optional sub-category column for stacking. |
+| `title` | Plot title. |
+
+## Interaction
+
+- **Click** inside a bar to inspect a specific item.
+- **Box select** points within a bar to drill into a subset.
+- **Filter** to a sub-population before plotting for fast comparisons.

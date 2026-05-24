@@ -94,7 +94,7 @@ export default function KeyboardShortcutsOverlay() {
           <h2 className="text-sm font-semibold text-gray-900">Keyboard shortcuts</h2>
           <button
             onClick={() => setOpen(false)}
-            className="rounded-md px-2 py-1 text-xs text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            className="rounded-md px-2 py-1 text-xs text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
           >
             Esc
           </button>
@@ -102,7 +102,7 @@ export default function KeyboardShortcutsOverlay() {
         <div className="grid grid-cols-2 gap-x-8 gap-y-4">
           {groups.map((group) => (
             <div key={group.title}>
-              <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+              <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
                 {group.title}
               </h3>
               <div className="space-y-1">
@@ -125,7 +125,7 @@ export default function KeyboardShortcutsOverlay() {
             </div>
           ))}
         </div>
-        <p className="mt-4 text-center text-[11px] text-gray-400">
+        <p className="mt-4 text-center text-[11px] text-gray-500">
           Press <kbd className="rounded border border-gray-200 bg-gray-50 px-1 py-px text-[10px] font-medium text-gray-500">?</kbd> to toggle
         </p>
       </div>

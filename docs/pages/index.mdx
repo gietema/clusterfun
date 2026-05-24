@@ -1,0 +1,39 @@
+# Clusterfun
+
+A data-exploration tool for browsing, labelling, and analysing image datasets in the browser.
+
+## What you can do
+
+- **Explore** large image datasets in a scrollable grid with similarity search, filtering, and outlier detection.
+- **Label** with keyboard shortcuts (1–9), drag-to-tag, and full undo/redo. Label propagation via centroid similarity ("Find more").
+- **Plot** any column on the fly — scatter, histogram, violin, embedding maps — with linked brushing.
+- **Active learning** in the browser using KNN, centroid, linear, prototype, or MLP heads on cached CLIP embeddings.
+
+## Quick start
+
+```bash
+pip install clusterfun
+```
+
+```python
+import clusterfun as clt
+clt.scatter(df, x="x", y="y", media="image_path", color="label")
+```
+
+This opens the web UI in your default browser, served from a local Python process.
+
+## Read next
+
+### Plot types
+- [Scatter](/plots/scatter) — 2D scatter for embeddings and pairwise features.
+- [Histogram](/plots/histogram) — distribution of a single numeric column.
+- [Bar chart](/plots/bar-chart) — category breakdown with clickable items inside.
+- [Violin](/plots/violin) — distribution shape per category.
+- [Pie chart](/plots/pie-chart) — proportional breakdown.
+- [Confusion matrix](/plots/confusion-matrix) — true vs. predicted with drill-in.
+- [Embedding map](/plots/embedding-map) — in-app UMAP / t-SNE / PCA on cached embeddings.
+
+### Workflows
+- [Filtering & search](/filtering) — composing constraints with filter chips, breadcrumbs, and text search.
+- [Labelling workflow](/labelling) — keyboard, mouse, and focus-mode flows.
+- [Active learning](/active-learning) — five in-browser learning methods on CLIP embeddings.

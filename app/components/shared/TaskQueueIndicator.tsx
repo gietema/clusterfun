@@ -206,7 +206,7 @@ export default function TaskQueueIndicator() {
           </div>
           <div className="max-h-60 overflow-y-auto">
             {visibleTasks.length === 0 && (
-              <div className="px-3 py-4 text-center text-xs text-gray-400">No active tasks</div>
+              <div className="px-3 py-4 text-center text-xs text-gray-500">No active tasks</div>
             )}
             {visibleTasks.map((task) => (
               <div key={task.id} className="border-b border-gray-50 px-3 py-2.5 last:border-b-0">
@@ -215,14 +215,14 @@ export default function TaskQueueIndicator() {
                   {task.status === "done" ? (
                     <button
                       onClick={() => dismissTask(task.id)}
-                      className="rounded p-0.5 text-gray-400 transition-colors hover:text-gray-600"
+                      className="rounded p-0.5 text-gray-500 transition-colors hover:text-gray-600"
                     >
                       <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <path d="M18 6 6 18M6 6l12 12" />
                       </svg>
                     </button>
                   ) : (
-                    <span className="text-[10px] text-gray-400">
+                    <span className="text-[10px] text-gray-500">
                       {task.done.toLocaleString()} / {task.total.toLocaleString()}
                     </span>
                   )}
@@ -230,7 +230,7 @@ export default function TaskQueueIndicator() {
                 {task.status === "running" && (
                   <>
                     {task.phase && (
-                      <div className="mt-1 text-[10px] text-gray-400">{task.phase}</div>
+                      <div className="mt-1 text-[10px] text-gray-500">{task.phase}</div>
                     )}
                     <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-gray-100">
                       <div

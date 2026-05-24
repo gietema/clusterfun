@@ -44,7 +44,7 @@ function ProjectList({ onSelect }: { onSelect: (name: string) => void }) {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-gray-400">
+      <div className="flex h-full items-center justify-center text-sm text-gray-500">
         Loading projects...
       </div>
     );
@@ -87,7 +87,7 @@ function ProjectList({ onSelect }: { onSelect: (name: string) => void }) {
               <span>{p.view_count} view{p.view_count !== 1 ? "s" : ""}</span>
               <span>{p.label_count} labeled</span>
             </div>
-            <div className="mt-2 text-[10px] text-gray-400">
+            <div className="mt-2 text-[10px] text-gray-500">
               {formatDate(p.created_at)}
             </div>
           </button>
@@ -158,7 +158,7 @@ function ViewRow({
             className="min-w-0 flex-grow rounded border border-gray-300 px-2 py-0.5 text-sm text-gray-900 focus:border-gray-500 focus:outline-none"
           />
           <button type="submit" className="text-xs text-gray-600 hover:text-gray-900">Save</button>
-          <button type="button" onClick={() => setEditing(false)} className="text-xs text-gray-400 hover:text-gray-700">Cancel</button>
+          <button type="button" onClick={() => setEditing(false)} className="text-xs text-gray-500 hover:text-gray-700">Cancel</button>
         </form>
       ) : (
         <button
@@ -168,7 +168,7 @@ function ViewRow({
           <div className="truncate text-sm text-gray-900 group-hover:text-blue-600">
             {displayTitle}
           </div>
-          <div className="text-[10px] text-gray-400">
+          <div className="text-[10px] text-gray-500">
             {formatDate(view.created_at)} {formatTime(view.created_at)}
           </div>
         </button>
@@ -178,7 +178,7 @@ function ViewRow({
         <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
           <button
             onClick={(e) => { e.stopPropagation(); setEditTitle(view.title ?? ""); setEditing(true); }}
-            className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+            className="rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
             title="Rename"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -187,7 +187,7 @@ function ViewRow({
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); setConfirming(true); }}
-            className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
+            className="rounded p-1 text-gray-500 hover:bg-red-50 hover:text-red-600"
             title="Remove from project"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -208,7 +208,7 @@ function ViewRow({
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); setConfirming(false); }}
-            className="text-[11px] text-gray-400 hover:text-gray-700"
+            className="text-[11px] text-gray-500 hover:text-gray-700"
           >
             No
           </button>
@@ -251,12 +251,12 @@ function ProjectDetailView({ name, onBack }: { name: string; onBack: () => void 
     setLabelFilter(null);
     setSimilarityResults({});
     setUuid(uuid);
-    setShowPage(type === "grid" ? "grid" : "plot");
+    setShowPage("grid");
   };
 
   if (loading || !project) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-gray-400">
+      <div className="flex h-full items-center justify-center text-sm text-gray-500">
         Loading...
       </div>
     );
@@ -268,7 +268,7 @@ function ProjectDetailView({ name, onBack }: { name: string; onBack: () => void 
       <div className="mb-6">
         <button
           onClick={onBack}
-          className="mb-2 text-xs text-gray-400 transition-colors hover:text-gray-700"
+          className="mb-2 text-xs text-gray-500 transition-colors hover:text-gray-700"
         >
           &larr; All projects
         </button>

@@ -1,0 +1,34 @@
+# Violin
+
+Density-based view of a numeric column grouped by a categorical one. Unlike a box plot, a violin shows the **shape** of each distribution — bimodality, skew, heavy tails are visible at a glance.
+
+```python
+import clusterfun as clt
+
+clt.violin(
+    df,
+    y="score",
+    media="path",
+    color="class",
+)
+```
+
+## When to use
+
+- Comparing distributions across classes (e.g. confidence per class).
+- Detecting bimodal or skewed distributions that a histogram + mean would hide.
+- Spotting outliers per group.
+
+## Parameters
+
+| Parameter | Description |
+|---|---|
+| `y` | Numeric column to show on the Y axis. |
+| `color` | Categorical column that defines the groups (one violin per value). |
+| `media` | Column with the media path. Required. |
+| `title` | Plot title. |
+
+## Interaction
+
+- **Select** points on the tail of a violin to inspect the unusual examples in the grid.
+- **Click** any point for media preview.

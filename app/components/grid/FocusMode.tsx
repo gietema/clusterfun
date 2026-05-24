@@ -340,7 +340,7 @@ export default function FocusMode({ mediaIndices, onLabelToggle, onExit }: Focus
             Exit
           </button>
           <span className="text-sm font-medium text-gray-900">Focus Mode</span>
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-gray-500">
             {position + 1} / {total.toLocaleString()}
             {filterMode !== "all" && <span className="ml-1 text-blue-500">({filterMode})</span>}
           </span>
@@ -355,18 +355,18 @@ export default function FocusMode({ mediaIndices, onLabelToggle, onExit }: Focus
             <option value="unlabeled">Unlabeled only</option>
             {alState && <option value="uncertain">Uncertain only</option>}
           </select>
-          <label className="flex cursor-pointer items-center gap-1.5 text-[10px] text-gray-400">
+          <label className="flex cursor-pointer items-center gap-1.5 text-[10px] text-gray-500">
             <input type="checkbox" checked={autoAdvance} onChange={(e) => setAutoAdvance(e.target.checked)} className="h-3 w-3 rounded border-gray-300 text-gray-800 focus:ring-0" />
             auto-advance
           </label>
           <button
             onClick={() => setShowStats((s) => !s)}
-            className={`rounded px-2 py-1 text-[10px] transition-colors ${showStats ? "bg-gray-800 text-white" : "text-gray-400 hover:text-gray-600"}`}
+            className={`rounded px-2 py-1 text-[10px] transition-colors ${showStats ? "bg-gray-800 text-white" : "text-gray-500 hover:text-gray-600"}`}
           >Stats</button>
-          {reviewedCount > 0 && <span className="text-[10px] tabular-nums text-gray-400">{itemsPerMin.toFixed(1)}/min</span>}
+          {reviewedCount > 0 && <span className="text-[10px] tabular-nums text-gray-500">{itemsPerMin.toFixed(1)}/min</span>}
           {alState && (
             <>
-              <label className="flex items-center gap-1.5 text-[10px] text-gray-400" title="Label rejected items as 'exclude' so active learning deprioritizes them">
+              <label className="flex items-center gap-1.5 text-[10px] text-gray-500" title="Label rejected items as 'exclude' so active learning deprioritizes them">
                 <input type="checkbox" checked={labelRejects} onChange={(e) => setLabelRejects(e.target.checked)} className="h-3 w-3 rounded border-gray-300 accent-gray-700" />
                 label rejects
               </label>
@@ -378,7 +378,7 @@ export default function FocusMode({ mediaIndices, onLabelToggle, onExit }: Focus
               )}
             </>
           )}
-          <div className="flex items-center gap-2 text-[10px] text-gray-400">
+          <div className="flex items-center gap-2 text-[10px] text-gray-500">
             {alState && (
               <>
                 <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5">Y</kbd><span>accept</span>
@@ -429,15 +429,15 @@ export default function FocusMode({ mediaIndices, onLabelToggle, onExit }: Focus
 
       {/* Image toolbar: rotate + adjustments toggle */}
       <div className="flex shrink-0 items-center gap-1 border-b border-gray-100 px-3 py-1">
-        <button onClick={() => handleRotate(-90)} className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700" title="Rotate left">
+        <button onClick={() => handleRotate(-90)} className="rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700" title="Rotate left">
           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2.5 2v6h6" /><path d="M2.66 15.57a10 10 0 1 0 .57-8.38" /></svg>
         </button>
-        <button onClick={() => handleRotate(90)} className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700" title="Rotate right">
+        <button onClick={() => handleRotate(90)} className="rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700" title="Rotate right">
           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21.5 2v6h-6" /><path d="M21.34 15.57a10 10 0 1 1-.57-8.38" /></svg>
         </button>
         <button
           onClick={() => setShowAdjustments((s) => !s)}
-          className={`rounded px-2 py-1 text-[10px] transition-colors ${showAdjustments ? "bg-gray-200 text-gray-800" : "text-gray-400 hover:text-gray-600"}`}
+          className={`rounded px-2 py-1 text-[10px] transition-colors ${showAdjustments ? "bg-gray-200 text-gray-800" : "text-gray-500 hover:text-gray-600"}`}
         >
           Adjustments
         </button>
@@ -498,7 +498,7 @@ export default function FocusMode({ mediaIndices, onLabelToggle, onExit }: Focus
             )}
           </>
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-gray-400">
+          <div className="flex h-full items-center justify-center text-sm text-gray-500">
             {filterMode !== "all" ? "No matching items — try a different filter" : "No more items"}
           </div>
         )}
@@ -535,7 +535,7 @@ export default function FocusMode({ mediaIndices, onLabelToggle, onExit }: Focus
       {filmstrip.length > 0 && (
         <div className="shrink-0 border-t border-gray-200 bg-gray-50 px-4 py-2">
           <div className="flex items-center justify-center gap-2">
-            <span className="mr-2 text-[10px] text-gray-400">Up next</span>
+            <span className="mr-2 text-[10px] text-gray-500">Up next</span>
             {filmstrip.map((item, i) => {
               if (!item) return null;
               const thumbPrediction = alState?.predictions.find((p) => p.media_id === item.index);
@@ -549,7 +549,7 @@ export default function FocusMode({ mediaIndices, onLabelToggle, onExit }: Focus
                   {item.type !== "audio" ? (
                     <img src={item.src} alt="" className="h-full w-full object-cover" />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-gray-100 text-gray-400">
+                    <div className="flex h-full w-full items-center justify-center bg-gray-100 text-gray-500">
                       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" /></svg>
                     </div>
                   )}

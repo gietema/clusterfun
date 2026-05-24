@@ -119,7 +119,7 @@ export default function FilterValueInput({ filter, onValueChange }: FilterValueI
               className="flex items-center rounded-md bg-gray-800 px-2 py-0.5 text-xs text-white"
             >
               {value}
-              <button onClick={() => handleRemove(value)} className="ml-1.5 text-gray-400 hover:text-white">&times;</button>
+              <button onClick={() => handleRemove(value)} className="ml-1.5 text-gray-500 hover:text-white">&times;</button>
             </span>
           ))}
         </div>

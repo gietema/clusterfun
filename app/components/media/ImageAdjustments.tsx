@@ -31,7 +31,7 @@ function Slider({ label, value, onChange, min = 0, max = 200 }: {
         onChange={(e) => onChange(parseInt(e.target.value))}
         className="w-24"
       />
-      <span className="w-10 text-right text-xs text-gray-400">{value}%</span>
+      <span className="w-10 text-right text-xs text-gray-500">{value}%</span>
     </div>
   );
 }
@@ -100,7 +100,7 @@ export default function ImageAdjustments({ values, onChange }: ImageAdjustmentsP
       {!isDefault && (
         <button
           onClick={() => onChange(DEFAULT_ADJUSTMENTS)}
-          className="text-xs text-gray-400 transition-colors hover:text-gray-700"
+          className="text-xs text-gray-500 transition-colors hover:text-gray-700"
         >
           Reset
         </button>

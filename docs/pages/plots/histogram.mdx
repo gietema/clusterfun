@@ -1,0 +1,35 @@
+# Histogram
+
+Distribution of a single numeric column, rendered as binned dot stacks. Each bin shows individual points (not a smooth curve), so you can click into outliers directly.
+
+```python
+import clusterfun as clt
+
+clt.histogram(
+    df,
+    x="confidence",
+    media="path",
+    bins=30,
+)
+```
+
+## When to use
+
+- Inspecting the distribution of a model output (confidence, score, loss).
+- Sanity-checking annotation or class-balance distributions.
+- Finding the long tail — those bins on either edge are usually the interesting items.
+
+## Parameters
+
+| Parameter | Description |
+|---|---|
+| `x` | Column whose distribution you want to plot. |
+| `bins` | Number of bins (default 20). |
+| `media` | Column with the media path. Required. |
+| `color` | Optional column to stack bins by category. |
+| `hline` / `vline` | Reference lines for thresholds. |
+
+## Interaction
+
+- **Select** a bin or range to drill into those items in the grid.
+- **Stack by category** with `color=` to compare distributions side-by-side.

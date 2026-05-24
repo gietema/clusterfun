@@ -40,11 +40,11 @@ export default function ColumnDropdown({ options, selected, onChange }: ColumnDr
       >
         {selected ? (
           <div className="flex items-center">
-            {icon && <FontAwesomeIcon icon={icon} className="mr-2 text-gray-400" />}
+            {icon && <FontAwesomeIcon icon={icon} className="mr-2 text-gray-500" />}
             {selectedOption?.label ?? selected}
           </div>
         ) : (
-          <span className="text-gray-400">-</span>
+          <span className="text-gray-500">-</span>
         )}
       </button>
       {isOpen && (
@@ -57,7 +57,7 @@ export default function ColumnDropdown({ options, selected, onChange }: ColumnDr
                 onClick={() => { onChange(opt.value); setIsOpen(false); }}
                 className="flex cursor-pointer items-center px-3 py-2 text-xs hover:bg-gray-50"
               >
-                {optIcon && <FontAwesomeIcon icon={optIcon} className="mr-2 text-gray-400" />}
+                {optIcon && <FontAwesomeIcon icon={optIcon} className="mr-2 text-gray-500" />}
                 {opt.label}
               </li>
             );

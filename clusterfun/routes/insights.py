@@ -61,11 +61,19 @@ class DuplicateGroup(BaseModel):
 class CentroidDistanceRequest(BaseModel):
     media_ids: List[int] = []
     limit: int = 200
+    # Optional categorical column. When set, a separate centroid is computed for
+    # each unique value of the column; each item's distance is measured against
+    # its OWN group's centroid (finding items atypical of their own class).
+    group_by: Optional[str] = None
 
 
 class CentroidDistanceResult(BaseModel):
     media_id: int
     distance: float
+    # Set when group_by was passed — the group this item belongs to, and the
+    # total number of items in that group.
+    group: Optional[str] = None
+    group_total: Optional[int] = None
 
 
 class InsightsTaskResponse(BaseModel):
@@ -500,8 +508,15 @@ def _run_centroid_distance(
     media_ids: List[int],
     limit: int = 200,
     progress_cb=None,
+    group_by: Optional[str] = None,
 ) -> List[dict]:
-    """Compute distance from centroid using streaming — no FAISS needed."""
+    """Compute distance from centroid using streaming — no FAISS needed.
+
+    If ``group_by`` is given, computes one centroid per unique value of the
+    grouping column and scores each item against ITS group's centroid.
+    Results are ranked globally by distance (so the most-atypical-of-its-class
+    items float to the top regardless of class).
+    """
     backend = get_backend()
     con = ensure_embeddings_table(
         view_uuid, backend, config.embeddings,
@@ -510,30 +525,59 @@ def _run_centroid_distance(
     )
     safe_col = '"' + config.embeddings.replace('"', '""') + '"'
 
-    # First pass: compute centroid by streaming
     if progress_cb:
         progress_cb("Computing centroid", 10)
 
-    if media_ids:
-        placeholders = ", ".join("?" for _ in media_ids)
-        total = con.execute(
-            f"SELECT COUNT(*) FROM embeddings WHERE id IN ({placeholders})",
-            media_ids,
-        ).fetchone()[0]
-        result = con.execute(
-            f"SELECT id, {safe_col} FROM embeddings WHERE id IN ({placeholders})",
-            media_ids,
-        )
+    # Build the SELECT — include the grouping column if requested.
+    if group_by:
+        safe_group_col = '"' + group_by.replace('"', '""') + '"'
+        # Join embeddings to the database table to pull the group column.
+        if media_ids:
+            placeholders = ", ".join("?" for _ in media_ids)
+            total = con.execute(
+                f"SELECT COUNT(*) FROM embeddings e JOIN database d ON e.id = d.id "
+                f"WHERE e.id IN ({placeholders})",
+                media_ids,
+            ).fetchone()[0]
+            result = con.execute(
+                f"SELECT e.id, e.{safe_col}, d.{safe_group_col} "
+                f"FROM embeddings e JOIN database d ON e.id = d.id "
+                f"WHERE e.id IN ({placeholders})",
+                media_ids,
+            )
+        else:
+            total = con.execute(
+                "SELECT COUNT(*) FROM embeddings e JOIN database d ON e.id = d.id"
+            ).fetchone()[0]
+            result = con.execute(
+                f"SELECT e.id, e.{safe_col}, d.{safe_group_col} "
+                f"FROM embeddings e JOIN database d ON e.id = d.id"
+            )
     else:
-        total = con.execute("SELECT COUNT(*) FROM embeddings").fetchone()[0]
-        result = con.execute(f"SELECT id, {safe_col} FROM embeddings")
+        if media_ids:
+            placeholders = ", ".join("?" for _ in media_ids)
+            total = con.execute(
+                f"SELECT COUNT(*) FROM embeddings WHERE id IN ({placeholders})",
+                media_ids,
+            ).fetchone()[0]
+            result = con.execute(
+                f"SELECT id, {safe_col} FROM embeddings WHERE id IN ({placeholders})",
+                media_ids,
+            )
+        else:
+            total = con.execute("SELECT COUNT(*) FROM embeddings").fetchone()[0]
+            result = con.execute(f"SELECT id, {safe_col} FROM embeddings")
 
     if total == 0:
         return []
 
-    centroid = None
-    all_ids_list = []
-    all_vecs = []
+    # Streaming pass — accumulate vectors per group (or globally) for centroid.
+    all_ids_list: List[int] = []
+    all_vecs: List[np.ndarray] = []
+    all_groups: List[Optional[str]] = []
+    # Per-group accumulators: label → (running sum, count)
+    group_sums: Dict[Any, np.ndarray] = {}
+    group_counts: Dict[Any, int] = {}
     batch_size = 100_000
     loaded = 0
 
@@ -545,36 +589,50 @@ def _run_centroid_distance(
             vec = np.array(list(row[1]), dtype=np.float32)
             all_ids_list.append(row[0])
             all_vecs.append(vec)
-            if centroid is None:
-                centroid = vec.copy()
+            gkey = row[2] if group_by else None
+            all_groups.append(gkey)
+            if gkey in group_sums:
+                group_sums[gkey] += vec
+                group_counts[gkey] += 1
             else:
-                centroid += vec
+                group_sums[gkey] = vec.copy()
+                group_counts[gkey] = 1
         loaded += len(batch)
         if progress_cb:
             progress_cb("Computing centroid", 10 + (loaded / total) * 40)
 
-    if centroid is None:
+    if not group_sums:
         return []
 
-    centroid /= total
-
-    # Normalize centroid
-    centroid_norm = np.linalg.norm(centroid)
-    if centroid_norm > 1e-10:
-        centroid /= centroid_norm
+    # Finalize centroids: divide by count, then L2-normalize.
+    centroids: Dict[Any, np.ndarray] = {}
+    for gkey, s in group_sums.items():
+        c = s / max(1, group_counts[gkey])
+        n = np.linalg.norm(c)
+        if n > 1e-10:
+            c = c / n
+        centroids[gkey] = c
 
     if progress_cb:
         progress_cb("Scoring items", 55)
 
-    # Second pass: compute distances
+    # Second pass — distance from each item to ITS centroid (or the global one
+    # when there's no grouping).
     results = []
-    for i, (mid, vec) in enumerate(zip(all_ids_list, all_vecs)):
+    for i, (mid, vec, gkey) in enumerate(zip(all_ids_list, all_vecs, all_groups)):
         vec_norm = np.linalg.norm(vec)
         if vec_norm > 1e-10:
             vec = vec / vec_norm
-        sim = float(np.dot(vec, centroid))
+        c = centroids.get(gkey)
+        if c is None:
+            continue
+        sim = float(np.dot(vec, c))
         dist = 1.0 - sim
-        results.append({"media_id": int(mid), "distance": float(dist)})
+        row: Dict[str, Any] = {"media_id": int(mid), "distance": float(dist)}
+        if group_by:
+            row["group"] = None if gkey is None else (str(gkey))
+            row["group_total"] = int(group_counts[gkey])
+        results.append(row)
 
         if progress_cb and i % 10_000 == 0:
             progress_cb("Scoring items", 55 + (i / total) * 40)
@@ -718,6 +776,7 @@ def centroid_distance(
     if n <= _SYNC_LIMIT:
         results = _run_centroid_distance(
             view_uuid, config, request.media_ids, request.limit,
+            group_by=request.group_by,
         )
         return [CentroidDistanceResult(**r) for r in results]
 
@@ -736,6 +795,7 @@ def centroid_distance(
             results = _run_centroid_distance(
                 view_uuid, config, request.media_ids, request.limit,
                 progress_cb=_progress_cb_for_task(task_id),
+                group_by=request.group_by,
             )
             _update_task(task_id, status="done", progress=100, phase="Done", results=results)
         except Exception as e:

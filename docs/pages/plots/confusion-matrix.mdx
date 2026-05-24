@@ -1,0 +1,34 @@
+# Confusion matrix
+
+Grid of true-vs-predicted class combinations, with the actual misclassified items scattered at each (true, pred) intersection. Lets you click straight from a confusion cell into the specific examples that produced it.
+
+```python
+import clusterfun as clt
+
+clt.confusion_matrix(
+    df,
+    y_true="gt",
+    y_pred="pred",
+    media="path",
+)
+```
+
+## When to use
+
+- Classification model debugging.
+- Investigating *why* a model confuses class A for class B — click the cell, see the items.
+- Validating annotation consistency (gt vs. a re-annotation).
+
+## Parameters
+
+| Parameter | Description |
+|---|---|
+| `y_true` | Column with ground-truth labels. |
+| `y_pred` | Column with predicted labels. |
+| `media` | Column with the media path. Required. |
+| `title` | Plot title. |
+
+## Interaction
+
+- **Click a cell** to drill into the items at that true/pred intersection.
+- The diagonal (correct predictions) is muted; off-diagonal cells stand out.

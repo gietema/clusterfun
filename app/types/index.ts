@@ -190,6 +190,9 @@ export interface ProbeResponse {
 }
 
 // ── Plot Builder ──
+// Plot/analysis types supported in the Charts dock:
+//   "scatter" | "histogram" | "bar_chart" | "violin" | "embedding_map"
+//   "outliers" | "duplicates" | "farthest"   ← embedding-driven analyses
 export interface PlotPanelConfig {
   id: string;
   type: string;
@@ -201,6 +204,11 @@ export interface PlotPanelConfig {
   sampleSize?: number;
   method?: string;
   nNeighbors?: number;
+  // Analysis-specific params
+  outlierK?: number;
+  outlierThreshold?: number;
+  outlierGroupBy?: string | null;
+  dupThreshold?: number;
 }
 
 // ── Outlier / Duplicate Detection ──

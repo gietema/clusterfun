@@ -67,7 +67,7 @@ export default function ActiveLearningSection() {
                     className={`rounded-full px-2 py-0.5 text-xs transition-colors ${
                       isOn
                         ? "bg-blue-600 text-white"
-                        : "bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+                        : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-600"
                     }`}
                   >
                     {label}
@@ -110,7 +110,7 @@ export default function ActiveLearningSection() {
               </div>
             )}
           </div>
-          <div className="mt-1 text-xs text-gray-400">
+          <div className="mt-1 text-xs text-gray-500">
             {AL_METHODS.find((m) => m.id === methodId)?.description}
           </div>
         </div>

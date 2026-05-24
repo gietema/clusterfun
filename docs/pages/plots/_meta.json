@@ -1,0 +1,9 @@
+{
+  "scatter": "Scatter",
+  "histogram": "Histogram",
+  "bar-chart": "Bar chart",
+  "violin": "Violin",
+  "pie-chart": "Pie chart",
+  "confusion-matrix": "Confusion matrix",
+  "embedding-map": "Embedding map"
+}

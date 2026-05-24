@@ -55,7 +55,7 @@ export default function SelectionActionBar({
                 </button>
                 <button
                   onClick={() => { onRemoveLabel(label); setShowLabels(false); }}
-                  className="px-2 py-1.5 text-[10px] text-gray-400 transition-colors hover:text-red-500"
+                  className="px-2 py-1.5 text-[10px] text-gray-500 transition-colors hover:text-red-500"
                   title={`Remove "${label}" from selected`}
                 >
                   <FontAwesomeIcon icon={faTrash} />
@@ -82,7 +82,7 @@ export default function SelectionActionBar({
       {/* Clear */}
       <button
         onClick={onClear}
-        className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+        className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
         title="Clear selection (Esc)"
       >
         <FontAwesomeIcon icon={faXmark} />

@@ -71,7 +71,7 @@ export default function HeaderControls({
         </div>
         <div className="flex items-center gap-1.5">
           {hasPrev && (
-            <button className="rounded-md px-2 py-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={onPrevious}>
+            <button className="rounded-md px-2 py-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={onPrevious}>
               <FontAwesomeIcon icon={faArrowLeft} />
             </button>
           )}
@@ -81,7 +81,7 @@ export default function HeaderControls({
             </span>
           )}
           {hasNext && (
-            <button className="rounded-md px-2 py-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={onNext}>
+            <button className="rounded-md px-2 py-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900" onClick={onNext}>
               <FontAwesomeIcon icon={faArrowRight} />
             </button>
           )}

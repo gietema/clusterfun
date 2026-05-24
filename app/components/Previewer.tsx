@@ -16,13 +16,17 @@ import {
 import { fetchUuid, fetchPlotData, fetchFilteredPlotData, fetchMedia, fetchAllLabels } from "@/app/lib/api";
 import { useUrlState } from "@/app/lib/use-url-state";
 import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
-import TabNavigation from "./shared/TabNavigation";
+import UnifiedToolbar from "./shared/UnifiedToolbar";
 import KeyboardShortcutsOverlay from "./shared/KeyboardShortcutsOverlay";
-import PlotPage from "./plot/PlotPage";
+import SlideOverPanel from "./shared/SlideOverPanel";
+import CommandPalette from "./shared/CommandPalette";
 import GridView from "./grid/GridView";
+import LabelRail from "./grid/LabelRail";
+import QuickLook from "./grid/QuickLook";
+import FirstRunHint from "./shared/FirstRunHint";
+import PaneShortcuts from "./shared/PaneShortcuts";
+import PaneLayoutSync from "./shared/PaneLayoutSync";
 import MediaPage from "./media/MediaPage";
-import DocsPage from "./docs/DocsPage";
-import InsightsPage from "./insights/InsightsPage";
 import ProjectsPage from "./projects/ProjectsPage";
 
 interface PreviewerProps {
@@ -41,7 +45,6 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
   const labelFilter = useAtomValue(labelFilterAtom);
 
   const {
-    pushSelection,
     popSelection,
     setBaseAndSelection,
     initBase,
@@ -61,9 +64,6 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
     fetchPlotData(uuid).then(({ config, data: plotData }) => {
       setData(plotData);
       setConfig(config);
-      if (config.type === "grid" && showPage === "plot") {
-        setShowPage("grid");
-      }
       if (showPage === "media" && mediaIndex != null) {
         fetchMedia(uuid, mediaIndex, true).then(setSideMedia);
       }
@@ -85,17 +85,12 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
     });
   }, [uuid, data, labelFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Populate media indices when grid view is shown but stack is empty.
-  // Always use [] (empty = "all items") so the grid paginates server-side
-  // instead of holding millions of IDs in browser memory.
+  // Populate media indices when grid is active but stack is empty.
+  // Grid is always rendered now, so init whenever the stack is empty.
   useEffect(() => {
-    if (showPage !== "grid" || mediaIndices.length > 0 || !data) return;
+    if (showPage === "media" || mediaIndices.length > 0 || !data) return;
     initBase([]);
   }, [showPage, mediaIndices.length, data, filters, uuid]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const handleMediaIndices = (newIndices: number[]) => {
-    pushSelection(newIndices, "Selection");
-  };
 
   if (showPage === "media" && mediaIndex !== undefined) {
     return (
@@ -103,29 +98,42 @@ export default function Previewer({ uuidProp }: PreviewerProps) {
         mediaIndex={mediaIndex}
         onBack={() => {
           setMediaIndex(undefined);
-          setShowPage(mediaIndices.length > 0 ? "grid" : "plot");
+          setShowPage("grid");
         }}
       />
     );
   }
 
+  const closeOverlay = () => setShowPage("grid");
+
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <TabNavigation />
+      {/* Skip-link — visible only when focused via keyboard, jumps past chrome */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-[100] focus:rounded-md focus:bg-teal-700 focus:px-3 focus:py-1.5 focus:text-xs focus:font-medium focus:text-white"
+      >
+        Skip to grid
+      </a>
+      <UnifiedToolbar />
       <KeyboardShortcutsOverlay />
-      <div className="min-h-0 flex-1 overflow-hidden">
-        {showPage === "projects" ? (
-          <ProjectsPage />
-        ) : showPage === "docs" ? (
-          <DocsPage />
-        ) : showPage === "insights" ? (
-          <InsightsPage />
-        ) : showPage === "grid" ? (
+      <CommandPalette />
+      <QuickLook />
+      <FirstRunHint />
+      <PaneShortcuts />
+      <PaneLayoutSync />
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        <LabelRail />
+        <div id="main" className="min-w-0 flex-1 overflow-hidden">
           <GridView onBack={popSelection} />
-        ) : (
-          <PlotPage onMediaSelect={handleMediaIndices} />
-        )}
+        </div>
       </div>
+
+      {/* Overlays — grid stays visible underneath */}
+      <SlideOverPanel open={showPage === "projects"} onClose={closeOverlay} title="Projects" width="max-w-xl">
+        <ProjectsPage />
+      </SlideOverPanel>
+      {/* Insights moved to /insights route */}
     </div>
   );
 }

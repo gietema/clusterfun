@@ -21,6 +21,8 @@ const nextConfig = {
       'onnxruntime-node': false,
       'sharp': false,
     };
+    // Silence Plotly's glslify "Critical dependency" warning
+    config.module.exprContextCritical = false;
     return config;
   },
 }

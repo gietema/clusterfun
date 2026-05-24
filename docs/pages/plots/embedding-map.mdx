@@ -1,0 +1,42 @@
+# Embedding map
+
+A 2D projection of high-dimensional embeddings, computed inside the app. Pick the projection method, point count, and neighbour parameters; the result is cached so switching colors or re-opening is instant.
+
+Unlike [Scatter](/plots/scatter) (where you pass already-projected `x`/`y` columns), the embedding map runs the projection from the cached embedding vectors.
+
+```python
+import clusterfun as clt
+
+clt.scatter(
+    df,
+    media="path",
+    embeddings="embedding",
+)
+# then pick "Embedding map" in the in-app plot dropdown
+```
+
+## When to use
+
+- You have raw embedding vectors and want to see them in 2D without re-running UMAP/t-SNE separately.
+- You want to iterate on `n_neighbors`, `sample_size`, or the method without leaving the app.
+
+## Projection methods
+
+| Method | Strengths | Notes |
+|---|---|---|
+| **UMAP** | Preserves local + some global structure. Fast on large datasets. | Default. Recommended starting point. |
+| **t-SNE** | Strong local structure. | Slower for big datasets. Less stable globally. |
+| **PCA** | Linear, fast, deterministic. | Useful as a sanity check against learned methods. |
+
+## Parameters
+
+| Parameter | Description |
+|---|---|
+| `embeddings` | Column with embedding vectors. Required (set at the dataset level). |
+| `method` | `umap`, `tsne`, or `pca`. Defaults to `umap`. |
+| `sample_size` | Max points to project (default 10,000). Larger = slower. |
+| `n_neighbors` | Local neighbourhood size for UMAP/t-SNE (default 15). |
+
+## Caching
+
+The projection is cached per (uuid, method, sample_size, n_neighbors). Switching `color` does not invalidate the cache.

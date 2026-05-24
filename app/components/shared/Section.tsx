@@ -18,7 +18,7 @@ export default function Section({ title, defaultOpen = false, children, badge }:
         onClick={() => setOpen(!open)}
         className="flex w-full items-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"
       >
-        <FontAwesomeIcon icon={open ? faChevronDown : faChevronRight} className="w-2.5 text-gray-400" />
+        <FontAwesomeIcon icon={open ? faChevronDown : faChevronRight} className="w-2.5 text-gray-500" />
         {title}
         {badge && <span className="ml-auto">{badge}</span>}
       </button>

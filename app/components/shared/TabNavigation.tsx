@@ -134,7 +134,7 @@ export default function TabNavigation() {
           className={`border-b-2 px-3 py-2 text-xs font-medium transition-colors ${
             showPage === tab.id
               ? "border-gray-900 text-gray-900"
-              : "border-transparent text-gray-400 hover:text-gray-600"
+              : "border-transparent text-gray-500 hover:text-gray-600"
           }`}
         >
           {tab.label}
@@ -165,7 +165,7 @@ export default function TabNavigation() {
             <button
               type="submit"
               disabled={searching || !inputValue.trim()}
-              className="flex shrink-0 items-center justify-center px-2 py-1.5 text-gray-400 transition-colors hover:text-gray-600 disabled:opacity-50"
+              className="flex shrink-0 items-center justify-center px-2 py-1.5 text-gray-500 transition-colors hover:text-gray-600 disabled:opacity-50"
               title="Search (Enter)"
             >
               {searching ? (
@@ -222,14 +222,14 @@ export default function TabNavigation() {
 
             {/* Cmd+K hint — only when empty */}
             {!hasActiveSearch && !inputValue && !searching && (
-              <kbd className="mr-2 shrink-0 rounded border border-gray-200 bg-white px-1 py-0.5 text-[10px] text-gray-400">
+              <kbd className="mr-2 shrink-0 rounded border border-gray-200 bg-white px-1 py-0.5 text-[10px] text-gray-500">
                 ⌘K
               </kbd>
             )}
 
             {/* "Modified" indicator — query changed but not submitted */}
             {isDirty && inputValue.trim() && !searching && (
-              <span className="mr-2 shrink-0 text-[10px] text-gray-400">Enter to search</span>
+              <span className="mr-2 shrink-0 text-[10px] text-gray-500">Enter to search</span>
             )}
           </div>
 

@@ -1,0 +1,41 @@
+# Scatter
+
+Two-dimensional plot that maps two numeric columns to the X and Y axes. The standard chart for embeddings (UMAP, t-SNE, PCA outputs), pairwise feature exploration, and any "what does X look like vs Y" question.
+
+```python
+import clusterfun as clt
+
+clt.scatter(
+    df,
+    x="umap_x",
+    y="umap_y",
+    media="path",
+    color="label",
+)
+```
+
+## When to use
+
+- Visualising 2D embedding projections.
+- Pairwise relationships between continuous variables (e.g. confidence vs uncertainty).
+- Spotting clusters and outliers visually before formal analysis.
+
+## Parameters
+
+| Parameter | Description |
+|---|---|
+| `x` | Column to plot on the X axis. |
+| `y` | Column to plot on the Y axis. |
+| `media` | Column with the media path (image, video, audio). Required. |
+| `color` | Column used to color each point. Categorical or numeric. |
+| `hline` / `vline` | Draw a horizontal / vertical reference line at the given value. |
+| `title` | Plot title. |
+
+## Interaction
+
+- **Lasso / box select** points to view them in the grid.
+- **Click** a point to open it in the media viewer.
+- **Hover** for a quick preview thumbnail.
+- Combine with **filters** to scope the plot to a subset.
+
+See also: [Embedding map](/plots/embedding-map) — for computing the projection inside the app.

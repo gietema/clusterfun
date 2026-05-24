@@ -87,7 +87,7 @@ export default function ExportSection() {
               </button>
             ))}
           </div>
-          <p className="mt-1 text-[10px] text-gray-400">{selected.description}</p>
+          <p className="mt-1 text-[10px] text-gray-500">{selected.description}</p>
         </div>
 
         {/* Selection filter */}

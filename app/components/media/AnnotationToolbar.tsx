@@ -54,7 +54,7 @@ export default function AnnotationToolbar({
     <div className="flex flex-col gap-3 border-l border-gray-200 p-3" style={{ width: 260, minWidth: 260 }}>
       {/* Tool selection */}
       <div>
-        <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400">Tool</div>
+        <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Tool</div>
         <div className="flex gap-1">
           <button
             onClick={() => onToolChange("rectangle")}
@@ -83,7 +83,7 @@ export default function AnnotationToolbar({
 
       {/* Label selection */}
       <div>
-        <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400">Label</div>
+        <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Label</div>
         <div className="flex flex-col gap-1">
           {labels.map((label) => (
             <button
@@ -141,11 +141,11 @@ export default function AnnotationToolbar({
 
       {/* Annotation list */}
       <div className="flex-1 overflow-y-auto">
-        <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+        <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
           Annotations ({annotations.length})
         </div>
         {annotations.length === 0 ? (
-          <div className="text-xs text-gray-400">
+          <div className="text-xs text-gray-500">
             Draw on the image to create annotations
           </div>
         ) : (
@@ -179,14 +179,14 @@ export default function AnnotationToolbar({
                       }}
                     />
                     <span className="font-medium">{ann.label}</span>
-                    <span className="text-gray-400">{dims}</span>
+                    <span className="text-gray-500">{dims}</span>
                   </div>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       onDeleteAnnotation(ann.id);
                     }}
-                    className="rounded p-0.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
+                    className="rounded p-0.5 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-500"
                     title="Delete annotation"
                   >
                     <FontAwesomeIcon icon={faTrash} className="text-[10px]" />

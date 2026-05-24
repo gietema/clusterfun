@@ -1,0 +1,43 @@
+# Filtering & search
+
+Clusterfun composes "what am I looking at" from four small things that you can stack:
+
+1. **Filters** — column predicates (`category = cat`, `score >= 0.8`).
+2. **Selections** — points lasso'd on a plot or items chosen in the grid.
+3. **Text search** — natural-language similarity against the dataset's embeddings.
+4. **Label filter** — show items that carry a specific label.
+
+All four show up as **chips in the scope line** at the top of the app. The number to the left of the chips is the current count; the chips on the right tell you why it's that number. Click the × on any chip to remove that constraint.
+
+## Filters
+
+Click the **Filter** button in the toolbar. Pick a column, an operator, and a value (or values for `IN` / `NOT IN`).
+
+| Operator | Meaning |
+|---|---|
+| `=`, `≠` | Equal, not equal |
+| `≥`, `≤` | Numeric comparisons |
+| `IN`, `NOT IN` | Set membership (multi-value) |
+| `= col`, `≠ col` | Compare against another column (e.g. `pred = gt`) |
+
+Filters combine with **AND** logic. Add another row to add another constraint.
+
+The filter dropdown is portaled — it overlays everything else regardless of where the trigger sits.
+
+## Text search
+
+If the dataset has embeddings *and* the embedding model supports text encoding (CLIP, SigLIP, etc.), a search box appears in the toolbar. Type a phrase, press **Enter** — Clusterfun encodes the query in the browser and ranks every item by similarity.
+
+The grid switches to "ranked" order. A teal accent indicates active text search.
+
+To clear: click the × inside the search input or press **Escape**.
+
+## Combining constraints
+
+Every constraint pushes a new level onto the navigation stack. Click any chip's × to pop just that level, or **Clear** at the end of the scope line to reset everything.
+
+Example: start with a filter `class = cat`, lasso a cluster of points on a UMAP, then run text search for `"sleeping"`. The scope line will read:
+
+> **42** of 50,000 · filter: class = cat · in: Selection · search: "sleeping"
+
+That's three stacked levels. Removing any one chip pops that level and re-runs the rest.

@@ -30,7 +30,7 @@ export default function FilterRow({ filter, columns, onChange, onRemove }: Filte
   return (
     <div className="mb-2 rounded-lg border border-gray-200 p-3">
       <div className="mb-2 text-right">
-        <button onClick={onRemove} className="text-xs text-gray-400 transition-colors hover:text-red-500">&times;</button>
+        <button onClick={onRemove} className="text-xs text-gray-500 transition-colors hover:text-red-500">&times;</button>
       </div>
       <div className="flex w-full gap-2">
         <div className="flex-grow">

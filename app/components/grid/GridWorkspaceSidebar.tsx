@@ -4,6 +4,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   configAtom, mediaItemsAtom, uuidAtom,
   mediaAtom, showPageAtom, similarityResultsAtom,
+  detailMediaIndexAtom, sidebarCollapsedAtom, gridCollapsedAtom,
 } from "@/app/store/atoms";
 import { fetchSimilar, updateMetadata, addColumn } from "@/app/lib/api";
 import { useBreadcrumbNav } from "@/app/lib/use-breadcrumb-nav";
@@ -13,18 +14,20 @@ import { saveLabel, deleteLabel } from "@/app/lib/api";
 import { useLabelUndo } from "@/app/lib/use-label-undo";
 import PreviewMedia from "../shared/PreviewMedia";
 import InformationItem from "../shared/InformationItem";
-import Section from "../shared/Section";
-import LabelsSection from "./LabelsSection";
-import ActiveLearningSection from "./ActiveLearningSection";
-import ExportSection from "./ExportSection";
+import MediaDetailPanel from "./MediaDetailPanel";
+import EmptyState from "../shared/EmptyState";
 
 export default function GridWorkspaceSidebar() {
+  const detailIndex = useAtomValue(detailMediaIndexAtom);
+  const isDetailMode = detailIndex != null;
   const uuid = useAtomValue(uuidAtom);
   const [config, setConfig] = useAtom(configAtom);
   const [media, setSideMedia] = useAtom(mediaAtom);
   const [mediaItems, setMediaItems] = useAtom(mediaItemsAtom);
   const setShowPage = useSetAtom(showPageAtom);
   const setSimilarityResults = useSetAtom(similarityResultsAtom);
+  const setSidebarCollapsed = useSetAtom(sidebarCollapsedAtom);
+  const [gridCollapsed, setGridCollapsed] = useAtom(gridCollapsedAtom);
   const { replaceTop } = useBreadcrumbNav();
   const { pushAction } = useLabelUndo();
 
@@ -142,36 +145,96 @@ export default function GridWorkspaceSidebar() {
 
   return (
     <div className="flex h-full flex-col overflow-y-auto border-l border-gray-200">
-      {/* Preview */}
-      <Section title="Preview" defaultOpen>
+      {/* Pane header — mirrors LabelRail pattern */}
+      <div className="flex h-7 shrink-0 items-center justify-between border-b border-gray-100 px-2">
+        <button
+          onClick={() => {
+            // If grid is collapsed, auto-expand it so the user sees something.
+            if (gridCollapsed) setGridCollapsed(false);
+            setSidebarCollapsed(true);
+          }}
+          className="flex h-5 w-5 items-center justify-center rounded text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+          title="Hide preview pane"
+          aria-label="Hide preview pane"
+        >
+          <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="m9 18 6-6-6-6" />
+          </svg>
+        </button>
+        {/* Pinned indicator removed — click now opens Quick Look instead of pinning */}
+      </div>
+
+      {/* Preview / Detail — always-visible content area (no inner collapsible) */}
+      <div className="px-3 pb-3 pt-2">
+        {isDetailMode ? (
+          <MediaDetailPanel />
+        ) : null}
         {media ? (
-          <div className="flex flex-col gap-2">
-            <div className="rounded [&_img]:max-h-[200px] [&_img]:w-auto [&_img]:object-contain [&_video]:max-h-[200px] [&_video]:w-auto [&_video]:object-contain">
-              <PreviewMedia
-                media={media}
-                boundingBoxColumn={config.bounding_box}
-                displayLabel
-              />
-            </div>
+          <div
+            key={media.index}
+            className={`motion-fade flex flex-col gap-2 ${isDetailMode ? "mt-2 border-t border-gray-100 pt-2" : ""}`}
+          >
+            {!isDetailMode && (
+              <div className="rounded [&_img]:max-h-[200px] [&_img]:w-auto [&_img]:object-contain [&_video]:max-h-[200px] [&_video]:w-auto [&_video]:object-contain">
+                <PreviewMedia
+                  media={media}
+                  boundingBoxColumn={config.bounding_box}
+                  displayLabel
+                />
+              </div>
+            )}
             {config.embeddings && (
               <button
                 onClick={handleFindSimilar}
                 disabled={findSimilarLoading}
-                className="w-full rounded-md bg-gray-800 px-3 py-1.5 text-center text-xs font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
+                className="w-full rounded-md bg-teal-700 px-3 py-1.5 text-center text-xs font-medium text-white transition-colors hover:bg-teal-800 disabled:opacity-50"
               >
                 {findSimilarLoading ? "Searching..." : "Find similar"}
               </button>
             )}
             <div>
-              {entries.map(([key, value]) => (
-                <InformationItem
-                  key={key}
-                  label={key}
-                  value={value}
-                  onEdit={handleMetadataEdit}
-                  onEditAll={handleMetadataEditAll}
-                />
-              ))}
+              {/* Group columns by source/type for readability */}
+              {(() => {
+                const isPrediction = (k: string) =>
+                  /^(pred(iction)?|score|confidence|prob)/i.test(k) || /_(pred|score|confidence)$/i.test(k);
+                const isLabel = (k: string) =>
+                  /^(label|class|category|gt|target|y_true|y_pred)$/i.test(k);
+                const isImageStat = (k: string) => k.startsWith("img_");
+                const groups: Array<{ title: string; items: typeof entries }> = [
+                  { title: "Predictions", items: [] },
+                  { title: "Labels & ground truth", items: [] },
+                  { title: "Image stats", items: [] },
+                  { title: "Metadata", items: [] },
+                ];
+                for (const e of entries) {
+                  const k = e[0];
+                  if (isPrediction(k)) groups[0].items.push(e);
+                  else if (isLabel(k)) groups[1].items.push(e);
+                  else if (isImageStat(k)) groups[2].items.push(e);
+                  else groups[3].items.push(e);
+                }
+                return groups
+                  .filter((g) => g.items.length > 0)
+                  .map((g, gi) => (
+                    <div key={g.title} className={gi > 0 ? "mt-2 border-t border-gray-100 pt-2" : ""}>
+                      {/* Only show header if more than one group present */}
+                      {groups.filter((x) => x.items.length > 0).length > 1 && (
+                        <div className="mb-1 text-[9px] font-semibold uppercase tracking-wider text-gray-500">
+                          {g.title}
+                        </div>
+                      )}
+                      {g.items.map(([key, value]) => (
+                        <InformationItem
+                          key={key}
+                          label={key}
+                          value={value}
+                          onEdit={handleMetadataEdit}
+                          onEditAll={handleMetadataEditAll}
+                        />
+                      ))}
+                    </div>
+                  ));
+              })()}
               <div className="mt-2 flex items-center gap-1">
                 <input
                   placeholder="New column"
@@ -182,7 +245,7 @@ export default function GridWorkspaceSidebar() {
                   onKeyDown={(e) => { if (e.key === "Enter") handleAddColumn(); }}
                 />
                 <button
-                  className="shrink-0 rounded-md bg-gray-800 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-gray-700"
+                  className="shrink-0 rounded-md bg-teal-700 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-teal-800"
                   onClick={handleAddColumn}
                 >
                   Add
@@ -215,13 +278,14 @@ export default function GridWorkspaceSidebar() {
             )}
           </div>
         ) : (
-          <p className="text-xs text-gray-400">Hover an item to preview</p>
+          <EmptyState
+            illustration="preview"
+            title="Nothing selected"
+            hint="Hover an item in the grid to preview it here, or click to pin."
+          />
         )}
-      </Section>
+      </div>
 
-      <LabelsSection />
-      <ActiveLearningSection />
-      <ExportSection />
     </div>
   );
 }

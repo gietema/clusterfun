@@ -29,7 +29,7 @@ export default function Pagination({ page, maxPage, onPageChange }: PaginationPr
   return (
     <div className="flex items-center gap-2 text-xs">
       <button
-        className="text-gray-400 transition-colors hover:text-gray-900 disabled:text-gray-200"
+        className="text-gray-500 transition-colors hover:text-gray-900 disabled:text-gray-200"
         onClick={() => onPageChange(page - 1)}
         disabled={page === 0}
       >
@@ -60,7 +60,7 @@ export default function Pagination({ page, maxPage, onPageChange }: PaginationPr
         </button>
       )}
       <button
-        className="text-gray-400 transition-colors hover:text-gray-900 disabled:text-gray-200"
+        className="text-gray-500 transition-colors hover:text-gray-900 disabled:text-gray-200"
         onClick={() => onPageChange(page + 1)}
         disabled={page >= maxPage}
       >

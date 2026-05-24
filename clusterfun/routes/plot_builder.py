@@ -53,17 +53,67 @@ def _safe_col(name: str) -> str:
     return '"' + name.replace('"', '""') + '"'
 
 
+# Column-name fragments that strongly imply categorical regardless of dtype/cardinality.
+# Matched case-insensitively against the column name.
+_CATEGORICAL_NAME_HINTS = (
+    "label", "class", "category", "categorie",
+    "pred", "prediction", "predicted",
+    "target", "gt", "y_true", "y_pred",
+    "tag", "group", "cluster", "split",
+)
+
+# Cardinality cap above which integer columns lose their "categorical" assumption
+# (unless the name explicitly hints at a label). MNIST=10, CIFAR-10=10, CIFAR-100=100,
+# multi-class classification setups typically ≤ a few dozen — 50 is a forgiving cutoff
+# that still excludes IDs, timestamps, and zip codes.
+_INTEGER_CATEGORICAL_MAX_DISTINCT = 50
+
+
 def _detect_color_is_categorical(
     con: duckdb.DuckDBPyConnection, color: str, view_uuid: str
 ) -> bool:
-    """Sample the color column and return True if all values are strings. Cached."""
+    """Decide whether a color column should be rendered with a discrete (categorical) palette
+    rather than a continuous color scale.
+
+    Heuristics (in order):
+      - Strings or booleans → categorical.
+      - Floats → continuous.
+      - Integers → categorical if cardinality is low (≤ 50) OR the column name hints at a
+        label (``label``, ``class``, ``pred``, etc.). This catches MNIST/CIFAR-style integer
+        class IDs while still treating things like ``timestamp_ms`` or ``id`` as continuous.
+      - Mixed/other → continuous.
+
+    Result is cached per ``(view_uuid, color)``.
+    """
     cache_key = (view_uuid, color)
     if cache_key in _color_cat_cache:
         return _color_cat_cache[cache_key]
+
     sample = con.execute(
-        f"SELECT DISTINCT {_safe_col(color)} FROM database LIMIT 50"
+        f"SELECT DISTINCT {_safe_col(color)} FROM database LIMIT 51"
     ).fetchall()
-    result = all(isinstance(row[0], str) or row[0] is None for row in sample)
+    non_null = [row[0] for row in sample if row[0] is not None]
+    name_lower = color.lower()
+    name_suggests_label = any(hint in name_lower for hint in _CATEGORICAL_NAME_HINTS)
+
+    if not non_null:
+        result = True
+    elif all(isinstance(v, str) for v in non_null):
+        result = True
+    elif all(isinstance(v, bool) for v in non_null):
+        result = True
+    elif all(isinstance(v, int) and not isinstance(v, bool) for v in non_null):
+        # Integers: categorical when low-cardinality or the name screams "label".
+        # `LIMIT 51` above gives us up to 51 distinct samples — if we got back ≤ the cap
+        # then cardinality is definitely ≤ the cap. Otherwise consult the column name.
+        if len(non_null) <= _INTEGER_CATEGORICAL_MAX_DISTINCT:
+            result = True
+        else:
+            result = name_suggests_label
+    else:
+        # Floats and mixed types → continuous, unless the name screams label.
+        result = name_suggests_label
+
     _color_cat_cache[cache_key] = result
     return result
 
@@ -89,9 +139,15 @@ def _build_traces_from_rows(
         grouped: Dict[Any, list] = defaultdict(list)
         for r in rows:
             grouped[r[color_col_idx]].append(r)
+        # Sort group keys so legends are deterministic and ordered naturally.
+        # Mixed-type keys (e.g. None alongside ints) fall back to string sort.
+        try:
+            sorted_items = sorted(grouped.items(), key=lambda kv: (kv[0] is None, kv[0]))
+        except TypeError:
+            sorted_items = sorted(grouped.items(), key=lambda kv: (kv[0] is None, str(kv[0])))
         data = []
         colors_out = []
-        for idx, (color_val, group_rows) in enumerate(grouped.items()):
+        for idx, (color_val, group_rows) in enumerate(sorted_items):
             colors_out.append(color_val)
             data.append({
                 "id": [r[0] for r in group_rows],
@@ -99,7 +155,7 @@ def _build_traces_from_rows(
                 "y": [r[y_col_idx] for r in group_rows],
                 "mode": "markers",
                 "type": "scattergl",
-                "name": color_val,
+                "name": str(color_val),
                 "marker": {"color": COLORS[idx % len(COLORS)], "opacity": opacity},
             })
         return data, colors_out
@@ -140,9 +196,14 @@ def _build_histogram_data(
         for r in rows:
             grouped[r[2]].append(r)
 
+        try:
+            sorted_items = sorted(grouped.items(), key=lambda kv: (kv[0] is None, kv[0]))
+        except TypeError:
+            sorted_items = sorted(grouped.items(), key=lambda kv: (kv[0] is None, str(kv[0])))
+
         data = []
         colors_out = []
-        for idx, (color_val, group_rows) in enumerate(grouped.items()):
+        for idx, (color_val, group_rows) in enumerate(sorted_items):
             colors_out.append(color_val)
             x_values = [r[1] for r in group_rows]
             dots = get_x_and_y(x_values, bins)
@@ -152,7 +213,7 @@ def _build_histogram_data(
                 "y": [d[1] for d in dots],
                 "mode": "markers",
                 "type": "scattergl",
-                "name": color_val,
+                "name": str(color_val),
                 "marker": {"color": COLORS[idx % len(COLORS)], "opacity": 0.5},
             })
         return data, colors_out
@@ -199,9 +260,14 @@ def _build_violin_data(
         for r in rows:
             grouped[r[2]].append(r)
 
+        try:
+            sorted_items = sorted(grouped.items(), key=lambda kv: (kv[0] is None, kv[0]))
+        except TypeError:
+            sorted_items = sorted(grouped.items(), key=lambda kv: (kv[0] is None, str(kv[0])))
+
         data = []
         colors_out = []
-        for idx, (color_val, group_rows) in enumerate(grouped.items()):
+        for idx, (color_val, group_rows) in enumerate(sorted_items):
             colors_out.append(color_val)
             y_vals = [r[1] for r in group_rows]
             x_jitter = get_violin_x_single(y_vals)
@@ -212,7 +278,7 @@ def _build_violin_data(
                 "y": y_vals,
                 "mode": "markers",
                 "type": "scattergl",
-                "name": color_val,
+                "name": str(color_val),
                 "marker": {"color": COLORS[idx % len(COLORS)], "opacity": 1.0},
             })
         return data, colors_out

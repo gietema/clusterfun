@@ -43,7 +43,7 @@ function getXAxis(cfg: PlotConfig): Record<string, any> {
     showgrid: true,
     showline: false,
     zeroline: false,
-    title: { text: cfg.x, font: { color: "black", size: 11 } },
+    title: { text: cfg.x, font: { color: "black", size: 11 }, standoff: 1 },
     autorange: true,
     automargin: true,
   };
@@ -97,22 +97,31 @@ export default function PlotlyChart({
       hovermode: "closest",
       paper_bgcolor: "rgba(0,0,0,0)",
       plot_bgcolor: "rgba(0,0,0,0)",
-      xaxis: getXAxis(config),
+      font: { color: "#374151", size: 11, family: "system-ui, -apple-system, sans-serif" },
+      xaxis: { ...getXAxis(config), gridcolor: "#f3f4f6", linecolor: "#e5e7eb", zerolinecolor: "#e5e7eb", tickfont: { size: 10, color: "#6b7280" } },
       yaxis: {
         autorange: true,
         showgrid: true,
         showline: false,
-        title: { text: config.y, font: { color: "black", size: 11 } },
+        title: { text: config.y, font: { color: "#374151", size: 11 }, standoff: 1 },
+        gridcolor: "#f3f4f6",
+        zerolinecolor: "#e5e7eb",
+        tickfont: { size: 10, color: "#6b7280" },
       },
+      colorway: ["#0d6e6e", "#0891b2", "#7c3aed", "#db2777", "#f59e0b", "#10b981", "#ef4444", "#6366f1"],
       displayModeBar: false,
       dragmode: dragMode,
       datarevision: revision,
       autosize: true,
-      margin: { l: 40, r: 0, b: 60, t: 0, pad: 0 },
+      margin: { l: 40, r: 0, b: 40, t: 0, pad: 0 },
       shapes,
       legend: {
         traceorder: "normal",
-        ...(config.color ? { title: { text: config.color } } : {}),
+        font: { size: 10, color: "#374151" },
+        bgcolor: "rgba(255,255,255,0.6)",
+        bordercolor: "#e5e7eb",
+        borderwidth: 0,
+        ...(config.color ? { title: { text: config.color, font: { size: 10, color: "#6b7280" } } } : {}),
       },
     });
   }, [config, revision, data]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -189,6 +198,11 @@ export default function PlotlyChart({
           </svg>
         </div>
       )}
+      <div
+        role="img"
+        aria-label={`${config.type} chart${config.x ? ` of ${config.x}` : ""}${config.y ? ` vs ${config.y}` : ""}`}
+        style={{ width: "100%", height: "100%" }}
+      >
       <Plot
         data={displayData as unknown as Data[]}
         layout={layout}
@@ -211,6 +225,7 @@ export default function PlotlyChart({
           }
         }}
       />
+      </div>
     </>
   );
 }

@@ -2,6 +2,7 @@
 import { useAtomValue } from "jotai";
 import { columnsAtom, configAtom } from "@/app/store/atoms";
 import type { PlotPanelConfig } from "@/app/types";
+import { isAnalysisType } from "../workspace/AnalysisCharts";
 
 interface PlotConfigPanelProps {
   panel: PlotPanelConfig;
@@ -16,6 +17,16 @@ const BASE_PLOT_TYPES = [
   { value: "violin", label: "Violin" },
 ];
 
+const EMBEDDING_PLOT_TYPES = [
+  { value: "embedding_map", label: "Embedding map" },
+];
+
+const ANALYSIS_TYPES = [
+  { value: "outliers", label: "Outliers (LOF)" },
+  { value: "duplicates", label: "Near-duplicates" },
+  { value: "farthest", label: "Farthest from centroid" },
+];
+
 function isNumericDtype(dtype: string): boolean {
   return /int|float|double|decimal|numeric/i.test(dtype);
 }
@@ -26,8 +37,10 @@ export default function PlotConfigPanel({ panel, onChange, onRemove }: PlotConfi
   const hasEmbeddings = !!config?.embeddings;
 
   const PLOT_TYPES = hasEmbeddings
-    ? [...BASE_PLOT_TYPES, { value: "embedding_map", label: "Embedding map" }]
+    ? [...BASE_PLOT_TYPES, ...EMBEDDING_PLOT_TYPES, ...ANALYSIS_TYPES]
     : BASE_PLOT_TYPES;
+
+  const isAnalysis = isAnalysisType(panel.type);
 
   const MAX_COLOR_UNIQUE = 50;
   const numericCols = columns.filter((c) => isNumericDtype(c.dtype));
@@ -52,9 +65,9 @@ export default function PlotConfigPanel({ panel, onChange, onRemove }: PlotConfi
         ))}
       </select>
 
-      {showX && (
+      {showX && !isAnalysis && (
         <>
-          <span className="text-gray-400">{xLabel}</span>
+          <span className="text-gray-500">{xLabel}</span>
           <select
             value={panel.x ?? ""}
             onChange={(e) => onChange({ ...panel, x: e.target.value || undefined })}
@@ -68,9 +81,9 @@ export default function PlotConfigPanel({ panel, onChange, onRemove }: PlotConfi
         </>
       )}
 
-      {(needsY || panel.type === "violin") && (
+      {(needsY || panel.type === "violin") && !isAnalysis && (
         <>
-          <span className="text-gray-400">{yLabel}</span>
+          <span className="text-gray-500">{yLabel}</span>
           <select
             value={panel.y ?? ""}
             onChange={(e) => onChange({ ...panel, y: e.target.value || undefined })}
@@ -84,9 +97,9 @@ export default function PlotConfigPanel({ panel, onChange, onRemove }: PlotConfi
         </>
       )}
 
-      {panel.type === "histogram" && (
+      {panel.type === "histogram" && !isAnalysis && (
         <>
-          <span className="text-gray-400">Bins</span>
+          <span className="text-gray-500">Bins</span>
           <input
             type="number"
             min={5}
@@ -103,7 +116,7 @@ export default function PlotConfigPanel({ panel, onChange, onRemove }: PlotConfi
 
       {isEmbeddingMap && (
         <>
-          <span className="text-gray-400">Method</span>
+          <span className="text-gray-500">Method</span>
           <select
             value={panel.method ?? "umap"}
             onChange={(e) => onChange({ ...panel, method: e.target.value })}
@@ -114,7 +127,7 @@ export default function PlotConfigPanel({ panel, onChange, onRemove }: PlotConfi
             <option value="pca">PCA</option>
           </select>
 
-          <span className="text-gray-400">Sample</span>
+          <span className="text-gray-500">Sample</span>
           <input
             type="number"
             min={100}
@@ -130,7 +143,7 @@ export default function PlotConfigPanel({ panel, onChange, onRemove }: PlotConfi
 
           {(panel.method ?? "umap") === "umap" && (
             <>
-              <span className="text-gray-400">Neighbors</span>
+              <span className="text-gray-500">Neighbors</span>
               <input
                 type="number"
                 min={2}
@@ -147,22 +160,26 @@ export default function PlotConfigPanel({ panel, onChange, onRemove }: PlotConfi
         </>
       )}
 
-      <span className="text-gray-400">Color</span>
-      <select
-        value={panel.color ?? ""}
-        onChange={(e) => onChange({ ...panel, color: e.target.value || undefined })}
-        className="max-w-[140px] rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
-      >
-        <option value="">—</option>
-        {colorCols.map((c) => (
-          <option key={c.name} value={c.name}>{c.name}</option>
-        ))}
-      </select>
+      {!isAnalysis && (
+        <>
+          <span className="text-gray-500">Color</span>
+          <select
+            value={panel.color ?? ""}
+            onChange={(e) => onChange({ ...panel, color: e.target.value || undefined })}
+            className="max-w-[140px] rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
+          >
+            <option value="">—</option>
+            {colorCols.map((c) => (
+              <option key={c.name} value={c.name}>{c.name}</option>
+            ))}
+          </select>
+        </>
+      )}
 
       {onRemove && (
         <button
           onClick={onRemove}
-          className="ml-auto rounded px-1.5 py-0.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+          className="ml-auto rounded px-1.5 py-0.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
           title="Remove plot"
         >
           ×

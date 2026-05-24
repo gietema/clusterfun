@@ -302,6 +302,8 @@ export interface InsightsStatusResponse {
 export interface CentroidDistanceResult {
   media_id: number;
   distance: number;
+  group?: string | null;
+  group_total?: number | null;
 }
 
 export async function fetchOutliers(
@@ -338,10 +340,12 @@ export async function fetchCentroidDistance(
   uuid: string,
   mediaIds: number[] = [],
   limit = 200,
+  groupBy?: string | null,
 ): Promise<CentroidDistanceResult[] | InsightsTaskResponse> {
   const { data } = await axios.post(`${API_URL}/views/${uuid}/centroid-distance`, {
     media_ids: mediaIds,
     limit,
+    group_by: groupBy ?? null,
   });
   return data;
 }

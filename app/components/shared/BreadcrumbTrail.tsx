@@ -164,7 +164,7 @@ export default function BreadcrumbTrail() {
       {chips.length > 1 && (
         <button
           onClick={reset}
-          className="rounded px-1.5 py-0.5 text-[10px] text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+          className="rounded px-1.5 py-0.5 text-[10px] text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-600"
         >
           Clear all
         </button>

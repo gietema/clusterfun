@@ -81,7 +81,7 @@ export default function InformationItem({ label, value, onEdit, onEditAll }: Inf
         </div>
         {onEditAll && (
           <button
-            className="mt-0.5 text-[10px] text-gray-400 transition-colors hover:text-gray-700"
+            className="mt-0.5 text-[10px] text-gray-500 transition-colors hover:text-gray-700"
             onClick={handleApplyAll}
           >
             Apply to page

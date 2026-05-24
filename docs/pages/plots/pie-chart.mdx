@@ -1,0 +1,28 @@
+# Pie chart
+
+Proportional breakdown of a categorical column, rendered as a polar scatter — so each "slice" still contains the underlying points, clickable like the rest of the plots.
+
+```python
+import clusterfun as clt
+
+clt.pie_chart(
+    df,
+    color="category",
+    media="path",
+)
+```
+
+## When to use
+
+- Quick proportional overview of a small number of categories (≤ ~10).
+- Class-balance presentations.
+
+For larger numbers of categories prefer [Bar chart](/plots/bar-chart) — pie slices become unreadable past ~10 categories.
+
+## Parameters
+
+| Parameter | Description |
+|---|---|
+| `color` | Categorical column to break down. |
+| `media` | Column with the media path. Required. |
+| `title` | Plot title. |

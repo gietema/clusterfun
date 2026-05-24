@@ -1,0 +1,44 @@
+# Labelling workflow
+
+Labelling is the app's hero verb. It lives in the **left rail** — collapsed to a thin strip by default, expand it with the chevron when you're labelling.
+
+## Creating labels
+
+Type a label name in the input at the top of the rail and press **Enter**. The rail supports up to nine labels (one per digit key).
+
+Each label gets a unique colour, used everywhere it appears: chip in the rail, badge on the grid item, ring around a selected item.
+
+## Applying labels
+
+Three ways, pick the one that fits the moment:
+
+| Action | How |
+|---|---|
+| **Keyboard, one item** | Hover the item, press **1**–**9**. Same key again removes the label. |
+| **Mouse, one item** | Hover the item; the right sidebar shows label chips — click to toggle. |
+| **Batch** | Select multiple items (lasso on a plot, or click+shift-click in the grid), then click a label in the selection action bar. |
+
+Press **Ctrl/Cmd+Z** to undo, **Ctrl/Cmd+Shift+Z** to redo. Undo is per-action, not per-item — undoing a batch reverts the whole batch.
+
+## Focus mode
+
+Press **F** (or click **Focus** in the label rail) to enter focus mode. One item at a time, full screen, keyboard-driven: digits to label, **→** / **←** to move, **Esc** to exit. Best for sustained labelling sessions.
+
+## Find more
+
+If you have at least two items labelled in a class, **Find more** (in the rail) computes the centroid of those items in embedding space and ranks the dataset by similarity. The grid switches to ranked order — review and label the next batch quickly.
+
+Refine the search by labelling more items in that class, then click **Refine**. The centroid recomputes with the new examples included.
+
+## Exclude
+
+Press **X** while hovering a grid item to mark it as **excluded** — useful for the "definitely not this class" bucket. Exclude is its own label, shown with a red overlay. Excluded items push *away* from class centroids in **Find more**, so they actively shape the search.
+
+## Visual indicators
+
+| Marker | Meaning |
+|---|---|
+| Colored badge top-left of grid item | Item has this label. Number badge appears when many columns are shown (use the digit to identify). |
+| Colored left strip | Item has at least one (non-exclude) label. |
+| Teal ring | Item is currently selected. |
+| Red "excluded" overlay | Item carries the `exclude` label. |

@@ -23,7 +23,7 @@ export const gridValuesAtom = atom<GridValues>({
   subsample: 0,
 });
 export const mediaIndexAtom = atom<number | undefined>(undefined);
-export const showPageAtom = atom<string>("plot");
+export const showPageAtom = atom<string>("grid");
 export const mediaAtom = atom<Media | undefined>(undefined);
 export const mediaItemsAtom = atom<Media[]>([]);
 export const labelUndoStackAtom = atom<LabelAction[]>([]);
@@ -65,6 +65,44 @@ export const highlightedPointsAtom = atom<Set<number>>(new Set());
 
 // Column metadata (cached)
 export const columnsAtom = atom<ColumnInfo[]>([]);
+
+// Command palette
+export const commandPaletteOpenAtom = atom<boolean>(false);
+
+// Media detail panel (sidebar)
+export const detailMediaIndexAtom = atom<number | undefined>(undefined);
+
+// Grid overlay states (layers, not modes)
+export const outlierHighlightAtom = atom<boolean>(false);
+export const duplicateHighlightAtom = atom<boolean>(false);
+
+// Analytics dock (plot panels)
+export const bottomDockVisibleAtom = atom<boolean>(false);
+export const bottomDockHeightAtom = atom<number>(300);
+export const dockPositionAtom = atom<"bottom" | "top" | "right">("top");
+export const dockWidthAtom = atom<number>(400);
+
+// Focus mode (full-screen labeling)
+export const focusModeAtom = atom<boolean>(false);
+
+// Pane collapse (grid <-> sidebar)
+export const sidebarCollapsedAtom = atom<boolean>(false);
+export const gridCollapsedAtom = atom<boolean>(false);
+
+// Live filtered count (written by GridView, read by toolbar's scope line)
+export const filteredCountAtom = atom<number | null>(null);
+
+// Max page index (written by GridView, read by toolbar pagination)
+export const maxPageAtom = atom<number>(0);
+
+// Cursor (keyboard-focused item index in the current grid). Drives arrow-key nav.
+export const cursorIndexAtom = atom<number | null>(null);
+
+// Quick Look overlay (Space-key preview)
+export const quickLookOpenAtom = atom<boolean>(false);
+
+// Left label rail collapsed state (defaults to collapsed — labels are not always primary)
+export const labelRailCollapsedAtom = atom<boolean>(true);
 
 // Text search
 export const textSearchQueryAtom = atom<string>("");
